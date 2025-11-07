@@ -3,6 +3,8 @@
 export(curvecat)
 export(quantize)
 export(quantize_null)
+export(quantize_prep)
+export(stratify)
 export(trace_curvecat)
 importFrom(Rcpp,sourceCpp)
 useDynLib(quantize, .registration = TRUE)

@@ -4,29 +4,21 @@
 \alias{quantize_null}
 \title{Generate a null distribution using quantize()}
 \usage{
-quantize_null(
-  x,
-  n_reps = 999L,
-  method = "curvecat",
-  stat = NULL,
-  n_cores = 1L,
-  ...
-)
+quantize_null(x, n_reps = 999L, stat = NULL, n_cores = 1L, ...)
 }
 \arguments{
 \item{x}{Community matrix (species × sites, or any numeric matrix).}
 
-\item{n_reps}{Number of randomizations to generate.}
-
-\item{method}{Null model method passed to quantize/quantize_prep
-(e.g. "curvecat" or a binary vegan method).}
+\item{n_reps}{Number of randomizations to generate. Default is `999`.}
 
 \item{stat}{Optional summary function taking a matrix and returning a numeric
-statistic (e.g. rowSums on abundance data would give total abundance per site).
-If NULL (default), the function returns the full set of randomized matrices.}
+statistic (e.g. `rowSums` with abundance data would give total abundance per site).
+If `NULL` (default), the function returns the full set of randomized matrices.}
 
-\item{...}{Additional arguments passed to quantize()
-(e.g. n_strata, transform, jitter, priority, n_iter, burnin).}
+\item{n_cores}{Number of compute cores to use for parallel processing. Default is `1`.}
+
+\item{...}{Additional arguments passed to `quantize()`
+(e.g. `method`, `n_strata`, `transform`, `offset`, `priority`, `n_iter`, `burnin`).}
 }
 \value{
 If stat is NULL:

@@ -4,7 +4,17 @@
 \alias{quantize}
 \title{Stratified randomization of a quantitative community matrix}
 \usage{
-quantize(x = NULL, prep = NULL, method = "curvecat", ...)
+quantize(
+  x = NULL,
+  prep = NULL,
+  method = "curvecat",
+  breaks = NULL,
+  n_strata = NULL,
+  transform = NULL,
+  offset = NULL,
+  zero_stratum = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{Community matrix with sites in rows, species in columns, and
@@ -25,20 +35,9 @@ The default \code{"curvecat"} uses the categorical curveball algorithm
 be used; these are applied to a binary representation of each stratum via
 \code{\link[vegan]{nullmodel}}. Only binary methods should be used here.}
 
-\item{...}{Additional arguments controlling stratification, the quantitative
+\item{...}{Additional arguments controlling stratification, quantitative
 reassignment, and (for vegan methods) the underlying binary null model:
 \itemize{
-  \item \code{n_strata}: Integer giving the number of strata to split the
-    data into. Must be 2 or greater. Larger values yield randomizations
-    with less mixing but higher fidelity to the original marginal
-    distributions. Default is \code{5}.
-  \item \code{transform}: A function used to transform the values in
-    \code{x} before assigning them to \code{n_strata} equal-width
-    intervals. Examples include \code{sqrt}, \code{log}, \code{rank}, etc.;
-    the default is \code{identity}.
-  \item \code{jitter}: Number between 0 and 1 indicating how much to
-    randomly jitter the locations of stratum boundaries. Jittering can
-    reduce artefacts from hard cutpoints.
   \item \code{priority}: One of \code{"rows"}, \code{"cols"}, or
     \code{"neither"}, indicating whether reassignment of quantitative
     values within strata should prioritize maintaining the marginal
@@ -88,7 +87,9 @@ Two classes of null model are supported:
   and the layers are recombined to yield a quantitative matrix. This
   reproduces classical binary null models on each stratum while approximately
   preserving the marginal distributions of rows and columns in the
-  quantitative data.
+  quantitative data. Because strata are permuted independently, the "one-hot"
+  property in which a given species-site has occupancy in exactly one stratum
+  is not maintained; this can lead, e.g., to probabilities grater than 1.
 }
 
 By default, \code{quantize()} will compute all necessary overhead for a
