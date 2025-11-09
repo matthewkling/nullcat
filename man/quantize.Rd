@@ -8,11 +8,12 @@ quantize(
   x = NULL,
   prep = NULL,
   method = "curvecat",
+  fixed = c("stratum", "cell", "row", "col"),
   breaks = NULL,
-  n_strata = NULL,
-  transform = NULL,
-  offset = NULL,
-  zero_stratum = NULL,
+  n_strata = 5,
+  transform = identity,
+  offset = 0,
+  zero_stratum = FALSE,
   ...
 )
 }
@@ -33,18 +34,56 @@ The default \code{"curvecat"} uses the categorical curveball algorithm
 \code{\link[vegan]{commsim}} (e.g. \code{"curveball"}, \code{"swap"},
 \code{"tswap"}, \code{"quasiswap"}, \code{"backtracking"}, \dots) can also
 be used; these are applied to a binary representation of each stratum via
-\code{\link[vegan]{nullmodel}}. Only binary methods should be used here.}
+\code{\link[vegan]{nullmodel}}. Only binary methods are allowed.}
+
+\item{fixed}{Character string specifying the level at which quantitative
+  values are held fixed during randomization. One of:
+  \itemize{
+    \item \code{"stratum"} (the default):
+      values are shuffled globally within each stratum, holding only the overall
+      stratum-level value distribution fixed.
+    \item \code{"cell"} (only available when \code{method = "curvecat"}):
+      values remain attached to their original cells and move with them during
+      the categorical randomization. Row and column value
+      distributions are not preserved, but the mapping between each original
+      cell and its randomized destination is fixed.
+    \item \code{"row"}: values are shuffled within strata separately for each
+      row, holding each row’s value multiset fixed.
+    \item \code{"col"}: values are shuffled within strata separately for each
+      column, holding each column’s value multiset fixed.
+}
+Note that this interacts with \code{method}: different null models
+fix different margins in the underlying binary representation.}
+
+\item{breaks}{Numeric vector of stratum breakpoints.}
+
+\item{n_strata}{Integer giving the number of strata to split the
+data into. Must be 2 or greater. Larger values yield randomizations
+with less mixing but higher fidelity to the original marginal
+distributions. Default is \code{5}. Ignored unless \code{breaks = NULL}.}
+
+\item{transform}{A function used to transform the values in
+\code{x} before assigning them to \code{n_strata} equal-width
+intervals. Examples include \code{sqrt}, \code{log}, \code{rank}, etc.;
+the default is \code{identity}. If \code{zero_stratum = TRUE}, the
+transformation is only applied on nonzero values. The function should
+pass NA values. This argument is ignored unless \code{breaks = NULL}.}
+
+\item{offset}{Numeric value between -1 and 1 (default 0) indicating
+how much to shift stratum breakpoints relative to the binwidth (applied
+during quantization as: \code{breaks <- breaks + offset * bw}). To
+assess sensitivity to stratum boundaries, run \code{quantize()} multiple
+times with different offset values. Ignored unless \code{breaks = NULL}.}
+
+\item{zero_stratum}{Logical indicating whether to segregate zeros into their
+own stratum. If \code{FALSE} (the default), zeros will likely be combined
+into a stratum that also includes small positive numbers. If \code{breaks} iss
+specified, zero simply gets added as an additional break; if not, one
+of the \code{n_strata} will represent zeros and the others will be nonzero ranges.}
 
 \item{...}{Additional arguments controlling stratification, quantitative
 reassignment, and (for vegan methods) the underlying binary null model:
 \itemize{
-  \item \code{priority}: One of \code{"rows"}, \code{"cols"}, or
-    \code{"neither"}, indicating whether reassignment of quantitative
-    values within strata should prioritize maintaining the marginal
-    distributions of rows or columns of the input matrix. The default,
-    \code{"neither"}, does not give precedence to either dimension.
-    Note that this interacts with \code{method}: different null models
-    fix different margins in the underlying binary representation.
   \item \code{n_iter}: For \code{method = "curvecat"}, the number of
     categorical curveball iterations (row-pair trades) to perform.
     Larger values yield more thorough mixing. If omitted, a data-dependent
@@ -78,7 +117,7 @@ Two classes of null model are supported:
   categorical curveball algorithm implemented in \code{\link{curvecat}}.
   This preserves the multiset of strata in each row and column, and
   reassigns quantitative values within those strata according to
-  \code{priority}.
+  \code{fixed}.
 
   \item \strong{Binary vegan methods} (e.g. \code{"curveball"}, \code{"swap"},
   \code{"quasiswap"}, etc.) are accessed via \code{\link[vegan]{nullmodel}}.
@@ -109,10 +148,10 @@ comm <- matrix(rexp(50 * 40), nrow = 50,
 # default: curvecat-backed stratified randomization
 rand1 <- quantize(comm)
 
-# change stratification and priority
+# change stratification and preservation mode
 rand2 <- quantize(comm, n_strata = 4,
                   transform = sqrt,
-                  priority  = "rows",
+                  fixed  = "row",
                   n_iter    = 2000)
 
 # use a vegan binary method on each stratum (here: swap)
@@ -122,7 +161,7 @@ rand3 <- quantize(comm, method = "swap",
 
 # precompute overhead and reuse for many randomizations
 prep  <- quantize_prep(comm, method = "curvecat",
-                       n_strata = 5, priority = "rows")
+                       n_strata = 5, fixed = "row")
 rand4 <- quantize(prep = prep)
 rand5 <- quantize(prep = prep)
 }

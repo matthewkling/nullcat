@@ -11,20 +11,21 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // curvecat_cpp
-IntegerMatrix curvecat_cpp(IntegerMatrix mat, int n_iter);
-RcppExport SEXP _quantize_curvecat_cpp(SEXP matSEXP, SEXP n_iterSEXP) {
+IntegerMatrix curvecat_cpp(IntegerMatrix mat, int n_iter, std::string output);
+RcppExport SEXP _quantize_curvecat_cpp(SEXP matSEXP, SEXP n_iterSEXP, SEXP outputSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< IntegerMatrix >::type mat(matSEXP);
     Rcpp::traits::input_parameter< int >::type n_iter(n_iterSEXP);
-    rcpp_result_gen = Rcpp::wrap(curvecat_cpp(mat, n_iter));
+    Rcpp::traits::input_parameter< std::string >::type output(outputSEXP);
+    rcpp_result_gen = Rcpp::wrap(curvecat_cpp(mat, n_iter, output));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_quantize_curvecat_cpp", (DL_FUNC) &_quantize_curvecat_cpp, 2},
+    {"_quantize_curvecat_cpp", (DL_FUNC) &_quantize_curvecat_cpp, 3},
     {NULL, NULL, 0}
 };
 

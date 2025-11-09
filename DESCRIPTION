@@ -1,6 +1,6 @@
 Package: quantize
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Null models for categorical and continuous community matrices
 Version: 0.1.0
 Author: Who wrote it
 Maintainer: The package maintainer <yourself@somewhere.net>
@@ -15,7 +15,8 @@ LinkingTo:
 Imports: 
     Rcpp
 Suggests: 
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    vegan
 Config/testthat/edition: 3
 URL: https://github.com/matthewkling/quantize
 BugReports: https://github.com/matthewkling/quantize/issues

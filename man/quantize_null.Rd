@@ -18,13 +18,13 @@ If `NULL` (default), the function returns the full set of randomized matrices.}
 \item{n_cores}{Number of compute cores to use for parallel processing. Default is `1`.}
 
 \item{...}{Additional arguments passed to `quantize()`
-(e.g. `method`, `n_strata`, `transform`, `offset`, `priority`, `n_iter`, `burnin`).}
+(e.g. `method`, `breaks`, `n_strata`, `transform`, `offset`, `zero_stratum`,
+`fixed`, `n_iter`, `burnin`, etc.).}
 }
 \value{
-If stat is NULL:
-  - a 3D array (rows × cols × n_reps)
-  If stat is not NULL:
-  - a numeric array of statistic values; dimensionality will depend on stat.
+If stat is NULL: a 3D array (rows × cols × n_reps).
+  If stat is not NULL: a numeric array of statistic values
+  (dimensionality will depend on stat).
 }
 \description{
 Generate a null distribution using quantize()

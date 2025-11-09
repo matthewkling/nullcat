@@ -16,7 +16,7 @@
 #'   categorical curveball algorithm implemented in \code{\link{curvecat}}.
 #'   This preserves the multiset of strata in each row and column, and
 #'   reassigns quantitative values within those strata according to
-#'   \code{priority}.
+#'   \code{fixed}.
 #'
 #'   \item \strong{Binary vegan methods} (e.g. \code{"curveball"}, \code{"swap"},
 #'   \code{"quasiswap"}, etc.) are accessed via \code{\link[vegan]{nullmodel}}.
@@ -50,17 +50,29 @@
 #'   \code{\link[vegan]{commsim}} (e.g. \code{"curveball"}, \code{"swap"},
 #'   \code{"tswap"}, \code{"quasiswap"}, \code{"backtracking"}, \dots) can also
 #'   be used; these are applied to a binary representation of each stratum via
-#'   \code{\link[vegan]{nullmodel}}. Only binary methods should be used here.
+#'   \code{\link[vegan]{nullmodel}}. Only binary methods are allowed.
+#' @param fixed Character string specifying the level at which quantitative
+#'   values are held fixed during randomization. One of:
+#'   \itemize{
+#'     \item \code{"stratum"} (the default):
+#'       values are shuffled globally within each stratum, holding only the overall
+#'       stratum-level value distribution fixed.
+#'     \item \code{"cell"} (only available when \code{method = "curvecat"}):
+#'       values remain attached to their original cells and move with them during
+#'       the categorical randomization. Row and column value
+#'       distributions are not preserved, but the mapping between each original
+#'       cell and its randomized destination is fixed.
+#'     \item \code{"row"}: values are shuffled within strata separately for each
+#'       row, holding each row’s value multiset fixed.
+#'     \item \code{"col"}: values are shuffled within strata separately for each
+#'       column, holding each column’s value multiset fixed.
+#' }
+#' Note that this interacts with \code{method}: different null models
+#' fix different margins in the underlying binary representation.
+#' @inheritParams stratify
 #' @param ... Additional arguments controlling stratification, quantitative
 #'   reassignment, and (for vegan methods) the underlying binary null model:
 #'   \itemize{
-#'     \item \code{priority}: One of \code{"rows"}, \code{"cols"}, or
-#'       \code{"neither"}, indicating whether reassignment of quantitative
-#'       values within strata should prioritize maintaining the marginal
-#'       distributions of rows or columns of the input matrix. The default,
-#'       \code{"neither"}, does not give precedence to either dimension.
-#'       Note that this interacts with \code{method}: different null models
-#'       fix different margins in the underlying binary representation.
 #'     \item \code{n_iter}: For \code{method = "curvecat"}, the number of
 #'       categorical curveball iterations (row-pair trades) to perform.
 #'       Larger values yield more thorough mixing. If omitted, a data-dependent
@@ -89,10 +101,10 @@
 #' # default: curvecat-backed stratified randomization
 #' rand1 <- quantize(comm)
 #'
-#' # change stratification and priority
+#' # change stratification and preservation mode
 #' rand2 <- quantize(comm, n_strata = 4,
 #'                   transform = sqrt,
-#'                   priority  = "rows",
+#'                   fixed  = "row",
 #'                   n_iter    = 2000)
 #'
 #' # use a vegan binary method on each stratum (here: swap)
@@ -102,7 +114,7 @@
 #'
 #' # precompute overhead and reuse for many randomizations
 #' prep  <- quantize_prep(comm, method = "curvecat",
-#'                        n_strata = 5, priority = "rows")
+#'                        n_strata = 5, fixed = "row")
 #' rand4 <- quantize(prep = prep)
 #' rand5 <- quantize(prep = prep)
 #' }
@@ -112,36 +124,45 @@
 quantize <- function(x = NULL,
                      prep = NULL,
                      method = "curvecat",
-                     breaks = NULL, n_strata = NULL, transform = NULL, offset = NULL, zero_stratum = NULL,
+                     fixed = c("stratum", "cell", "row", "col"),
+                     breaks = NULL,
+                     n_strata  = 5,
+                     transform = identity,
+                     offset = 0,
+                     zero_stratum = FALSE,
                      ...) {
 
       if (is.null(prep)) {
             if(is.null(x)) stop("`x` and `prep` cannot both be NULL")
-            prep <- quantize_prep(x, method = method, ...)
+            prep <- quantize_prep(x, method = method, fixed = fixed,
+                                  breaks = breaks, n_strata = n_strata, transform = transform,
+                                  offset = offset, zero_stratum = zero_stratum,
+                                  ...)
       }
 
       if (prep$method == "curvecat") {
             # ensure n_iter is a scalar integer
             n_iter <- prep$sim_args$n_iter
             if (is.null(n_iter)) {
-                  n_iter <- 1L
+                  stop("`n_iter` must be specified when `method = 'curvecat'`")
             }
 
-            rand_strata <- curvecat(prep$strata, n_iter = n_iter)
+            mode <- ifelse(prep$fixed == "cell", "index", "category")
+            rand_strata <- curvecat(prep$strata, n_iter = n_iter, output = mode)
 
             rand <- fill_from_pool(
-                  s        = prep$strata,
-                  s_rand   = rand_strata,
-                  pool     = prep$pool,
-                  priority = prep$priority
+                  s = prep$strata,
+                  s_rand = rand_strata,
+                  pool = prep$pool,
+                  fixed = prep$fixed
             )
 
             return(rand)
 
       } else {
-            priority <- prep$priority
+            fixed <- prep$fixed
             tf <- function(x) x
-            if (priority == "rows") tf <- t
+            if (fixed == "row") tf <- t
 
             b <- prep$stratarray
 
@@ -173,7 +194,7 @@ quantize <- function(x = NULL,
 #' \itemize{
 #'   \item transforms and stratifies \code{x} into \code{n_strata} numeric
 #'     intervals (via \code{\link{stratify}()}),
-#'   \item constructs the appropriate value pools given \code{priority}
+#'   \item constructs the appropriate value pools given \code{fixed}
 #'     (either for the categorical \code{"curvecat"} backend or for binary
 #'     vegan methods), and
 #'   \item assembles arguments for the underlying null model call
@@ -201,11 +222,11 @@ quantize <- function(x = NULL,
 #'       \code{method = "curvecat"}.
 #'     \item \code{pool}: data structure encoding the quantitative value pools
 #'       used during reassignment. For \code{"curvecat"}, this is a list of
-#'       per-stratum or per-row/column pools depending on \code{priority}; for
+#'       per-stratum or per-row/column pools depending on \code{fixed}; for
 #'       binary methods, it is a matrix of pre-shuffled values.
 #'     \item \code{method}: the null model method used (as in the
 #'       \code{method} argument).
-#'     \item \code{n_strata}, \code{transform}, \code{offset}, \code{priority}:
+#'     \item \code{n_strata}, \code{transform}, \code{offset}, \code{fixed}:
 #'       the stratification and reassignment settings used to construct
 #'       \code{strata} and \code{pool}.
 #'     \item \code{sim_args}: named list of arguments to be passed on to
@@ -226,7 +247,7 @@ quantize <- function(x = NULL,
 #' # prepare overhead for a curvecat-backed stratified null model
 #' prep <- quantize_prep(comm, method   = "curvecat",
 #'                       n_strata = 5,
-#'                       priority = "rows",
+#'                       fixed = "row",
 #'                       n_iter   = 2000)
 #'
 #' # fast repeated randomizations using the same prep
@@ -243,39 +264,32 @@ quantize <- function(x = NULL,
 #' @export
 quantize_prep <- function(x,
                           method = "curvecat",
+                          fixed = c("stratum", "cell", "row", "col"),
+                          breaks = NULL,
+                          n_strata  = 5,
+                          transform = identity,
+                          offset = 0,
+                          zero_stratum = FALSE,
                           ...) {
+
+      fixed <- match.arg(fixed)
 
       stopifnot(
             "The specified `method` must be either 'curvecat' or one of the 'binary' methods listed under `?vegan::commsim`" =
                   method %in% c("curvecat", binary_models())
       )
 
-      # native arguments
+      # non-quantize (simulation) arguments
       dots <- list(...)
-      args <- list(
-            breaks = NULL,
-            n_strata  = 5,
-            transform = identity,
-            offset    = 0,
-            zero_stratum = FALSE,
-            priority  = "neither"
-      )
-      args <- c(dots[names(dots) %in% names(args)],
-                args[! names(args) %in% names(dots)])
-
-      breaks <- args$breaks
-      n_strata  <- args$n_strata
-      transform <- args$transform
-      offset    <- args$offset
-      zero_stratum <- args$zero_stratum
-      priority  <- args$priority
-
-      # arguments to `simulate`
       sim_args <- dots[! names(dots) %in% names(args)]
       dfts <- list(seed = NULL, burnin = 10000) # defaults
       reqs <- list(nsim = 1, thin = 1)         # hard requirements
       sim_args <- c(sim_args, dfts[! names(dfts) %in% names(sim_args)])
-      sim_args <- c(reqs,     sim_args[! names(sim_args) %in% names(reqs)])
+      sim_args <- c(reqs, sim_args[! names(sim_args) %in% names(reqs)])
+
+
+      if(method != "curvecat" & fixed == "cell") stop("`fixed = 'cell'` is only allowed when `method = 'curvecat'`")
+      # [placeholder for error handling for other invalid method-fixed combinations]
 
       # convert to strata
       strata <- stratify(x,
@@ -287,28 +301,28 @@ quantize_prep <- function(x,
 
       if (method == "curvecat") {
             stratarray <- NULL
-            pool <- make_cat_pool(x, strata, priority = priority)
+            pool <- make_cat_pool(x, strata, fixed = fixed)
       } else {
             stratarray <- apply(strata, 1:2, function(z) replace(rep(0, n_strata), z, 1))
-            pool <- make_bin_pool(x, strata, priority = priority)
+            pool <- make_bin_pool(x, strata, fixed = fixed)
       }
 
       list(
-            strata    = strata,
+            strata = strata,
             stratarray = stratarray,
-            pool      = pool,
-            method    = method,
+            pool = pool,
+            method = method,
             breaks = breaks,
-            n_strata  = n_strata,
+            n_strata = n_strata,
             transform = transform,
-            offset    = offset,
+            offset  = offset,
             zero_stratum = zero_stratum,
-            priority  = priority,
-            sim_args  = sim_args
+            fixed = fixed,
+            sim_args = sim_args
       )
 }
 
-make_bin_pool <- function(x, s, priority = "neither") {
+make_bin_pool <- function(x, s, fixed = "stratum") {
       nr <- nrow(x)
       nc <- ncol(x)
       n_strata <- max(s, na.rm = TRUE)
@@ -316,7 +330,7 @@ make_bin_pool <- function(x, s, priority = "neither") {
       r <- s
       resample <- function(z, ...) z[sample.int(length(z), ...)]
 
-      if (priority == "rows") {
+      if (fixed == "row") {
             for (i in seq_len(n_strata)) {
                   for (j in seq_len(nr)) {
                         idx <- (s[j, ] == i)
@@ -326,7 +340,7 @@ make_bin_pool <- function(x, s, priority = "neither") {
             }
       }
 
-      if (priority == "cols") {
+      if (fixed == "col") {
             for (i in seq_len(n_strata)) {
                   for (j in seq_len(nc)) {
                         idx <- (s[, j] == i)
@@ -336,7 +350,7 @@ make_bin_pool <- function(x, s, priority = "neither") {
             }
       }
 
-      if (priority == "neither") {
+      if (fixed == "stratum") {
             for (i in seq_len(n_strata)) {
                   idx <- (s == i)
                   if (!any(idx)) next
@@ -348,44 +362,53 @@ make_bin_pool <- function(x, s, priority = "neither") {
 }
 
 
-make_cat_pool <- function(x, s, priority = "neither") {
+make_cat_pool <- function(x, s, fixed = "stratum") {
       n_strata <- max(s, na.rm = TRUE)
 
-      if (priority == "neither") {
+      if (fixed == "cell") {
+            pools <- x
+      }
+
+      if (fixed == "stratum") {
             pools <- vector("list", n_strata)
             for (k in seq_len(n_strata)) {
                   idx <- which(s == k)
                   pools[[k]] <- x[idx]
             }
-            return(pools)
       }
 
-      if (priority == "rows") {
+      if (fixed == "row") {
             nr <- nrow(x)
             pools <- vector("list", nr)
             for (i in seq_len(nr)) {
                   pools[[i]] <- split(x[i, ], s[i, ])  # list per row, keyed by stratum
             }
-            return(pools)
       }
 
-      if (priority == "cols") {
+      if (fixed == "col") {
             nc <- ncol(x)
             pools <- vector("list", nc)
             for (j in seq_len(nc)) {
                   pools[[j]] <- split(x[, j], s[, j])  # list per col, keyed by stratum
             }
-            return(pools)
       }
+
+      return(pools)
 }
 
-fill_from_pool <- function(s, s_rand, pool, priority = "neither") {
+fill_from_pool <- function(s, s_rand, pool, fixed = "stratum") {
       out <- matrix(NA_real_, nrow(s), ncol(s))
       dimnames(out) <- dimnames(s)
 
-      priority <- match.arg(priority, c("neither", "rows", "cols"))
+      fixed <- match.arg(fixed, c("stratum", "row", "col", "cell"))
 
-      if (priority == "neither") {
+      if(fixed == "cell"){
+            out <- pool
+            out[] <- out[s_rand]
+            return(out)
+      }
+
+      if(fixed == "stratum"){
             n_strata <- length(pool)
             for (k in seq_len(n_strata)) {
                   idx_new <- which(s_rand == k)
@@ -398,7 +421,7 @@ fill_from_pool <- function(s, s_rand, pool, priority = "neither") {
             return(out)
       }
 
-      if (priority == "rows") {
+      if(fixed == "row"){
             nr <- nrow(s)
             for (i in seq_len(nr)) {
                   row_pools <- pool[[i]]
@@ -416,22 +439,22 @@ fill_from_pool <- function(s, s_rand, pool, priority = "neither") {
             return(out)
       }
 
-      # priority == "cols"
-      nc <- ncol(s)
-      for (j in seq_len(nc)) {
-            col_pools <- pool[[j]]
-            if (is.null(col_pools)) next
+      if(fixed == "col"){
+            nc <- ncol(s)
+            for (j in seq_len(nc)) {
+                  col_pools <- pool[[j]]
+                  if (is.null(col_pools)) next
 
-            for (nm in names(col_pools)) {
-                  k <- as.integer(nm)
-                  idx_new <- which(s_rand[, j] == k)
-                  if (!length(idx_new)) next
-                  vals <- col_pools[[nm]]
-                  out[idx_new, j] <- vals[sample.int(length(vals))]
+                  for (nm in names(col_pools)) {
+                        k <- as.integer(nm)
+                        idx_new <- which(s_rand[, j] == k)
+                        if (!length(idx_new)) next
+                        vals <- col_pools[[nm]]
+                        out[idx_new, j] <- vals[sample.int(length(vals))]
+                  }
             }
+            return(out)
       }
-
-      out
 }
 
 
@@ -450,12 +473,12 @@ binary_models <- function(){
 #'        If `NULL` (default), the function returns the full set of randomized matrices.
 #' @param n_cores Number of compute cores to use for parallel processing. Default is `1`.
 #' @param ... Additional arguments passed to `quantize()`
-#'        (e.g. `method`, `n_strata`, `transform`, `offset`, `priority`, `n_iter`, `burnin`).
+#'        (e.g. `method`, `breaks`, `n_strata`, `transform`, `offset`, `zero_stratum`,
+#'        `fixed`, `n_iter`, `burnin`, etc.).
 #'
-#' @return If stat is NULL:
-#'   - a 3D array (rows × cols × n_reps)
-#'   If stat is not NULL:
-#'   - a numeric array of statistic values; dimensionality will depend on stat.
+#' @return If stat is NULL: a 3D array (rows × cols × n_reps).
+#'   If stat is not NULL: a numeric array of statistic values
+#'   (dimensionality will depend on stat).
 #'
 #' @export
 quantize_null <- function(x,
