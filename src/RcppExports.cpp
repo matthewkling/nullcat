@@ -23,9 +23,23 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// swapcat_cpp
+IntegerMatrix swapcat_cpp(IntegerMatrix mat, int n_iter, std::string output);
+RcppExport SEXP _nullcat_swapcat_cpp(SEXP matSEXP, SEXP n_iterSEXP, SEXP outputSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerMatrix >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< int >::type n_iter(n_iterSEXP);
+    Rcpp::traits::input_parameter< std::string >::type output(outputSEXP);
+    rcpp_result_gen = Rcpp::wrap(swapcat_cpp(mat, n_iter, output));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_nullcat_curvecat_cpp", (DL_FUNC) &_nullcat_curvecat_cpp, 3},
+    {"_nullcat_swapcat_cpp", (DL_FUNC) &_nullcat_swapcat_cpp, 3},
     {NULL, NULL, 0}
 };
 

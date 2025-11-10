@@ -49,7 +49,7 @@ test_that("curvecat stationary distribution matches vegan curveball given binary
       }
 
       cb <- sim(vegan::nullmodel(b, method = "curveball"))
-      cc <- sim(vegan::nullmodel(b, method = commsim_curvecat_seq()))
+      cc <- sim(vegan::nullmodel(b, method = commsim_cat_seq(method = "curvecat")))
 
       # test cell-wise MAE
       expect_lt(mean(abs(cb - cc)), .01)

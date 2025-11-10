@@ -1,23 +1,24 @@
-#' Categorical curveball commsim (non-sequential)
+#' Categorical nullcat commsim (non-sequential)
 #'
-#' Construct a \code{vegan::commsim} object that uses \code{curvecat()}
+#' Construct a \code{vegan::commsim} object that uses \code{nullcat()}
 #' as a non-sequential null model for categorical / integer matrices.
 #' Each simulated matrix is generated independently by applying
-#' \code{curvecat()} with \code{n_iter} trades starting from the
+#' \code{nullcat()} with \code{n_iter} trades starting from the
 #' original matrix.
 #'
-#' @param n_iter Integer, number of curvecat trades per simulated matrix.
-#' @param output Character, passed to \code{curvecat(output = ...)}.
+#' @param n_iter Integer, number of iterations per simulated matrix.
+#' @param method Character specifying which nullcat randomization algorithm
+#'   to use. See \code{nullcat()} for details.
+#' @param output Character, passed to \code{nullcat(output = ...)}.
 #'   Typically \code{"category"} (default) or \code{"index"}.
-#' @param method Character label stored in the \code{commsim} object.
 #' @return An object of class \code{"commsim"} suitable for
 #'   \code{vegan::nullmodel()}.
 #' @export
-commsim_curvecat <- function(n_iter = 1e4,
-                             output = c("category", "index"),
-                             method = "curvecat") {
+commsim_cat <- function(n_iter = 1e4,
+                        method = "curvecat",
+                        output = c("category", "index")) {
       if (!requireNamespace("vegan", quietly = TRUE)) {
-            stop("Package 'vegan' is required for commsim_curvecat(). ",
+            stop("Package 'vegan' is required for commsim_cat(). ",
                  "Please install it with install.packages('vegan').",
                  call. = FALSE)
       }
@@ -39,7 +40,7 @@ commsim_curvecat <- function(n_iter = 1e4,
             out <- array(NA_integer_, dim = c(nr, nc, n))
 
             for (k in seq_len(n)) {
-                  out[, , k] <- curvecat_cpp(x, n_iter, output)
+                  out[, , k] <- nullcat(x, method = method, n_iter = n_iter, output = output)
             }
 
             out
@@ -59,7 +60,7 @@ commsim_curvecat <- function(n_iter = 1e4,
 
 #' Categorical curveball commsim (sequential / Markov chain)
 #'
-#' Construct a \code{vegan::commsim} object that uses \code{curvecat()}
+#' Construct a \code{vegan::commsim} object that uses \code{nullcat()}
 #' as a *sequential* null model: successive simulated matrices form a
 #' Markov chain, and mixing is controlled via the \code{thin} and
 #' \code{burnin} arguments to \code{simulate.nullmodel()}.
@@ -67,16 +68,17 @@ commsim_curvecat <- function(n_iter = 1e4,
 #' Internally, each simulation "step" advances the chain by
 #' \code{thin} curvecat trades.
 #'
-#' @param output Character, passed to \code{curvecat(output = ...)}.
+#' @param method Character specifying which nullcat randomization algorithm
+#'   to use. See \code{nullcat()} for details.
+#' @param output Character, passed to \code{nullcat(output = ...)}.
 #'   Typically \code{"category"} (default) or \code{"index"}.
-#' @param method Character label stored in the \code{commsim} object.
 #' @return An object of class \code{"commsim"} suitable for
 #'   \code{vegan::nullmodel()}.
 #' @export
-commsim_curvecat_seq <- function(output = c("category", "index"),
-                                 method = "curvecat_seq") {
+commsim_cat_seq <- function(method = "curvecat",
+                            output = c("category", "index")) {
       if (!requireNamespace("vegan", quietly = TRUE)) {
-            stop("Package 'vegan' is required for commsim_curvecat_seq(). ",
+            stop("Package 'vegan' is required for commsim_cat_seq(). ",
                  "Please install it with install.packages('vegan').",
                  call. = FALSE)
       }
@@ -100,7 +102,7 @@ commsim_curvecat_seq <- function(output = c("category", "index"),
             state <- x
 
             for (k in seq_len(n)) {
-                  state <- curvecat_cpp(state, thin, output)
+                  state <- nullcat(state, method = method, n_iter = thin, output = output)
                   out[, , k] <- state
             }
 
@@ -108,7 +110,7 @@ commsim_curvecat_seq <- function(output = c("category", "index"),
       }
 
       vegan::commsim(
-            method = method,
+            method = paste0(method, "_seq"),
             fun    = simfun,
             binary = FALSE,
             isSeq  = TRUE,

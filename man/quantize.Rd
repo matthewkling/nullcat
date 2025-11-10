@@ -29,8 +29,8 @@ is typically much faster when generating many randomizations of the same
 dataset.}
 
 \item{method}{Character string specifying the null model algorithm.
-The default \code{"curvecat"} uses the categorical curveball algorithm
-(see \code{\link{curvecat}}).}
+The default \code{"curvecat"} uses the categorical curveball algorithm.
+See \code{\link{nullcat}} for alternative options.}
 
 \item{fixed}{Character string specifying the level at which quantitative
   values are held fixed during randomization. One of:

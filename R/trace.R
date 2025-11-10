@@ -1,12 +1,13 @@
 
 
-#' Trace diagnostics for curvecat mixing
+#' Trace diagnostics for nullcat mixing
 #'
-#' Applies curvecat to a categorical matrix, recording a summary statistic
+#' Applies \code{nullcat()} to a categorical matrix, recording a summary statistic
 #' at each iteration to help assess mixing on a given dataset.
 #'
 #' @param x A matrix containing integer or factor values.
-#' @param max_iter Number of successive curvecat updates to apply. Default is 1000.
+#' @param method Character specifying algorithm to use. See \code{nullcat()} for details.
+#' @param max_iter Number of successive matrix updates to apply. Default is 1000.
 #' @param n_runs Number of independent runs to perform. Default is 3.
 #' @param stat Output trace statistic to compute for each iteration. Either:
 #' \itemize{
@@ -21,7 +22,12 @@
 #'    and a column for each run.
 #'
 #' @export
-trace_curvecat <- function(x, max_iter = 1000L, n_runs = 3, stat = "kappa", plot = FALSE) {
+trace_nullcat <- function(x,
+                           method = "curvecat",
+                           max_iter = 1000L,
+                           n_runs = 3,
+                           stat = "kappa",
+                           plot = FALSE) {
 
       if(stat == "kappa"){
             fun <- kappa
@@ -36,7 +42,7 @@ trace_curvecat <- function(x, max_iter = 1000L, n_runs = 3, stat = "kappa", plot
       for(r in 1:n_runs){
             x <- x0
             for (i in seq_len(max_iter)) {
-                  x <- curvecat(x, n_iter = 1)
+                  x <- nullcat(x, method = method, n_iter = 1, output = "category")
                   out[i,r] <- fun(x, x0)
             }
       }
@@ -48,7 +54,7 @@ trace_curvecat <- function(x, max_iter = 1000L, n_runs = 3, stat = "kappa", plot
             if(stat == "prop_equal") ylab <- "Proportion of cells equal"
             matplot(out, type = "l", lty = 1, col = cols,
                     xlab = "Iteration", ylab = ylab,
-                    main = "curvecat mixing traces")
+                    main = paste(method, "mixing traces"))
             legend("topright", legend = paste("Run", seq_len(ncol(out))),
                    col = cols, lty = 1, bty = "n")
       }
@@ -68,6 +74,11 @@ kappa <- function(a, b) {
       p_chance <- sum(p_ref^2)
       p_obs <- mean(a == b)
       (p_obs - p_chance) / (1 - p_chance)
+}
+
+
+suggest_n_iter <- function(){
+      # placeholder for helper function
 }
 
 

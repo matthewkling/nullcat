@@ -24,8 +24,8 @@
 #'   is typically much faster when generating many randomizations of the same
 #'   dataset.
 #' @param method Character string specifying the null model algorithm.
-#'   The default \code{"curvecat"} uses the categorical curveball algorithm
-#'   (see \code{\link{curvecat}}).
+#'   The default \code{"curvecat"} uses the categorical curveball algorithm.
+#'   See \code{\link{nullcat}} for alternative options.
 #' @param fixed Character string specifying the level at which quantitative
 #'   values are held fixed during randomization. One of:
 #'   \itemize{
@@ -115,28 +115,20 @@ quantize <- function(x = NULL,
                                   ...)
       }
 
-      if (prep$method == "curvecat") {
-            # ensure n_iter is a scalar integer
-            n_iter <- prep$sim_args$n_iter
-            if (is.null(n_iter)) {
-                  stop("`n_iter` must be specified when `method = 'curvecat'`")
-            }
+      n_iter <- prep$sim_args$n_iter
+      mode <- ifelse(prep$fixed == "cell", "index", "category")
 
-            mode <- ifelse(prep$fixed == "cell", "index", "category")
-            rand_strata <- curvecat(prep$strata, n_iter = n_iter, output = mode)
+      rand_strata <- nullcat(prep$strata, method = prep$method, n_iter = n_iter, output = mode)
 
-            rand <- fill_from_pool(
-                  s = prep$strata,
-                  s_rand = rand_strata,
-                  pool = prep$pool,
-                  fixed = prep$fixed
-            )
+      rand <- fill_from_pool(
+            s = prep$strata,
+            s_rand = rand_strata,
+            pool = prep$pool,
+            fixed = prep$fixed
+      )
 
-            return(rand)
+      return(rand)
 
-      } else {
-            stop("unsupported method")
-      }
 }
 
 
@@ -222,7 +214,7 @@ quantize <- function(x = NULL,
 #'
 #' @export
 quantize_prep <- function(x,
-                          method = c("curvecat", "swapcat"),
+                          method = "curvecat",
                           fixed = c("stratum", "cell", "row", "col"),
                           breaks = NULL,
                           n_strata  = 5,
@@ -231,14 +223,14 @@ quantize_prep <- function(x,
                           zero_stratum = FALSE,
                           ...) {
 
-      method <- match.arg(method)
+      method <- match.arg(method, nullcat_methods())
       fixed <- match.arg(fixed)
 
       # method args
       dots <- list(...)
       sim_args <- dots[! names(dots) %in% names(args)]
       dfts <- list(seed = NULL, burnin = 10000) # defaults
-      reqs <- list(nsim = 1, thin = 1)         # hard requirements
+      reqs <- list(nsim = 1, thin = 1) # hard requirements
       sim_args <- c(sim_args, dfts[! names(dfts) %in% names(sim_args)])
       sim_args <- c(reqs, sim_args[! names(sim_args) %in% names(reqs)])
 

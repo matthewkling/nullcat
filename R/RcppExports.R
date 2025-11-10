@@ -5,3 +5,7 @@ curvecat_cpp <- function(mat, n_iter, output = "category") {
     .Call(`_nullcat_curvecat_cpp`, mat, n_iter, output)
 }
 
+swapcat_cpp <- function(mat, n_iter, output = "category") {
+    .Call(`_nullcat_swapcat_cpp`, mat, n_iter, output)
+}
+
