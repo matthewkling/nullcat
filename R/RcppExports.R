@@ -2,6 +2,6 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 curvecat_cpp <- function(mat, n_iter, output = "category") {
-    .Call(`_quantize_curvecat_cpp`, mat, n_iter, output)
+    .Call(`_nullcat_curvecat_cpp`, mat, n_iter, output)
 }
 

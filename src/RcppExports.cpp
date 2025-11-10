@@ -12,7 +12,7 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 
 // curvecat_cpp
 IntegerMatrix curvecat_cpp(IntegerMatrix mat, int n_iter, std::string output);
-RcppExport SEXP _quantize_curvecat_cpp(SEXP matSEXP, SEXP n_iterSEXP, SEXP outputSEXP) {
+RcppExport SEXP _nullcat_curvecat_cpp(SEXP matSEXP, SEXP n_iterSEXP, SEXP outputSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -25,11 +25,11 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_quantize_curvecat_cpp", (DL_FUNC) &_quantize_curvecat_cpp, 3},
+    {"_nullcat_curvecat_cpp", (DL_FUNC) &_nullcat_curvecat_cpp, 3},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_quantize(DllInfo *dll) {
+RcppExport void R_init_nullcat(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

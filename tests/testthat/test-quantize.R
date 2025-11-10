@@ -16,7 +16,7 @@ test_that("quantize works", {
 })
 
 
-test_that("`fixed` correctly preserves marginal sums and conditional distributions", {
+test_that("`fixed` parameter correctly preserves marginal sums and conditional distributions", {
       set.seed(123)
       m <- matrix(runif(200), nrow = 20)
 
@@ -29,5 +29,20 @@ test_that("`fixed` correctly preserves marginal sums and conditional distributio
       expect_equal(colSums(m), colSums(r))
       expect_true(any(rowSums(m) != rowSums(r)))
       expect_equal(apply(m, 2, sort), apply(r, 2, sort))
+})
+
+
+test_that("fixed = 'cell' preserves one-to-one mapping with index output", {
+      set.seed(1)
+      x <- matrix(runif(100), nrow = 10)
+      prep <- quantize_prep(x, method = "curvecat", fixed = "cell", n_iter = 1000)
+
+      set.seed(1)
+      idx <- curvecat(prep$strata, output = "index")
+
+      set.seed(1)
+      xr <- quantize(prep = prep)
+
+      expect_equal(xr, matrix(prep$pool[idx], nrow = nrow(x)))
 })
 
