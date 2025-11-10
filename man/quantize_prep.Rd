@@ -6,7 +6,7 @@
 \usage{
 quantize_prep(
   x,
-  method = "curvecat",
+  method = c("curvecat", "swapcat"),
   fixed = c("stratum", "cell", "row", "col"),
   breaks = NULL,
   n_strata = 5,
@@ -24,11 +24,7 @@ should be prepared.}
 
 \item{method}{Character string specifying the null model algorithm.
 The default \code{"curvecat"} uses the categorical curveball algorithm
-(see \code{\link{curvecat}}). Any of the binary methods listed in
-\code{\link[vegan]{commsim}} (e.g. \code{"curveball"}, \code{"swap"},
-\code{"tswap"}, \code{"quasiswap"}, \code{"backtracking"}, \dots) can also
-be used; these are applied to a binary representation of each stratum via
-\code{\link[vegan]{nullmodel}}. Only binary methods are allowed.}
+(see \code{\link{curvecat}}).}
 
 \item{fixed}{Character string specifying the level at which quantitative
   values are held fixed during randomization. One of:

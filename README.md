@@ -3,15 +3,23 @@
 
 # nullcat
 
-Null models for categorical and quantized continuous data in community
-ecology.
+This package provides null models for categorical and quantized
+continuous data in community ecology.
 
-This package extends classic **binary** null models to work with
-**categorical** data. Categorical generalizations currently include
-`curveball -> curvecat` and `swap -> swapcat`.
+It extends classic **binary** null models to work with **categorical**
+data. Categorical generalizations include `curveball -> curvecat`, and
+`swap -> swapcat`, and `r0 -> r0cat`, among others.
 
 It also provides a routine for using these algorithms with
 **continuous** data. This `quantize()` routine works by converting
 continuous values to discrete strata, randomizing them using categorical
 algorithms, and mapping the randomized categories back to the original
 quantities.
+
+`nullcat` includes helper functions for integrating with `vegan` null
+model workflows. Models are implemented in C++ for computational
+efficiency.
+
+The package is currently in development and has not yet been released on
+CRAN. You can install via
+`remotes::install_github("matthewkling/nullcat")`.

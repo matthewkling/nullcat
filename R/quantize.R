@@ -6,29 +6,8 @@
 #' \code{quantize()} is a community null model for quantitative community data
 #' (e.g. abundance, biomass, or occurrence probability). It works by converting
 #' quantitative values into a small number of categorical strata, randomizing
-#' the categorical layout under a chosen null model, and then reassigning
-#' quantitative values within each stratum.
-#'
-#' Two classes of null model are supported:
-#'
-#' \itemize{
-#'   \item \strong{\code{method = "curvecat"}} (the default) uses the
-#'   categorical curveball algorithm implemented in \code{\link{curvecat}}.
-#'   This preserves the multiset of strata in each row and column, and
-#'   reassigns quantitative values within those strata according to
-#'   \code{fixed}.
-#'
-#'   \item \strong{Binary vegan methods} (e.g. \code{"curveball"}, \code{"swap"},
-#'   \code{"quasiswap"}, etc.) are accessed via \code{\link[vegan]{nullmodel}}.
-#'   In this case the matrix is decomposed into a stack of binary layers
-#'   (one per stratum), each layer is randomized with the chosen binary method,
-#'   and the layers are recombined to yield a quantitative matrix. This
-#'   reproduces classical binary null models on each stratum while approximately
-#'   preserving the marginal distributions of rows and columns in the
-#'   quantitative data. Because strata are permuted independently, the "one-hot"
-#'   property in which a given species-site has occupancy in exactly one stratum
-#'   is not maintained; this can lead, e.g., to probabilities grater than 1.
-#' }
+#' the categorical layout under a chosen categorical null model, and then
+#' reassigning quantitative values within each stratum.
 #'
 #' By default, \code{quantize()} will compute all necessary overhead for a
 #' given dataset (strata, pools, etc.) internally. For repeated randomization
@@ -46,11 +25,7 @@
 #'   dataset.
 #' @param method Character string specifying the null model algorithm.
 #'   The default \code{"curvecat"} uses the categorical curveball algorithm
-#'   (see \code{\link{curvecat}}). Any of the binary methods listed in
-#'   \code{\link[vegan]{commsim}} (e.g. \code{"curveball"}, \code{"swap"},
-#'   \code{"tswap"}, \code{"quasiswap"}, \code{"backtracking"}, \dots) can also
-#'   be used; these are applied to a binary representation of each stratum via
-#'   \code{\link[vegan]{nullmodel}}. Only binary methods are allowed.
+#'   (see \code{\link{curvecat}}).
 #' @param fixed Character string specifying the level at which quantitative
 #'   values are held fixed during randomization. One of:
 #'   \itemize{
@@ -160,23 +135,7 @@ quantize <- function(x = NULL,
             return(rand)
 
       } else {
-            fixed <- prep$fixed
-            tf <- function(x) x
-            if (fixed == "row") tf <- t
-
-            b <- prep$stratarray
-
-            for (i in seq_len(prep$n_strata)) {
-                  null <- vegan::nullmodel(b[i,,], method = prep$method)
-                  sim  <- do.call(stats::simulate, c(list(object = null), prep$sim_args))
-                  bb   <- tf(sim[,,1])
-                  bb[bb == 1] <- tf(prep$pool)[tf(prep$strata) == i]
-                  b[i,,] <- tf(bb)
-            }
-
-            b <- apply(b, 2:3, sum)
-            dimnames(b) <- dimnames(prep$strata)
-            return(b)
+            stop("unsupported method")
       }
 }
 
@@ -263,7 +222,7 @@ quantize <- function(x = NULL,
 #'
 #' @export
 quantize_prep <- function(x,
-                          method = "curvecat",
+                          method = c("curvecat", "swapcat"),
                           fixed = c("stratum", "cell", "row", "col"),
                           breaks = NULL,
                           n_strata  = 5,
@@ -272,14 +231,10 @@ quantize_prep <- function(x,
                           zero_stratum = FALSE,
                           ...) {
 
+      method <- match.arg(method)
       fixed <- match.arg(fixed)
 
-      stopifnot(
-            "The specified `method` must be either 'curvecat' or one of the 'binary' methods listed under `?vegan::commsim`" =
-                  method %in% c("curvecat", binary_models())
-      )
-
-      # non-quantize (simulation) arguments
+      # method args
       dots <- list(...)
       sim_args <- dots[! names(dots) %in% names(args)]
       dfts <- list(seed = NULL, burnin = 10000) # defaults
@@ -287,9 +242,7 @@ quantize_prep <- function(x,
       sim_args <- c(sim_args, dfts[! names(dfts) %in% names(sim_args)])
       sim_args <- c(reqs, sim_args[! names(sim_args) %in% names(reqs)])
 
-
-      if(method != "curvecat" & fixed == "cell") stop("`fixed = 'cell'` is only allowed when `method = 'curvecat'`")
-      # [placeholder for error handling for other invalid method-fixed combinations]
+      # [placeholder for error handling for invalid method-fixed combinations]
 
       # convert to strata
       strata <- stratify(x,
@@ -299,17 +252,10 @@ quantize_prep <- function(x,
                          offset = offset,
                          zero_stratum = zero_stratum)
 
-      if (method == "curvecat") {
-            stratarray <- NULL
-            pool <- make_cat_pool(x, strata, fixed = fixed)
-      } else {
-            stratarray <- apply(strata, 1:2, function(z) replace(rep(0, n_strata), z, 1))
-            pool <- make_bin_pool(x, strata, fixed = fixed)
-      }
+      pool <- make_cat_pool(x, strata, fixed = fixed)
 
       list(
             strata = strata,
-            stratarray = stratarray,
             pool = pool,
             method = method,
             breaks = breaks,
@@ -321,46 +267,6 @@ quantize_prep <- function(x,
             sim_args = sim_args
       )
 }
-
-make_bin_pool <- function(x, s, fixed = "stratum") {
-      nr <- nrow(x)
-      nc <- ncol(x)
-      n_strata <- max(s, na.rm = TRUE)
-
-      r <- s
-      resample <- function(z, ...) z[sample.int(length(z), ...)]
-
-      if (fixed == "row") {
-            for (i in seq_len(n_strata)) {
-                  for (j in seq_len(nr)) {
-                        idx <- (s[j, ] == i)
-                        if (!any(idx)) next
-                        r[j, idx] <- resample(x[j, idx])
-                  }
-            }
-      }
-
-      if (fixed == "col") {
-            for (i in seq_len(n_strata)) {
-                  for (j in seq_len(nc)) {
-                        idx <- (s[, j] == i)
-                        if (!any(idx)) next
-                        r[idx, j] <- resample(x[idx, j])
-                  }
-            }
-      }
-
-      if (fixed == "stratum") {
-            for (i in seq_len(n_strata)) {
-                  idx <- (s == i)
-                  if (!any(idx)) next
-                  r[idx] <- resample(x[idx])
-            }
-      }
-
-      return(r)
-}
-
 
 make_cat_pool <- function(x, s, fixed = "stratum") {
       n_strata <- max(s, na.rm = TRUE)
@@ -457,11 +363,6 @@ fill_from_pool <- function(s, s_rand, pool, fixed = "stratum") {
       }
 }
 
-
-binary_models <- function(){
-      c("r00", "r0", "r1", "r2", "c0", "swap", "tswap",
-        "curveball", "quasiswap", "greedyqswap", "backtracking")
-}
 
 
 #' Generate a null distribution using quantize()

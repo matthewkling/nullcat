@@ -11,7 +11,6 @@ test_that("quantize works", {
 
       # various parameter settings work
       expect_no_error(quantize(m, n_iter = 5, n_strata = 5, method = "curvecat", fixed = "cell"))
-      expect_no_error(quantize(m, n_strata = 3, method = "curveball", fixed = "col"))
       expect_no_error(quantize(m, n_iter = 5, breaks = c(.33, .66), method = "curvecat", fixed = "cell"))
 })
 

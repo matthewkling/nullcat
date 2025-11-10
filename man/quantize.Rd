@@ -30,11 +30,7 @@ dataset.}
 
 \item{method}{Character string specifying the null model algorithm.
 The default \code{"curvecat"} uses the categorical curveball algorithm
-(see \code{\link{curvecat}}). Any of the binary methods listed in
-\code{\link[vegan]{commsim}} (e.g. \code{"curveball"}, \code{"swap"},
-\code{"tswap"}, \code{"quasiswap"}, \code{"backtracking"}, \dots) can also
-be used; these are applied to a binary representation of each stratum via
-\code{\link[vegan]{nullmodel}}. Only binary methods are allowed.}
+(see \code{\link{curvecat}}).}
 
 \item{fixed}{Character string specifying the level at which quantitative
   values are held fixed during randomization. One of:
@@ -106,31 +102,10 @@ A randomized version of \code{x}, with the same dimensions and
 \code{quantize()} is a community null model for quantitative community data
 (e.g. abundance, biomass, or occurrence probability). It works by converting
 quantitative values into a small number of categorical strata, randomizing
-the categorical layout under a chosen null model, and then reassigning
-quantitative values within each stratum.
+the categorical layout under a chosen categorical null model, and then
+reassigning quantitative values within each stratum.
 }
 \details{
-Two classes of null model are supported:
-
-\itemize{
-  \item \strong{\code{method = "curvecat"}} (the default) uses the
-  categorical curveball algorithm implemented in \code{\link{curvecat}}.
-  This preserves the multiset of strata in each row and column, and
-  reassigns quantitative values within those strata according to
-  \code{fixed}.
-
-  \item \strong{Binary vegan methods} (e.g. \code{"curveball"}, \code{"swap"},
-  \code{"quasiswap"}, etc.) are accessed via \code{\link[vegan]{nullmodel}}.
-  In this case the matrix is decomposed into a stack of binary layers
-  (one per stratum), each layer is randomized with the chosen binary method,
-  and the layers are recombined to yield a quantitative matrix. This
-  reproduces classical binary null models on each stratum while approximately
-  preserving the marginal distributions of rows and columns in the
-  quantitative data. Because strata are permuted independently, the "one-hot"
-  property in which a given species-site has occupancy in exactly one stratum
-  is not maintained; this can lead, e.g., to probabilities grater than 1.
-}
-
 By default, \code{quantize()} will compute all necessary overhead for a
 given dataset (strata, pools, etc.) internally. For repeated randomization
 of the same matrix (e.g. to build a null distribution), this overhead can be
