@@ -2,7 +2,7 @@
 % Please edit documentation in R/swapcat.R
 \name{swapcat}
 \alias{swapcat}
-\title{Categorical swap (2x2) randomization}
+\title{Categorical swap randomization (swapcat)}
 \usage{
 swapcat(x, n_iter = 1000L, output = c("category", "index"))
 }
@@ -10,11 +10,53 @@ swapcat(x, n_iter = 1000L, output = c("category", "index"))
 \item{x}{A matrix of categorical data, encoded as integers.
 Values should represent category or stratum membership for each cell.}
 
-\item{n_iter}{Number of swap attempts. Default is 1000.}
+\item{n_iter}{Number of iterations. Default is 1000.
+Ignored for `r0cat` and `col0cat` methods.}
 
-\item{output}{"category" (default) returns randomized matrix;
-"index" returns an index matrix describing where original entries moved.}
+\item{output}{Character indicating type of result to return:
+\itemize{
+  \item \code{"category"} (default) returns randomized matrix
+  \item \code{"index"} returns an index matrix describing where original
+       entries moved.
+}}
+}
+\value{
+A matrix of the same dimensions as \code{x}, either randomized
+  categorical values (when \code{output = "category"}) or an integer index
+  matrix describing the permutation of entries (when \code{output = "index"}).
 }
 \description{
-Categorical generalization of vegan's \code{swap} algorithm.
+Categorical generalization of the binary 2x2 swap algorithm to
+matrices of categorical data. This function is a convenience wrapper
+around [nullcat()] with `method = "swapcat"`.
+}
+\details{
+The swapcat algorithm attempts random 2x2 swaps of the form
+
+\deqn{
+\begin{pmatrix}
+a & b \\
+b & a
+\end{pmatrix}
+\leftrightarrow
+\begin{pmatrix}
+b & a \\
+a & b
+\end{pmatrix}
+}
+
+where \eqn{a} and \eqn{b} are distinct categories. These swaps
+preserve the multiset of categories in each row and column.
+With only two categories present, `swapcat()` reduces to the
+behavior of the standard binary swap algorithm.
+}
+\references{
+Gotelli, N. J. (2000). Null model analysis of species co-occurrence patterns.
+*Ecology*, 81(9), 2606–2621.
+
+See also Gotelli & Entsminger (2003) *EcoSim: Null models software for ecology*
+(Version 7.0) for implementation details of the binary swap algorithm.
+}
+\seealso{
+[nullcat()], [nullcat_methods()]
 }

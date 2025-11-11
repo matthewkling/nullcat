@@ -98,7 +98,7 @@
 #' @rdname quantize
 quantize <- function(x = NULL,
                      prep = NULL,
-                     method = "curvecat",
+                     method = nullcat_methods(),
                      fixed = c("stratum", "cell", "row", "col"),
                      breaks = NULL,
                      n_strata  = 5,
@@ -214,7 +214,7 @@ quantize <- function(x = NULL,
 #'
 #' @export
 quantize_prep <- function(x,
-                          method = "curvecat",
+                          method = nullcat_methods(),
                           fixed = c("stratum", "cell", "row", "col"),
                           breaks = NULL,
                           n_strata  = 5,
@@ -223,7 +223,7 @@ quantize_prep <- function(x,
                           zero_stratum = FALSE,
                           ...) {
 
-      method <- match.arg(method, nullcat_methods())
+      method <- match.arg(method, NULLCAT_METHODS)
       fixed <- match.arg(fixed)
 
       # method args

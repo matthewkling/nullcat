@@ -6,7 +6,7 @@
 \usage{
 commsim_cat(
   n_iter = 10000,
-  method = "curvecat",
+  method = nullcat_methods(),
   output = c("category", "index")
 )
 }

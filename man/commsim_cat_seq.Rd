@@ -4,7 +4,7 @@
 \alias{commsim_cat_seq}
 \title{Categorical curveball commsim (sequential / Markov chain)}
 \usage{
-commsim_cat_seq(method = "curvecat", output = c("category", "index"))
+commsim_cat_seq(method = nullcat_methods(), output = c("category", "index"))
 }
 \arguments{
 \item{method}{Character specifying which nullcat randomization algorithm

@@ -6,7 +6,7 @@
 \usage{
 quantize_prep(
   x,
-  method = "curvecat",
+  method = nullcat_methods(),
   fixed = c("stratum", "cell", "row", "col"),
   breaks = NULL,
   n_strata = 5,

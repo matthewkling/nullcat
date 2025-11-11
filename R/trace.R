@@ -23,11 +23,11 @@
 #'
 #' @export
 trace_nullcat <- function(x,
-                           method = "curvecat",
-                           max_iter = 1000L,
-                           n_runs = 3,
-                           stat = "kappa",
-                           plot = FALSE) {
+                          method = "curvecat",
+                          max_iter = 1000L,
+                          n_runs = 3,
+                          stat = "kappa",
+                          plot = FALSE) {
 
       if(stat == "kappa"){
             fun <- kappa
@@ -61,6 +61,7 @@ trace_nullcat <- function(x,
 
       out
 }
+
 
 #' Cohen's kappa for categorical data
 #'

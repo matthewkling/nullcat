@@ -10,6 +10,19 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// c0cat_cpp
+IntegerMatrix c0cat_cpp(IntegerMatrix mat, int n_iter, std::string output);
+RcppExport SEXP _nullcat_c0cat_cpp(SEXP matSEXP, SEXP n_iterSEXP, SEXP outputSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerMatrix >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< int >::type n_iter(n_iterSEXP);
+    Rcpp::traits::input_parameter< std::string >::type output(outputSEXP);
+    rcpp_result_gen = Rcpp::wrap(c0cat_cpp(mat, n_iter, output));
+    return rcpp_result_gen;
+END_RCPP
+}
 // curvecat_cpp
 IntegerMatrix curvecat_cpp(IntegerMatrix mat, int n_iter, std::string output);
 RcppExport SEXP _nullcat_curvecat_cpp(SEXP matSEXP, SEXP n_iterSEXP, SEXP outputSEXP) {
@@ -20,6 +33,19 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type n_iter(n_iterSEXP);
     Rcpp::traits::input_parameter< std::string >::type output(outputSEXP);
     rcpp_result_gen = Rcpp::wrap(curvecat_cpp(mat, n_iter, output));
+    return rcpp_result_gen;
+END_RCPP
+}
+// r0cat_cpp
+IntegerMatrix r0cat_cpp(IntegerMatrix mat, int n_iter, std::string output);
+RcppExport SEXP _nullcat_r0cat_cpp(SEXP matSEXP, SEXP n_iterSEXP, SEXP outputSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerMatrix >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< int >::type n_iter(n_iterSEXP);
+    Rcpp::traits::input_parameter< std::string >::type output(outputSEXP);
+    rcpp_result_gen = Rcpp::wrap(r0cat_cpp(mat, n_iter, output));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -36,10 +62,26 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// tswapcat_cpp
+IntegerMatrix tswapcat_cpp(IntegerMatrix mat, int n_iter, std::string output);
+RcppExport SEXP _nullcat_tswapcat_cpp(SEXP matSEXP, SEXP n_iterSEXP, SEXP outputSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerMatrix >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< int >::type n_iter(n_iterSEXP);
+    Rcpp::traits::input_parameter< std::string >::type output(outputSEXP);
+    rcpp_result_gen = Rcpp::wrap(tswapcat_cpp(mat, n_iter, output));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_nullcat_c0cat_cpp", (DL_FUNC) &_nullcat_c0cat_cpp, 3},
     {"_nullcat_curvecat_cpp", (DL_FUNC) &_nullcat_curvecat_cpp, 3},
+    {"_nullcat_r0cat_cpp", (DL_FUNC) &_nullcat_r0cat_cpp, 3},
     {"_nullcat_swapcat_cpp", (DL_FUNC) &_nullcat_swapcat_cpp, 3},
+    {"_nullcat_tswapcat_cpp", (DL_FUNC) &_nullcat_tswapcat_cpp, 3},
     {NULL, NULL, 0}
 };
 

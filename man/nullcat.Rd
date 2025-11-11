@@ -6,7 +6,7 @@
 \usage{
 nullcat(
   x,
-  method = c("curvecat", "swapcat"),
+  method = nullcat_methods(),
   n_iter = 1000L,
   output = c("category", "index")
 )
@@ -18,20 +18,38 @@ Values should represent category or stratum membership for each cell.}
 \item{method}{Character specifying the randomization algorithm to use.
 Options include:
 \itemize{
-  \item \code{"curvecat"}
-  \item \code{"swapcat"}
+  \item \code{"curvecat"}: categorical analog to `curveball`;
+       see \link{curvecat} for details.
+  \item \code{"swapcat"}: categorical analog to `swap`;
+       see \link{swapcat} for details.
+  \item \code{"tswapcat"}: categorical analog to `tswap`;
+       see \link{tswapcat} for details.
+  \item \code{"r0cat"}: categorical analog to `r0`;
+       see \link{r0cat} for details.
+  \item \code{"c0cat"}: categorical analog to `c0`;
+       see \link{c0cat} for details.
 }}
 
-\item{n_iter}{Number of iterations. Default is 1000.}
+\item{n_iter}{Number of iterations. Default is 1000.
+Ignored for `r0cat` and `col0cat` methods.}
 
-\item{output}{"category" (default) returns randomized matrix;
-"index" returns an index matrix describing where original entries moved.}
+\item{output}{Character indicating type of result to return:
+\itemize{
+  \item \code{"category"} (default) returns randomized matrix
+  \item \code{"index"} returns an index matrix describing where original
+       entries moved.
+}}
 }
 \value{
 A matrix of the same dimensions as \code{x}, either randomized
-  categorical values (\code{output = "category"}) or an integer index
-  matrix describing the permutation of entries (\code{output = "index"}).
+  categorical values (when \code{output = "category"}) or an integer index
+  matrix describing the permutation of entries (when \code{output = "index"}).
 }
 \description{
 Categorical generalizations of binary community null model algorithms.
+}
+\details{
+Note that categorical null models are for cell-level categorical data. Site-level
+attributes (e.g., land cover) or species-level attributes (e.g., functional
+traits) should be analyzed using different approaches.
 }

@@ -15,7 +15,7 @@
 #'   \code{vegan::nullmodel()}.
 #' @export
 commsim_cat <- function(n_iter = 1e4,
-                        method = "curvecat",
+                        method = nullcat_methods(),
                         output = c("category", "index")) {
       if (!requireNamespace("vegan", quietly = TRUE)) {
             stop("Package 'vegan' is required for commsim_cat(). ",
@@ -23,6 +23,7 @@ commsim_cat <- function(n_iter = 1e4,
                  call. = FALSE)
       }
 
+      method <- match.arg(method, NULLCAT_METHODS)
       output <- match.arg(output)
       n_iter <- as.integer(n_iter)
       if (n_iter < 1L) {
@@ -75,7 +76,7 @@ commsim_cat <- function(n_iter = 1e4,
 #' @return An object of class \code{"commsim"} suitable for
 #'   \code{vegan::nullmodel()}.
 #' @export
-commsim_cat_seq <- function(method = "curvecat",
+commsim_cat_seq <- function(method = nullcat_methods(),
                             output = c("category", "index")) {
       if (!requireNamespace("vegan", quietly = TRUE)) {
             stop("Package 'vegan' is required for commsim_cat_seq(). ",
@@ -83,6 +84,7 @@ commsim_cat_seq <- function(method = "curvecat",
                  call. = FALSE)
       }
 
+      method <- match.arg(method, NULLCAT_METHODS)
       output <- match.arg(output)
 
       simfun <- function(x, n, nr, nc, rs, cs, rf, cf, s, fill, thin, ...) {

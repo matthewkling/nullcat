@@ -7,7 +7,7 @@
 quantize(
   x = NULL,
   prep = NULL,
-  method = "curvecat",
+  method = nullcat_methods(),
   fixed = c("stratum", "cell", "row", "col"),
   breaks = NULL,
   n_strata = 5,

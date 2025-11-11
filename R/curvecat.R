@@ -1,68 +1,23 @@
-#' Categorical curveball randomization
+#' Categorical curveball randomization (curvecat)
 #'
-#' Performs a categorical \emph{curveball} randomization of a matrix,
-#' preserving the marginal category multisets of each row and column.
-#' This is the categorical generalization of the binary curveball algorithm
-#' (Strona et al. 2014), which swaps entries between randomly chosen row pairs
-#' while maintaining their category counts (i.e. with only two categories,
-#' curvecat is identical to curveball).
+#' Categorical generalization of the binary curveball algorithm
+#' (Strona et al.) to matrices of categorical data. This function
+#' is a convenience wrapper around [nullcat()] with
+#' `method = "curvecat"`.
 #'
-#' @param x A matrix of categorical data, encoded as integers.
-#'   Values should represent category or stratum membership for each cell.
-#' @param n_iter Integer specifying the number of randomization iterations
-#'   (row-pair trades) to perform. Larger values yield more thorough mixing.
-#'   The default is \code{1000}.
-#' @param output Character string indicating what the function should return.
-#'   One of:
-#'   \itemize{
-#'     \item \code{"category"} (default): return a randomized category matrix
-#'       of the same dimensions as \code{x}, preserving the marginal category
-#'       multisets of each row and column.
-#'     \item \code{"index"}: return an integer matrix of the same dimensions as
-#'       \code{x}, where each entry gives the index of the
-#'       original cell whose category token ended up in that position after the
-#'       curvecat updates. This can be used to reconstruct either the
-#'       randomized categories or to move quantitative values around in tandem
-#'       with the categorical dynamics.
-#'   }
+#' @inheritParams nullcat
+#' @inherit nullcat return
 #'
 #' @details
-#' The \code{curvecat()} algorithm treats each cell of \code{x} as belonging
-#' to a categorical stratum (integer or factor level). At each iteration, two
-#' rows are selected at random and their differing entries are exchanged in
-#' random order, ensuring that each row retains its original set of categories.
-#' When repeated many times, this procedure generates randomized matrices that
-#' preserve row and column category frequencies while randomizing their joint
-#' associations.
+#' The curvecat algorithm operates on pairs of rows at a time,
+#' grouping differing entries by unordered category pairs and
+#' redistributing the orientation of those pairs while preserving
+#' the multiset of categories within each row. When there are only
+#' two categories, `curvecat()` reduces to the behavior of the
+#' original binary curveball algorithm applied to a 0/1 matrix.
 #'
-#' When \code{output = "category"}, the result is
-#' a randomized categorical matrix suitable for use as a null model on presence–
-#' absence or stratified data. When \code{output = "index"}, the returned index
-#' matrix \code{idx} satisfies
-#' \code{y <- matrix(as.numeric(x)[idx], nrow(x), ncol(x))}, which reproduces
-#' the effect of applying the curveball trades to \code{x}. The same index
-#' matrix can also be applied to a separate quantitative matrix of the same
-#' dimensions, allowing quantitative values to “follow” their categorical
-#' strata during randomization.
 #'
-#' This function is a wrapper around the underlying C++ implementation
-#' \code{curvecat_cpp()}, which performs the randomization efficiently in
-#' compiled code.
-#'
-#' @return
-#' If \code{output = "category"}, a matrix of the same dimensions as \code{x}
-#' (and typically the same storage mode), with its categorical entries
-#' randomized while preserving the marginal category multisets of each row and
-#' column.
-#'
-#' If \code{output = "index"}, an integer matrix of the same dimensions as
-#' \code{x}, whose entries are indices into the original \code{x}. Index
-#' \code{idx[i, j]} gives the position in \code{x} whose
-#' category token has moved to cell \code{(i, j)} after \code{n_iter}
-#' curveball iterations. Per R conventions, these are 1-based column-major
-#' indices, i.e. they can be used to index directly into \code{x} or
-#' \code{as.vector(x)} (or another matrix corresponding to x) as shown in
-#' the examples.
+#' @seealso [nullcat()], [nullcat_methods()]
 #'
 #' @references
 #' Strona, G., Nappo, D., Boccacci, F., Fattorini, S., & San-Miguel-Ayanz, J.
@@ -70,36 +25,7 @@
 #' matrices with fixed row and column totals. \emph{Nature Communications}, 5,
 #' 4114.
 #'
-#' @seealso
-#' \code{\link{trace_curvecat}} for mixing diagnostics,
-#' and \code{\link{quantize}} for applying categorical randomization to
-#' quantitative community matrices using curvecat as a backend.
-#'
-#' @examples
-#' set.seed(1)
-#' m <- matrix(sample(1:4, 20 * 30, replace = TRUE), nrow = 20)
-#'
-#' # default: randomized category matrix
-#' set.seed(123)
-#' m_rand <- curvecat(m, n_iter = 1000)
-#' mean(m_rand == m)  # fraction of unchanged cells
-#'
-#' # index output: move another matrix's values following curvecat dynamics
-#' set.seed(123)
-#' idx <- curvecat(m, n_iter = 1000, output = "index")
-#'
-#' # reconstruct the randomized categories from the index
-#' m_rand2 <- matrix(m[idx], nrow = nrow(m), dimnames = dimnames(m))
-#' all.equal(m_rand, m_rand2)  # should be TRUE given same seed was used
-#'
-#' # apply the same permutation to a quantitative matrix of the same shape
-#' q <- matrix(runif(length(m)), nrow = nrow(m))
-#' q_rand <- matrix(q[idx], nrow = nrow(q), dimnames = dimnames(q))
-#'
 #' @export
 curvecat <- function(x, n_iter = 1000L, output = c("category", "index")) {
-      output <- match.arg(output)
-      x <- as.matrix(x)
-      storage.mode(x) <- "integer"
-      curvecat_cpp(x, as.integer(n_iter), output)
+      nullcat(x, method = "curvecat", n_iter = n_iter, output = output)
 }
