@@ -20,9 +20,10 @@ An integer of class \code{"nullcat_n_iter"} with attributes:
 }
 \description{
 Uses trace diagnostics to estimate how many burn-in iterations are
-needed for a randomization to reach its apparent stationary distribution,
-given your data and randomization method. Uses a "first pre-tail
-sign-crossing" rule per chain, then returns the maximum across chains.
+needed for a nullcat or quantize randomization to reach its apparent
+stationary distribution, given your data and randomization method. Uses a
+"first pre-tail sign-crossing" rule per chain, then returns the maximum
+across chains.
 }
 \details{
 This function uses a “first pre-tail sign-crossing” heuristic to identify burn-in cutoff.
@@ -34,6 +35,13 @@ long-run mean, indicating that the chain has begun to oscillate around its
 stationary value. If the chain does not reach the long-run mean before the
 start of the tail window, the chain is determined not to have reached stationarity,
 and the function returns \code{NA} with attribute \code{converged = FALSE}.
+}
+\examples{
+set.seed(123)
+x <- matrix(sample(1:5, 2500, replace = T), 50)
+tr_null <- trace_cat(x, fun = "nullcat", n_iter = 1000,
+                     n_chains = 5, method = "curvecat")
+suggest_n_iter(tr_null, tail_frac = 0.3, plot = TRUE)
 }
 \references{
 Heidelberger, P. & Welch, P.D. (1983). Simulation run length control in the presence of an initial transient. Operations Research, 31(6): 1109–1144.

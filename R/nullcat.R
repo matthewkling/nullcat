@@ -19,8 +19,8 @@
 #'     \item \code{"c0cat"}: categorical analog to `c0`;
 #'          see \link{c0cat} for details.
 #'   }
-#' @param n_iter Number of iterations. Default is 1000.
-#'   Ignored for `r0cat` and `col0cat` methods.
+#' @param n_iter Number of iterations. Default is 1000. Larger values yield
+#'   more thorough mixing. Ignored for non-sequential methods.
 #' @param output Character indicating type of result to return:
 #'   \itemize{
 #'     \item \code{"category"} (default) returns randomized matrix

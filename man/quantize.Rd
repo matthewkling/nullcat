@@ -8,13 +8,13 @@ quantize(
   x = NULL,
   prep = NULL,
   method = nullcat_methods(),
-  fixed = c("stratum", "cell", "row", "col"),
+  fixed = c("cell", "stratum", "row", "col"),
   breaks = NULL,
   n_strata = 5,
   transform = identity,
   offset = 0,
   zero_stratum = FALSE,
-  ...
+  n_iter = 1000
 )
 }
 \arguments{
@@ -35,16 +35,16 @@ See \code{\link{nullcat}} for alternative options.}
 \item{fixed}{Character string specifying the level at which quantitative
   values are held fixed during randomization. One of:
   \itemize{
-    \item \code{"stratum"} (the default):
-      values are shuffled globally within each stratum, holding only the overall
-      stratum-level value distribution fixed.
-    \item \code{"cell"} (only available when \code{method = "curvecat"}):
+    \item \code{"cell"} (the default; only available when \code{method = "curvecat"}):
       values remain attached to their original cells and move with them during
       the categorical randomization. Row and column value
       distributions are not preserved, but the mapping between each original
       cell and its randomized destination is fixed.
+    \item \code{"stratum"}: values are shuffled globally within each stratum,
+      holding only the overall stratum-level value distribution fixed.
     \item \code{"row"}: values are shuffled within strata separately for each
-      row, holding each row’s value multiset fixed.
+      row, holding each row’s value multiset fixed. Not compatible with all
+      \code{method}s.
     \item \code{"col"}: values are shuffled within strata separately for each
       column, holding each column’s value multiset fixed.
 }
@@ -77,19 +77,8 @@ into a stratum that also includes small positive numbers. If \code{breaks} iss
 specified, zero simply gets added as an additional break; if not, one
 of the \code{n_strata} will represent zeros and the others will be nonzero ranges.}
 
-\item{...}{Additional arguments controlling stratification, quantitative
-reassignment, and (for vegan methods) the underlying binary null model:
-\itemize{
-  \item \code{n_iter}: For \code{method = "curvecat"}, the number of
-    categorical curveball iterations (row-pair trades) to perform.
-    Larger values yield more thorough mixing. If omitted, a data-dependent
-    default is used.
-  \item Other arguments are passed on to
-    \code{\link[vegan]{simulate.nullmodel}} for binary methods, such as
-    \code{seed} or \code{burnin}. The default \code{burnin} is
-    \code{10000}. Arguments \code{nsim} and \code{thin} are ignored, as
-    they are internally set to \code{1}.
-}}
+\item{n_iter}{Number of iterations. Default is 1000. Larger values yield
+more thorough mixing. Ignored for non-sequential methods.}
 }
 \value{
 A randomized version of \code{x}, with the same dimensions and
@@ -129,10 +118,8 @@ rand2 <- quantize(comm, n_strata = 4,
                   fixed  = "row",
                   n_iter    = 2000)
 
-# use a vegan binary method on each stratum (here: swap)
-rand3 <- quantize(comm, method = "swap",
-                  n_strata = 5,
-                  burnin   = 10000)
+# use a different randomization algorithm
+rand3 <- quantize(comm, method = "swapcat", n_iter = 10000)
 
 # precompute overhead and reuse for many randomizations
 prep  <- quantize_prep(comm, method = "curvecat",

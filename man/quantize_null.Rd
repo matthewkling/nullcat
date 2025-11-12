@@ -19,7 +19,7 @@ If `NULL` (default), the function returns the full set of randomized matrices.}
 
 \item{...}{Additional arguments passed to `quantize()`
 (e.g. `method`, `breaks`, `n_strata`, `transform`, `offset`, `zero_stratum`,
-`fixed`, `n_iter`, `burnin`, etc.).}
+`fixed`, `n_iter`, etc.).}
 }
 \value{
 If stat is NULL: a 3D array (rows × cols × n_reps).

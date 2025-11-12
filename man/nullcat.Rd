@@ -30,8 +30,8 @@ Options include:
        see \link{c0cat} for details.
 }}
 
-\item{n_iter}{Number of iterations. Default is 1000.
-Ignored for `r0cat` and `col0cat` methods.}
+\item{n_iter}{Number of iterations. Default is 1000. Larger values yield
+more thorough mixing. Ignored for non-sequential methods.}
 
 \item{output}{Character indicating type of result to return:
 \itemize{

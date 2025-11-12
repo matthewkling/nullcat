@@ -2,7 +2,8 @@
 #'
 #' `r0cat()` preserves the multiset of categories within each column but
 #' randomizes their positions across rows, leaving row margins free.
-#' This is the categorical analog to vegan's `c0` algorithm.
+#' This is the categorical analog to vegan's `c0` algorithm. It is a
+#' non-sequential method.
 #'
 #' @inheritParams nullcat
 #' @inherit nullcat return

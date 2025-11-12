@@ -10,8 +10,8 @@ tswapcat(x, n_iter = 1000L, output = c("category", "index"))
 \item{x}{A matrix of categorical data, encoded as integers.
 Values should represent category or stratum membership for each cell.}
 
-\item{n_iter}{Number of iterations. Default is 1000.
-Ignored for `r0cat` and `col0cat` methods.}
+\item{n_iter}{Number of iterations. Default is 1000. Larger values yield
+more thorough mixing. Ignored for non-sequential methods.}
 
 \item{output}{Character indicating type of result to return:
 \itemize{
