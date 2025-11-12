@@ -19,6 +19,6 @@
 #' ecology* (Version 7.0). Acquired Intelligence Inc. & Kesey-Bear, Jericho (VT).
 #'
 #' @export
-tswapcat <- function(x, n_iter = 1000L, output = c("category", "index")) {
-      nullcat(x, method = "tswapcat", n_iter = n_iter, output = output)
+tswapcat <- function(x, n_iter = 1000L, output = c("category", "index"), seed = NULL) {
+      nullcat(x, method = "tswapcat", n_iter = n_iter, output = output, seed = seed)
 }

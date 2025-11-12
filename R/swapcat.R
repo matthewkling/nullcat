@@ -37,6 +37,6 @@
 #' (Version 7.0) for implementation details of the binary swap algorithm.
 #'
 #' @export
-swapcat <- function(x, n_iter = 1000L, output = c("category", "index")) {
-      nullcat(x, method = "swapcat", n_iter = n_iter, output = output)
+swapcat <- function(x, n_iter = 1000L, output = c("category", "index"), seed = NULL) {
+      nullcat(x, method = "swapcat", n_iter = n_iter, output = output, seed = seed)
 }

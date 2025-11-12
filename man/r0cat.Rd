@@ -4,14 +4,15 @@
 \alias{r0cat}
 \title{Row-constrained categorical randomization (r0cat)}
 \usage{
-r0cat(x, n_iter = 1L, output = c("category", "index"))
+r0cat(x, n_iter = 1L, output = c("category", "index"), seed = NULL)
 }
 \arguments{
 \item{x}{A matrix of categorical data, encoded as integers.
 Values should represent category or stratum membership for each cell.}
 
 \item{n_iter}{Number of iterations. Default is 1000. Larger values yield
-more thorough mixing. Ignored for non-sequential methods.}
+more thorough mixing. Ignored for non-sequential methods. Minimum
+burn-in times can be estimated with \link{suggest_n_iter}.}
 
 \item{output}{Character indicating type of result to return:
 \itemize{
@@ -19,6 +20,8 @@ more thorough mixing. Ignored for non-sequential methods.}
   \item \code{"index"} returns an index matrix describing where original
        entries moved.
 }}
+
+\item{seed}{Integer used to seed random number generator, for reproducibility.}
 }
 \value{
 A matrix of the same dimensions as \code{x}, either randomized

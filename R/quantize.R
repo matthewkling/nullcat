@@ -100,12 +100,12 @@ quantize <- function(x = NULL,
             if(is.null(x)) stop("`x` and `prep` cannot both be NULL")
             prep <- quantize_prep(x, method = method, fixed = fixed,
                                   breaks = breaks, n_strata = n_strata, transform = transform,
-                                  offset = offset, zero_stratum = zero_stratum)
+                                  offset = offset, zero_stratum = zero_stratum, n_iter = n_iter)
       }
 
       mode <- ifelse(prep$fixed == "cell", "index", "category")
 
-      rand_strata <- nullcat(prep$strata, method = prep$method, n_iter = n_iter, output = mode)
+      rand_strata <- nullcat(prep$strata, method = prep$method, n_iter = prep$n_iter, output = mode)
 
       rand <- fill_from_pool(
             s = prep$strata,
@@ -192,6 +192,7 @@ quantize_null <- function(x,
 #' @return A list with class \code{"quantize_prep"} (if you want to set it)
 #'   containing the components needed by \code{\link{quantize}()}:
 #'   \itemize{
+#'     \item \code{x}: original quantitative marix \code{x},
 #'     \item \code{strata}: integer matrix of the same dimension as \code{x},
 #'       giving the stratum index (1, \dots, \code{n_strata}) for each cell.
 #'     \item \code{stratarray}: for binary methods, a 3D array of dimension
@@ -242,12 +243,13 @@ quantize_null <- function(x,
 #' @export
 quantize_prep <- function(x,
                           method = nullcat_methods(),
-                          fixed = c("stratum", "cell", "row", "col"),
+                          fixed = c("cell", "stratum", "row", "col"),
                           breaks = NULL,
                           n_strata  = 5,
                           transform = identity,
                           offset = 0,
-                          zero_stratum = FALSE) {
+                          zero_stratum = FALSE,
+                          n_iter = 1000) {
 
       method <- match.arg(method, NULLCAT_METHODS)
       fixed <- match.arg(fixed)
@@ -269,6 +271,7 @@ quantize_prep <- function(x,
       pool <- make_cat_pool(x, strata, fixed = fixed)
 
       prep <- list(
+            x = x,
             strata = strata,
             pool = pool,
             method = method,
@@ -277,7 +280,8 @@ quantize_prep <- function(x,
             transform = transform,
             offset  = offset,
             zero_stratum = zero_stratum,
-            fixed = fixed
+            fixed = fixed,
+            n_iter = n_iter
       )
       class(prep) <- c("quantize_prep", "list")
       prep
@@ -287,14 +291,21 @@ quantize_prep <- function(x,
 #' @method print quantize_prep
 #' @export
 print.quantize_prep <- function(x, ...) {
-      cat("Quantize preparation object\n")
-      cat("Method:", x$method, "\n")
-      cat("Strata:", x$n_strata, "\n")
-      cat("Priority:", x$priority, "\n")
-      cat("Transform:", deparse(x$transform)[1], "\n")
-      if (!is.null(x$sim_args$n_iter)) {
-            cat("Iterations:", x$sim_args$n_iter, "\n")
-      }
+      cat("Quantize prep object\n")
+      cat("____________________\n")
+      cat("Stratification:\n")
+      breaks <- attr(x$strata, "breaks")
+      n <- x$n_strata
+      strata <- data.frame(stratum = 1:n,
+                           from = breaks[1:n],
+                           to = breaks[(1:n)+1],
+                           freq = as.integer(table(x$strata)))
+      print(strata)
+      cat("____________________\n")
+      cat("Randomization\n")
+      cat("   Null algorithm:", x$method, "\n")
+      cat("   Quantities fixed:", x$fixed, "\n")
+
       invisible(x)
 }
 

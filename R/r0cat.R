@@ -8,6 +8,6 @@
 #' @inheritParams nullcat
 #' @inherit nullcat return
 #' @export
-r0cat <- function(x, n_iter = 1L, output = c("category", "index")) {
-      nullcat(x, method = "r0cat", n_iter = n_iter, output = output)
+r0cat <- function(x, n_iter = 1L, output = c("category", "index"), seed = NULL) {
+      nullcat(x, method = "r0cat", n_iter = n_iter, output = output, seed = seed)
 }

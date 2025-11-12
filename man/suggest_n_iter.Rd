@@ -4,14 +4,17 @@
 \alias{suggest_n_iter}
 \title{Suggest a reasonable n_iter for a randomization}
 \usage{
-suggest_n_iter(trace, tail_frac = 0.3, plot = FALSE)
+suggest_n_iter(trace = NULL, tail_frac = 0.3, plot = FALSE, ...)
 }
 \arguments{
-\item{trace}{A \code{cat_trace} object (as returned by \code{trace_cat()}).}
+\item{trace}{Either a \code{cat_trace} object (as returned by \code{trace_cat()}), or NULL.
+If NULL, arguments to \code{trace_cat()} must be supplied via \code{...}}
 
 \item{tail_frac}{Fraction of the trace (at the end) used as the tail window (default 0.3).}
 
 \item{plot}{If TRUE, plot the trace, with a vertical line at the suggested value.}
+
+\item{...}{Arguments passed to \code{trace_cat()}. Ignored if \code{trace} is non-NULL.}
 }
 \value{
 An integer of class \code{"nullcat_n_iter"} with attributes:
@@ -39,9 +42,17 @@ and the function returns \code{NA} with attribute \code{converged = FALSE}.
 \examples{
 set.seed(123)
 x <- matrix(sample(1:5, 2500, replace = T), 50)
-tr_null <- trace_cat(x, fun = "nullcat", n_iter = 1000,
+
+# call `trace_cat`, then pass result to `suggest_n_iter`:
+tr_null <- trace_cat(x = x, fun = "nullcat", n_iter = 1000,
                      n_chains = 5, method = "curvecat")
 suggest_n_iter(tr_null, tail_frac = 0.3, plot = TRUE)
+
+# alternatively, supply `trace_cat` arguments directly to `suggest_n_iter`:
+n_iter <- suggest_n_iter(x = x, fun = "nullcat", n_iter = 1000,
+               n_chains = 5, method = "curvecat", tail_frac = 0.3)
+
+
 }
 \references{
 Heidelberger, P. & Welch, P.D. (1983). Simulation run length control in the presence of an initial transient. Operations Research, 31(6): 1109–1144.

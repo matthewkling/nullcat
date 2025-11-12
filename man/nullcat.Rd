@@ -8,7 +8,8 @@ nullcat(
   x,
   method = nullcat_methods(),
   n_iter = 1000L,
-  output = c("category", "index")
+  output = c("category", "index"),
+  seed = NULL
 )
 }
 \arguments{
@@ -31,7 +32,8 @@ Options include:
 }}
 
 \item{n_iter}{Number of iterations. Default is 1000. Larger values yield
-more thorough mixing. Ignored for non-sequential methods.}
+more thorough mixing. Ignored for non-sequential methods. Minimum
+burn-in times can be estimated with \link{suggest_n_iter}.}
 
 \item{output}{Character indicating type of result to return:
 \itemize{
@@ -39,6 +41,8 @@ more thorough mixing. Ignored for non-sequential methods.}
   \item \code{"index"} returns an index matrix describing where original
        entries moved.
 }}
+
+\item{seed}{Integer used to seed random number generator, for reproducibility.}
 }
 \value{
 A matrix of the same dimensions as \code{x}, either randomized

@@ -7,12 +7,13 @@
 quantize_prep(
   x,
   method = nullcat_methods(),
-  fixed = c("stratum", "cell", "row", "col"),
+  fixed = c("cell", "stratum", "row", "col"),
   breaks = NULL,
   n_strata = 5,
   transform = identity,
   offset = 0,
-  zero_stratum = FALSE
+  zero_stratum = FALSE,
+  n_iter = 1000
 )
 }
 \arguments{
@@ -69,11 +70,16 @@ own stratum. If \code{FALSE} (the default), zeros will likely be combined
 into a stratum that also includes small positive numbers. If \code{breaks} iss
 specified, zero simply gets added as an additional break; if not, one
 of the \code{n_strata} will represent zeros and the others will be nonzero ranges.}
+
+\item{n_iter}{Number of iterations. Default is 1000. Larger values yield
+more thorough mixing. Ignored for non-sequential methods. Minimum
+burn-in times can be estimated with \link{suggest_n_iter}.}
 }
 \value{
 A list with class \code{"quantize_prep"} (if you want to set it)
   containing the components needed by \code{\link{quantize}()}:
   \itemize{
+    \item \code{x}: original quantitative marix \code{x},
     \item \code{strata}: integer matrix of the same dimension as \code{x},
       giving the stratum index (1, \dots, \code{n_strata}) for each cell.
     \item \code{stratarray}: for binary methods, a 3D array of dimension

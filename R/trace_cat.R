@@ -134,11 +134,10 @@ trace_chain <- function(x0,
             thin <- as.integer(thin)
       }
 
-      # guardrail: extremely fine thinning can be very slow
       steps   <- seq(0L, n_iter, by = thin)[-1L]
       n_steps <- length(steps)
       if (n_steps > 5000L) {
-            warning("trace will record ", n_steps, " steps (thin is very small); this may be slow.")
+            warning("trace will record ", n_steps, " steps; this may be slow.")
       }
 
       # pick the update kernel for the chosen fun
@@ -255,7 +254,7 @@ print.cat_trace <- function(x, digits = 3, ...) {
 
       cat("\nCategorical trace diagnostics\n")
       cat("───────────────────────────────\n")
-      cat(sprintf(" Engine:   %s\n", x$engine))
+      cat(sprintf(" Randomization method:   %s\n", x$fun))
       cat(sprintf(" Chains:   %d (%d recorded steps per chain)\n", n_chains, n_steps))
       cat(sprintf(" Iterations: %d total  (thin = %d)\n", total_iter, thin))
       cat(sprintf(" Statistic:  %s\n", stat_name))

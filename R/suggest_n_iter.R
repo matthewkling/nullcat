@@ -16,9 +16,11 @@
 #' start of the tail window, the chain is determined not to have reached stationarity,
 #' and the function returns \code{NA} with attribute \code{converged = FALSE}.
 #'
-#' @param trace A \code{cat_trace} object (as returned by \code{trace_cat()}).
+#' @param trace Either a \code{cat_trace} object (as returned by \code{trace_cat()}), or NULL.
+#'   If NULL, arguments to \code{trace_cat()} must be supplied via \code{...}
 #' @param tail_frac Fraction of the trace (at the end) used as the tail window (default 0.3).
 #' @param plot If TRUE, plot the trace, with a vertical line at the suggested value.
+#' @param ... Arguments passed to \code{trace_cat()}. Ignored if \code{trace} is non-NULL.
 #' @references
 #' Heidelberger, P. & Welch, P.D. (1983). Simulation run length control in the presence of an initial transient. Operations Research, 31(6): 1109–1144.
 #'
@@ -34,13 +36,24 @@
 #' @examples
 #' set.seed(123)
 #' x <- matrix(sample(1:5, 2500, replace = T), 50)
-#' tr_null <- trace_cat(x, fun = "nullcat", n_iter = 1000,
+#'
+#' # call `trace_cat`, then pass result to `suggest_n_iter`:
+#' tr_null <- trace_cat(x = x, fun = "nullcat", n_iter = 1000,
 #'                      n_chains = 5, method = "curvecat")
 #' suggest_n_iter(tr_null, tail_frac = 0.3, plot = TRUE)
+#'
+#' # alternatively, supply `trace_cat` arguments directly to `suggest_n_iter`:
+#' n_iter <- suggest_n_iter(x = x, fun = "nullcat", n_iter = 1000,
+#'                n_chains = 5, method = "curvecat", tail_frac = 0.3)
+#'
+#'
 #' @export
-suggest_n_iter <- function(trace,
+suggest_n_iter <- function(trace = NULL,
                            tail_frac = 0.3,
-                           plot  = FALSE) {
+                           plot  = FALSE,
+                           ...) {
+
+      if(is.null(trace)) trace <- trace_cat(...)
 
       if (!inherits(trace, "cat_trace")) {
             stop("`trace` must be a cat_trace object (from trace_cat()).")
