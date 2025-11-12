@@ -29,14 +29,13 @@
 #' @param fixed Character string specifying the level at which quantitative
 #'   values are held fixed during randomization. One of:
 #'   \itemize{
-#'     \item \code{"stratum"} (the default):
-#'       values are shuffled globally within each stratum, holding only the overall
-#'       stratum-level value distribution fixed.
-#'     \item \code{"cell"} (only available when \code{method = "curvecat"}):
+#'     \item \code{"cell"} (the default; only available when \code{method = "curvecat"}):
 #'       values remain attached to their original cells and move with them during
 #'       the categorical randomization. Row and column value
 #'       distributions are not preserved, but the mapping between each original
 #'       cell and its randomized destination is fixed.
+#'     \item \code{"stratum"}: values are shuffled globally within each stratum,
+#'       holding only the overall stratum-level value distribution fixed.
 #'     \item \code{"row"}: values are shuffled within strata separately for each
 #'       row, holding each row’s value multiset fixed.
 #'     \item \code{"col"}: values are shuffled within strata separately for each
@@ -99,7 +98,7 @@
 quantize <- function(x = NULL,
                      prep = NULL,
                      method = nullcat_methods(),
-                     fixed = c("stratum", "cell", "row", "col"),
+                     fixed = c("cell", "stratum", "row", "col"),
                      breaks = NULL,
                      n_strata  = 5,
                      transform = identity,

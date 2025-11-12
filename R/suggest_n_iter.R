@@ -1,79 +1,70 @@
-#' Suggest a reasonable n_iter for nullcat()
+#' Suggest a reasonable n_iter for a randomization
 #'
 #' Uses trace diagnostics to estimate how many burn-in iterations are
-#' needed for the chain to reach its apparent stationary distribution,
-#' given your data and randomization method.
+#' needed for a nullcat or quantize randomization to reach its apparent
+#' stationary distribution, given your data and randomization method. Uses a
+#' "first pre-tail sign-crossing" rule per chain, then returns the maximum
+#' across chains.
 #'
-#' The diagnostic used is a tail-catching heuristic: burn-in is
-#' considered complete when a chosen test statistic first crosses its mean
-#' value measured in the final "tail" window of the chain, provided
-#' this happens before the tail window. If multiple chains are used
-#' (highly recommended), the maximum of burn-in lengths across chains
-#' is returned.
+#' This function uses a “first pre-tail sign-crossing” heuristic to identify burn-in cutoff.
+#' This is a simple variant of standard mean-stability tests used in MCMC convergence
+#' diagnostics (e.g., Heidelberger & Welch 1983; Geweke 1992; Geyer 1992).
+#' It computes the long-run mean based on the "tail window" of the chain, and
+#' detects the first iteration at which the trace statistic crosses this
+#' long-run mean, indicating that the chain has begun to oscillate around its
+#' stationary value. If the chain does not reach the long-run mean before the
+#' start of the tail window, the chain is determined not to have reached stationarity,
+#' and the function returns \code{NA} with attribute \code{converged = FALSE}.
 #'
-#' @inheritParams trace_nullcat
+#' @param trace A \code{cat_trace} object (as returned by \code{trace_cat()}).
+#' @param tail_frac Fraction of the trace (at the end) used as the tail window (default 0.3).
+#' @param plot If TRUE, plot the trace, with a vertical line at the suggested value.
+#' @references
+#' Heidelberger, P. & Welch, P.D. (1983). Simulation run length control in the presence of an initial transient. Operations Research, 31(6): 1109–1144.
 #'
-#' @param tail_frac Fraction of the trace (at the end) used to estimate
-#'   the stationary mean for each chain. Default is 0.3 (last 30\%).
+#' Geweke, J. (1992). Evaluating the accuracy of sampling-based approaches to the calculation of posterior moments. In Bayesian Statistics 4, pp. 169–193.
 #'
-#' @return
-#' A numeric value giving the suggested \code{n_iter} for \code{nullcat()},
-#' with attributes \code{trace}, \code{steps}, \code{tail_mean},
-#' \code{per_chain}, and \code{converged}. If convergence cannot be
-#' diagnosed within \code{n_iter}, the returned value is \code{NA}
-#' and \code{converged} is \code{FALSE}.
+#' Geyer, C.J. (1992). Practical Markov Chain Monte Carlo. Statistical Science, 7(4): 473–483.
 #'
+#' Feller, W. (1968). An Introduction to Probability Theory and Its Applications, Vol. I. Wiley.
+#' @return An integer of class \code{"nullcat_n_iter"} with attributes:
+#' \code{n_iter} (numeric or NA), \code{trace} (matrix), \code{steps} (vector),
+#' \code{tail_mean} (per-chain), \code{per_chain} (data.frame), \code{converged} (logical).
+#'
+#' @examples
+#' set.seed(123)
+#' x <- matrix(sample(1:5, 2500, replace = T), 50)
+#' tr_null <- trace_cat(x, fun = "nullcat", n_iter = 1000,
+#'                      n_chains = 5, method = "curvecat")
+#' suggest_n_iter(tr_null, tail_frac = 0.3, plot = TRUE)
 #' @export
-suggest_n_iter <- function(x,
-                           method = "curvecat",
-                           n_iter = 1000L,
-                           thin = NULL,
-                           n_chains = 5,
-                           stat = "kappa",
-                           plot = FALSE,
+suggest_n_iter <- function(trace,
                            tail_frac = 0.3,
-                           n_cores = 1) {
+                           plot  = FALSE) {
 
-      n_iter <- as.integer(n_iter)
-
-      # Set default thin to give ~100 samples
-      if (is.null(thin)) {
-            thin <- max(1L, as.integer(n_iter / 100))
-      } else {
-            thin <- as.integer(thin)
+      if (!inherits(trace, "cat_trace")) {
+            stop("`trace` must be a cat_trace object (from trace_cat()).")
       }
 
-      # Get trace matrix (rows = steps, cols = chains).
-      # First row is iteration 0 (x vs x).
-      tr <- trace_nullcat(
-            x = x,
-            method = method,
-            n_iter = n_iter,
-            thin = thin,
-            n_chains = n_chains,
-            stat = stat,
-            plot = plot,
-            n_cores = n_cores
-      )
-
+      tr <- trace$traces
+      steps <- trace$steps
       n_steps  <- nrow(tr)
       n_chains <- ncol(tr)
 
-      if (n_steps == 0L || n_chains == 0L) {
-            warning("No trace data; consider increasing n_iter or decreasing thin.")
-            return(structure(
-                  NA_integer_,
-                  trace      = tr,
-                  steps      = integer(0),
-                  tail_mean  = numeric(0),
-                  per_chain  = data.frame(),
-                  converged  = FALSE
-            ))
+      if (n_steps < 3L || n_chains < 1L) {
+            warning("Trace too short to diagnose; increase n_iter or decrease thin.")
+            out <- list(n_iter = NA_integer_,
+                        trace = tr,
+                        steps = steps,
+                        tail_mean = numeric(0),
+                        per_chain = data.frame(),
+                        converged = FALSE)
+            class(out) <- "nullcat_n_iter"
+            return(out)
       }
 
-      # Iteration numbers corresponding to each trace row:
-      # 0, thin, 2*thin, ..., up to ~n_iter
-      steps <- seq.int(from = 0L, by = thin, length.out = n_steps)
+      # tail window (indices within rows of `tr`)
+      tail_start <- max(1L, n_steps - floor(tail_frac * n_steps) + 1L)
 
       tail_means      <- numeric(n_chains)
       chain_suggest   <- rep(NA_integer_, n_chains)
@@ -81,38 +72,28 @@ suggest_n_iter <- function(x,
 
       for (r in seq_len(n_chains)) {
             chain <- tr[, r]
-
-            # Estimate stationary value from the tail of this chain
-            tail_start <- max(1L, n_steps - floor(tail_frac * n_steps) + 1L)
-            tail_vals  <- chain[tail_start:n_steps]
-            mu         <- mean(tail_vals)
+            mu <- mean(chain[tail_start:n_steps])
             tail_means[r] <- mu
 
-            # Deviations from tail mean
             delta <- chain - mu
 
-            # If the initial deviation is exactly zero, treat as already stationary
+            # already exactly at mean at iter 0
             if (is.na(delta[1L]) || delta[1L] == 0) {
                   chain_suggest[r]   <- steps[1L]
                   chain_converged[r] <- TRUE
                   next
             }
 
-            # Sign of initial deviation
             s0 <- sign(delta[1L])
 
-            # We only consider sign changes *before* the tail window starts.
-            # If the first crossing happens in or after the tail window, we
-            # treat that as non-convergence.
+            # must cross BEFORE the tail window starts
             last_pre_tail_idx <- tail_start - 1L
-
             idx_cross <- NA_integer_
 
             if (last_pre_tail_idx >= 2L) {
                   for (i in 2L:last_pre_tail_idx) {
-                        if (is.na(delta[i])) next
                         si <- sign(delta[i])
-                        if (si == 0L || si != s0) {
+                        if (!is.na(si) && (si == 0L || si != s0)) {
                               idx_cross <- i
                               break
                         }
@@ -123,69 +104,62 @@ suggest_n_iter <- function(x,
                   chain_suggest[r]   <- steps[idx_cross]
                   chain_converged[r] <- TRUE
             } else {
-                  # Never crossed the tail mean before the tail window -> non-converged
                   chain_suggest[r]   <- NA_integer_
                   chain_converged[r] <- FALSE
             }
       }
 
-      # If any chain failed to converge, mark overall non-convergence
       if (!all(chain_converged)) {
             warning(
                   "At least one chain did not cross its tail mean before the tail window.\n",
-                  "Consider using a larger n_iter (and/or smaller thin)."
+                  "Increase n_iter (and/or reduce thin) and re-run trace_cat()."
             )
-            if (plot) {
-                  graphics::mtext(
-                        "No pre-tail crossing for all chains; increase n_iter",
-                        side = 3, col = "red", line = 0.5
-                  )
-            }
-
-            n <- list(
-                  n_iter = NA_integer_,
-                  trace = tr,
-                  steps = steps,
+            out <- structure(
+                  NA_integer_,
+                  trace     = tr,
+                  steps     = steps,
                   tail_mean = tail_means,
                   per_chain = data.frame(
-                        chain = seq_len(n_chains),
+                        chain     = seq_len(n_chains),
                         suggested = chain_suggest,
                         converged = chain_converged
                   ),
-                  converged = FALSE)
-            class(n) <- "nullcat_n_iter"
-            return(n)
+                  converged = FALSE
+            )
+            class(out) <- "suggested_n_iter"
+            return(out)
       }
 
-      # Overall suggestion: max over per-chain suggestions
       suggested <- max(chain_suggest, na.rm = TRUE)
 
-      if (plot) {
+      if (isTRUE(plot)) {
+            plot(trace)
             graphics::abline(v = suggested, lty = 2, col = "black", lwd = 2)
       }
 
-      n <- list(
-            n_iter = suggested,
-            trace = tr,
-            steps = steps,
+      out <- structure(
+            suggested,
+            trace     = tr,
+            steps     = steps,
             tail_mean = tail_means,
             per_chain = data.frame(
-                  chain = seq_len(n_chains),
+                  chain     = seq_len(n_chains),
                   suggested = chain_suggest,
                   converged = chain_converged
             ),
             converged = TRUE
       )
-      class(n) <- "nullcat_n_iter"
-      n
+      class(out) <- "suggested_n_iter"
+      out
 }
 
 
-#' @method print nullcat_n_iter
+#' @method print suggested_n_iter
 #' @export
-print.nullcat_n_iter <- function(x, ...) {
-      cat("nullcat n_iter object:\n")
-      cat("Converged:", x$converged, "\n")
-      cat("Suggested n iterations:", x$n_iter, "\n")
+print.suggested_n_iter <- function(x, ...) {
+      cat("suggested_n_iter object\n")
+      cat("───────────────────────\n")
+      cat("Converged:", attr(x, "converged"), "\n")
+      cat("Suggested n iterations:", x, "\n")
       invisible(x)
 }

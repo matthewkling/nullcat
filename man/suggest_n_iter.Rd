@@ -2,66 +2,45 @@
 % Please edit documentation in R/suggest_n_iter.R
 \name{suggest_n_iter}
 \alias{suggest_n_iter}
-\title{Suggest a reasonable n_iter for nullcat()}
+\title{Suggest a reasonable n_iter for a randomization}
 \usage{
-suggest_n_iter(
-  x,
-  method = "curvecat",
-  n_iter = 1000L,
-  thin = NULL,
-  n_chains = 5,
-  stat = "kappa",
-  plot = FALSE,
-  tail_frac = 0.3,
-  n_cores = 1
-)
+suggest_n_iter(trace, tail_frac = 0.3, plot = FALSE)
 }
 \arguments{
-\item{x}{A matrix containing integer or factor values.}
+\item{trace}{A \code{cat_trace} object (as returned by \code{trace_cat()}).}
 
-\item{method}{Character specifying algorithm to use. See \code{nullcat()} for details.}
+\item{tail_frac}{Fraction of the trace (at the end) used as the tail window (default 0.3).}
 
-\item{n_iter}{Number of successive matrix updates to apply. Default is \code{1000}.}
-
-\item{thin}{Thinning interval for the test chain. Higher values run faster but
-with lower resolution. Default is \code{n_iter / 100}, giving ~100 samples.}
-
-\item{n_chains}{Number of independent runs to perform, to assess consistency.
-Default is \code{5}.}
-
-\item{stat}{Output trace statistic to compute for each iteration. Either:
-\itemize{
-   \item \code{"kappa"} (the default) Cohen's kappa between the original `x` and
-   the randomized matrix `x_rand`
-   \item \code{"prop_equal"} proportion of cells in which `x == x_rand`
-   \item any function taking (`x`, `x_rand`) and returning a numeric scalar
-}}
-
-\item{plot}{Logical; if TRUE, plot the trace. Default is FALSE.}
-
-\item{tail_frac}{Fraction of the trace (at the end) used to estimate
-the stationary mean for each chain. Default is 0.3 (last 30\%).}
-
-\item{n_cores}{Maximum number of compute cores to use for parallel processing.
-Default is 1. If greater than 1, chains are processed in parallel.}
+\item{plot}{If TRUE, plot the trace, with a vertical line at the suggested value.}
 }
 \value{
-A numeric value giving the suggested \code{n_iter} for \code{nullcat()},
-with attributes \code{trace}, \code{steps}, \code{tail_mean},
-\code{per_chain}, and \code{converged}. If convergence cannot be
-diagnosed within \code{n_iter}, the returned value is \code{NA}
-and \code{converged} is \code{FALSE}.
+An integer of class \code{"nullcat_n_iter"} with attributes:
+\code{n_iter} (numeric or NA), \code{trace} (matrix), \code{steps} (vector),
+\code{tail_mean} (per-chain), \code{per_chain} (data.frame), \code{converged} (logical).
 }
 \description{
 Uses trace diagnostics to estimate how many burn-in iterations are
-needed for the chain to reach its apparent stationary distribution,
-given your data and randomization method.
+needed for a randomization to reach its apparent stationary distribution,
+given your data and randomization method. Uses a "first pre-tail
+sign-crossing" rule per chain, then returns the maximum across chains.
 }
 \details{
-The diagnostic used is a tail-catching heuristic: burn-in is
-considered complete when a chosen test statistic first crosses its mean
-value measured in the final "tail" window of the chain, provided
-this happens before the tail window. If multiple chains are used
-(highly recommended), the maximum of burn-in lengths across chains
-is returned.
+This function uses a “first pre-tail sign-crossing” heuristic to identify burn-in cutoff.
+This is a simple variant of standard mean-stability tests used in MCMC convergence
+diagnostics (e.g., Heidelberger & Welch 1983; Geweke 1992; Geyer 1992).
+It computes the long-run mean based on the "tail window" of the chain, and
+detects the first iteration at which the trace statistic crosses this
+long-run mean, indicating that the chain has begun to oscillate around its
+stationary value. If the chain does not reach the long-run mean before the
+start of the tail window, the chain is determined not to have reached stationarity,
+and the function returns \code{NA} with attribute \code{converged = FALSE}.
+}
+\references{
+Heidelberger, P. & Welch, P.D. (1983). Simulation run length control in the presence of an initial transient. Operations Research, 31(6): 1109–1144.
+
+Geweke, J. (1992). Evaluating the accuracy of sampling-based approaches to the calculation of posterior moments. In Bayesian Statistics 4, pp. 169–193.
+
+Geyer, C.J. (1992). Practical Markov Chain Monte Carlo. Statistical Science, 7(4): 473–483.
+
+Feller, W. (1968). An Introduction to Probability Theory and Its Applications, Vol. I. Wiley.
 }
