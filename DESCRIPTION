@@ -4,9 +4,8 @@ Title: Null models for categorical and continuous community matrices
 Version: 0.1.0
 Author: Matthew Kling
 Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Description: Provides novel null model algorithms for categorical and quantitative community ecology data. Extends classic binary null models (e.g., curveball, swap) to work with categorical data, and introduces a stratified randomization framework for continuous data that addresses limitations in existing quantitative null model methods.
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.2

@@ -27,7 +27,7 @@ data (site-by-species matrices of integers representing discrete strata
 or categories):
 
 - **`curvecat`**: Categorical curveball algorithm
-- **`swapcat`**: Categorical 2Ã2 swap algorithm  
+- **`swapcat`**: Categorical 2x2 swap algorithm  
 - **`tswapcat`**: Categorical trial-swap algorithm
 - **`r0cat`**: Row-constrained randomization (fixed row margins)
 - **`c0cat`**: Column-constrained randomization (fixed column margins)
