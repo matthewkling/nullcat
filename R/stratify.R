@@ -20,7 +20,7 @@
 #'       times with different offset values. Ignored unless \code{breaks = NULL}.
 #' @param zero_stratum Logical indicating whether to segregate zeros into their
 #'   own stratum. If \code{FALSE} (the default), zeros will likely be combined
-#'   into a stratum that also includes small positive numbers. If \code{breaks} iss
+#'   into a stratum that also includes small positive numbers. If \code{breaks} is
 #'   specified, zero simply gets added as an additional break; if not, one
 #'   of the \code{n_strata} will represent zeros and the others will be nonzero ranges.
 #'
