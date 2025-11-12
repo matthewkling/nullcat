@@ -294,7 +294,7 @@ print.quantize_prep <- function(x, ...) {
       cat("Quantize prep object\n")
       cat("____________________\n")
       cat("Stratification:\n")
-      breaks <- attr(x$strata, "breaks")
+      breaks <- signif(attr(x$strata, "breaks"), 2)
       n <- x$n_strata
       strata <- data.frame(stratum = 1:n,
                            from = breaks[1:n],

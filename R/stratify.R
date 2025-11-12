@@ -4,20 +4,21 @@
 #' @param x A matrix or vector containing non-negative values.
 #' @param breaks Numeric vector of stratum breakpoints.
 #' @param n_strata Integer giving the number of strata to split the
-#'       data into. Must be 2 or greater. Larger values yield randomizations
-#'       with less mixing but higher fidelity to the original marginal
-#'       distributions. Default is \code{5}. Ignored unless \code{breaks = NULL}.
+#'   data into. Must be 2 or greater. Larger values yield randomizations
+#'   with less mixing but higher fidelity to the original marginal
+#'   distributions. Default is \code{5}. Ignored unless \code{breaks = NULL}.
 #' @param transform A function used to transform the values in
-#'       \code{x} before assigning them to \code{n_strata} equal-width
-#'       intervals. Examples include \code{sqrt}, \code{log}, \code{rank}, etc.;
-#'       the default is \code{identity}. If \code{zero_stratum = TRUE}, the
-#'       transformation is only applied on nonzero values. The function should
-#'       pass NA values. This argument is ignored unless \code{breaks = NULL}.
+#'   \code{x} before assigning them to \code{n_strata} equal-width
+#'   intervals. Examples include \code{sqrt}, \code{log},
+#'   \code{rank} (for equal-occupancy strata), etc.;
+#'   the default is \code{identity}. If \code{zero_stratum = TRUE}, the
+#'   transformation is only applied on nonzero values. The function should
+#'   pass NA values. This argument is ignored unless \code{breaks = NULL}.
 #' @param offset Numeric value between -1 and 1 (default 0) indicating
-#'       how much to shift stratum breakpoints relative to the binwidth (applied
-#'       during quantization as: \code{breaks <- breaks + offset * bw}). To
-#'       assess sensitivity to stratum boundaries, run \code{quantize()} multiple
-#'       times with different offset values. Ignored unless \code{breaks = NULL}.
+#'   how much to shift stratum breakpoints relative to the binwidth (applied
+#'   during quantization as: \code{breaks <- breaks + offset * bw}). To
+#'   assess sensitivity to stratum boundaries, run \code{quantize()} multiple
+#'   times with different offset values. Ignored unless \code{breaks = NULL}.
 #' @param zero_stratum Logical indicating whether to segregate zeros into their
 #'   own stratum. If \code{FALSE} (the default), zeros will likely be combined
 #'   into a stratum that also includes small positive numbers. If \code{breaks} is
@@ -53,6 +54,8 @@ stratify <- function(x,
             }
 
             s <- transform(x)
+            trans <- any(s != x) # test for non-identity transform
+
             bw <- diff(range(s, na.rm = TRUE)) / n_strata
             breaks <- c(-Inf, seq(min(s, na.rm = TRUE) + bw,
                                   max(s, na.rm = TRUE) - bw, bw), Inf)
@@ -62,6 +65,12 @@ stratify <- function(x,
             if(zero_stratum){
                   s[zero] <- 0
                   s <- s + 1
+            }
+
+            # effective breaks in raw space: highest value in each stratum
+            if(trans){
+                  bx <- sapply(1:n_strata, function(i) max(x[s == i]))
+                  breaks <- c(-Inf, bx[1:(n_strata-1)], Inf)
             }
 
             attr(s, "breaks") <- breaks

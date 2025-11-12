@@ -60,7 +60,8 @@ distributions. Default is \code{5}. Ignored unless \code{breaks = NULL}.}
 
 \item{transform}{A function used to transform the values in
 \code{x} before assigning them to \code{n_strata} equal-width
-intervals. Examples include \code{sqrt}, \code{log}, \code{rank}, etc.;
+intervals. Examples include \code{sqrt}, \code{log},
+\code{rank} (for equal-occupancy strata), etc.;
 the default is \code{identity}. If \code{zero_stratum = TRUE}, the
 transformation is only applied on nonzero values. The function should
 pass NA values. This argument is ignored unless \code{breaks = NULL}.}
@@ -73,7 +74,7 @@ times with different offset values. Ignored unless \code{breaks = NULL}.}
 
 \item{zero_stratum}{Logical indicating whether to segregate zeros into their
 own stratum. If \code{FALSE} (the default), zeros will likely be combined
-into a stratum that also includes small positive numbers. If \code{breaks} iss
+into a stratum that also includes small positive numbers. If \code{breaks} is
 specified, zero simply gets added as an additional break; if not, one
 of the \code{n_strata} will represent zeros and the others will be nonzero ranges.}
 
