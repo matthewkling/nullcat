@@ -8,13 +8,15 @@ suggest_n_iter(trace = NULL, tail_frac = 0.3, plot = FALSE, ...)
 }
 \arguments{
 \item{trace}{Either a \code{cat_trace} object (as returned by \code{trace_cat()}), or NULL.
-If NULL, arguments to \code{trace_cat()} must be supplied via \code{...}}
+If NULL, arguments to \code{trace_cat()}, including \code{x} and any other relevant
+parameters must be supplied via \code{...}}
 
 \item{tail_frac}{Fraction of the trace (at the end) used as the tail window (default 0.3).}
 
 \item{plot}{If TRUE, plot the trace, with a vertical line at the suggested value.}
 
-\item{...}{Arguments passed to \code{trace_cat()}. Ignored if \code{trace} is non-NULL.}
+\item{...}{Arguments passed to \code{trace_cat()} including  arguments it passes to the
+\code{nullcat()} or \code{quantize()} function. Ignored if \code{trace} is non-NULL.}
 }
 \value{
 An integer of class \code{"nullcat_n_iter"} with attributes:
@@ -23,10 +25,10 @@ An integer of class \code{"nullcat_n_iter"} with attributes:
 }
 \description{
 Uses trace diagnostics to estimate how many burn-in iterations are
-needed for a nullcat or quantize randomization to reach its apparent
-stationary distribution, given your data and randomization method. Uses a
+needed for a `nullcat` or `quantize` randomization to reach its apparent
+stationary distribution, given a dataset and randomization method. Uses a
 "first pre-tail sign-crossing" rule per chain, then returns the maximum
-across chains.
+across chains. Can be called on a community matrix or a `cat_trace` object.
 }
 \details{
 This function uses a “first pre-tail sign-crossing” heuristic to identify burn-in cutoff.
@@ -40,18 +42,20 @@ start of the tail window, the chain is determined not to have reached stationari
 and the function returns \code{NA} with attribute \code{converged = FALSE}.
 }
 \examples{
-set.seed(123)
+set.seed(1234)
 x <- matrix(sample(1:5, 2500, replace = T), 50)
 
 # call `trace_cat`, then pass result to `suggest_n_iter`:
-tr_null <- trace_cat(x = x, fun = "nullcat", n_iter = 1000,
+trace <- trace_cat(x = x, fun = "nullcat", n_iter = 1000,
                      n_chains = 5, method = "curvecat")
-suggest_n_iter(tr_null, tail_frac = 0.3, plot = TRUE)
+suggest_n_iter(trace, tail_frac = 0.3, plot = TRUE)
 
 # alternatively, supply `trace_cat` arguments directly to `suggest_n_iter`:
-n_iter <- suggest_n_iter(x = x, fun = "nullcat", n_iter = 1000,
-               n_chains = 5, method = "curvecat", tail_frac = 0.3)
-
+x <- matrix(runif(2500), 50)
+n_iter <- suggest_n_iter(
+    x = x, n_chains = 5, n_iter = 1000, tail_frac = 0.3,
+    fun = "quantize", n_strata = 4, fixed = "stratum",
+    method = "curvecat", plot = T)
 
 }
 \references{

@@ -44,14 +44,14 @@
 #' plot(tr)
 #' @export
 trace_cat <- function(x,
-                      fun   = c("nullcat","quantize"),
-                      n_iter   = 1000L,
-                      thin     = NULL,
+                      fun = c("nullcat","quantize"),
+                      n_iter = 1000L,
+                      thin = NULL,
                       n_chains = 5L,
-                      n_cores  = 1L,
-                      stat     = NULL,
-                      seed     = NULL,
-                      plot     = FALSE,
+                      n_cores = 1L,
+                      stat = NULL,
+                      seed = NULL,
+                      plot = FALSE,
                       ...) {
 
 
@@ -77,27 +77,27 @@ trace_cat <- function(x,
       }
 
       core <- trace_chain(
-            x0       = x,
-            fun   = fun,
-            n_iter   = n_iter,
-            thin     = thin,
+            x0 = x,
+            fun = fun,
+            n_iter = n_iter,
+            thin = thin,
             n_chains = n_chains,
-            n_cores  = n_cores,
+            n_cores = n_cores,
             stat_fun = stat_fun,
-            seed     = seed,
+            seed = seed,
             ...
       )
 
       obj <- list(
-            traces      = core$traces,
-            steps       = core$steps,
-            fun      = fun,
-            n_iter      = as.integer(n_iter),
-            thin        = if (is.null(thin)) max(1L, as.integer(n_iter/100L)) else as.integer(thin),
-            n_chains    = as.integer(n_chains),
-            n_cores     = as.integer(n_cores),
-            stat_name   = stat_name,
-            call        = match.call(),
+            traces = core$traces,
+            steps = core$steps,
+            fun = fun,
+            n_iter = as.integer(n_iter),
+            thin = if (is.null(thin)) max(1L, as.integer(n_iter/100L)) else as.integer(thin),
+            n_chains = as.integer(n_chains),
+            n_cores = as.integer(n_cores),
+            stat_name = stat_name,
+            call = match.call(),
             fun_args = list(...)
       )
       class(obj) <- "cat_trace"
@@ -113,76 +113,90 @@ trace_cat <- function(x,
 
 # INTERNAL: shared trace core used by trace_cat()
 trace_chain <- function(x0,
-                        fun   = c("nullcat","quantize"),
-                        n_iter   = 1000L,
-                        thin     = NULL,
+                        fun = c("nullcat","quantize"),
+                        n_iter = 1000L,
+                        thin = NULL,
                         n_chains = 5L,
-                        n_cores  = 1L,
+                        n_cores = 1L,
                         stat_fun,
-                        seed     = NULL,
+                        seed = NULL,
                         ...) {
 
       fun <- match.arg(fun)
-      n_iter <- as.integer(n_iter)
+      n_iter   <- as.integer(n_iter)
       n_chains <- as.integer(n_chains)
       n_cores  <- as.integer(n_cores)
 
-      # default thin ~ n_iter / 100 (≈ 100 samples)
-      if (is.null(thin)) {
-            thin <- max(1L, as.integer(n_iter / 100L))
-      } else {
-            thin <- as.integer(thin)
-      }
-
+      if (is.null(thin)) thin <- max(1L, as.integer(n_iter / 100L)) else thin <- as.integer(thin)
       steps   <- seq(0L, n_iter, by = thin)[-1L]
       n_steps <- length(steps)
-      if (n_steps > 5000L) {
-            warning("trace will record ", n_steps, " steps; this may be slow.")
-      }
+      if (n_steps > 5000L) warning("trace will record ", n_steps, " steps; this may be slow.")
 
-      # pick the update kernel for the chosen fun
-      update_fun <- switch(
-            fun,
-            nullcat = function(x) nullcat(x, n_iter = thin, output = "category", ...),
-            quantize = function(x) quantize(x, n_iter = thin, ...)
-      )
-
-      # one chain (excluding the iteration-0 value)
-      one_chain <- function() {
-            x <- x0
-            vals <- numeric(n_steps)
-            for (i in seq_len(n_steps)) {
-                  x <- update_fun(x)
-                  vals[i] <- stat_fun(x, x0)
+      if (fun == "nullcat") {
+            update_fun <- function(x) nullcat(x, n_iter = thin, output = "category", ...)
+            one_chain <- function() {
+                  x <- x0
+                  vals <- numeric(n_steps)
+                  for (i in seq_len(n_steps)) {
+                        x <- update_fun(x)
+                        vals[i] <- stat_fun(x, x0)
+                  }
+                  vals
             }
-            vals
+      } else { # fun == "quantize" —— optimized path to avoid unneeded overhead computation
+
+            # One-time prep from the initial matrix
+            prep  <- quantize_prep(x0, ...)
+            fixed <- prep$fixed
+            mode  <- if (fixed == "cell") "index" else "category"
+
+            make_one_chain <- function() {
+                  # Per-chain state
+                  s_cur  <- prep$strata  # current categorical layout
+                  x_cur  <- x0 # current quantitative matrix (only used for fixed="cell")
+
+                  # Pre-bind method and thin for speed
+                  method <- prep$method
+                  nstep  <- thin
+
+                  vals <- numeric(n_steps)
+                  for (i in seq_len(n_steps)) {
+                        if (mode == "index") {
+                              # Advance categories by 'thin' updates and get the composite index permutation
+                              idx <- nullcat(s_cur, method = method, n_iter = nstep, output = "index")
+                              # Move both the categorical layout AND the quantitative values by the same permutation
+                              s_cur[] <- s_cur[idx]
+                              x_cur[] <- x_cur[idx]
+                              # Stat vs. original x0
+                              vals[i] <- stat_fun(x_cur, x0)
+                        } else {
+                              # Advance categorical layout directly
+                              s_cur <- nullcat(s_cur, method = method, n_iter = nstep, output = "category")
+                              # Materialize a quantitative draw using precomputed pool
+                              x_draw <- fill_from_pool(s = prep$strata, s_rand = s_cur, pool = prep$pool, fixed = fixed)
+                              vals[i] <- stat_fun(x_draw, x0)
+                        }
+                  }
+                  vals
+            }
+
+            one_chain <- make_one_chain
       }
 
-      # reproducible per-chain seeding (uses mc_replicate's internal seeds);
-      # setting a seed here ensures mc_replicate’s sampled seeds are reproducible.
-      if (!is.null(seed)) {
-            set.seed(as.integer(seed))
-      }
+      if (!is.null(seed)) set.seed(as.integer(seed))
 
-      chain_mat <- mc_replicate(
-            n_reps  = n_chains,
-            fun     = one_chain,
-            n_cores = n_cores
-      )
+      chain_mat <- mc_replicate(n_reps = n_chains, fun = one_chain, n_cores = n_cores)
       chain_mat <- as.matrix(chain_mat)
 
-      # build output with iteration 0 at the top
       out <- matrix(nrow = n_steps + 1L, ncol = n_chains)
       rownames(out) <- paste0("iter", c(0L, steps))
       colnames(out) <- paste0("chain", seq_len(n_chains))
-
-      # row 1: statistic on the original matrix vs itself
       out[1L, ] <- stat_fun(x0, x0)
       out[2:(n_steps + 1L), ] <- chain_mat
 
-      list(traces = out,
-           steps  = c(0L, steps))
+      list(traces = out, steps = c(0L, steps))
 }
+
 
 
 
@@ -270,8 +284,8 @@ print.cat_trace <- function(x, digits = 3, ...) {
 
       df <- data.frame(
             chain = seq_len(n_chains),
-            mean  = round(tail_mean, digits),
-            sd    = round(tail_sd, digits)
+            mean = round(tail_mean, digits),
+            sd = round(tail_sd, digits)
       )
 
       print(df, row.names = FALSE)
