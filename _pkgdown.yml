@@ -1,0 +1,29 @@
+url: https://matthewkling.github.io/nullcat/
+template:
+  bootstrap: 5
+
+reference:
+- title: Categorical randomizations
+- contents:
+  - nullcat
+  - nullcat_methods
+  - c0cat
+  - curvecat
+  - r0cat
+  - swapcat
+  - tswapcat
+- title: Quantize routines
+- contents:
+  - quantize
+  - quantize_prep
+  - quantize_null
+  - stratify
+- title: Mixing diagnostics
+- contents:
+  - suggest_n_iter
+  - trace_cat
+  - kappa
+- title: Vegan integration
+- contents:
+  - commsim_cat
+  - commsim_cat_seq
