@@ -1,0 +1,162 @@
+# Stratified randomization of a quantitative community matrix
+
+`quantize()` is a community null model for quantitative community data
+(e.g. abundance, biomass, or occurrence probability). It works by
+converting quantitative values into a small number of categorical
+strata, randomizing the categorical layout under a chosen categorical
+null model, and then reassigning quantitative values within each
+stratum.
+
+## Usage
+
+``` r
+quantize(
+  x = NULL,
+  prep = NULL,
+  method = nullcat_methods(),
+  fixed = c("cell", "stratum", "row", "col"),
+  breaks = NULL,
+  n_strata = 5,
+  transform = identity,
+  offset = 0,
+  zero_stratum = FALSE,
+  n_iter = 1000
+)
+```
+
+## Arguments
+
+- x:
+
+  Community matrix with sites in rows, species in columns, and
+  nonnegative quantitative values in cells. Ignored if `prep` is
+  supplied.
+
+- prep:
+
+  Optional precomputed object returned by
+  [`quantize_prep`](https://matthewkling.github.io/nullcat/reference/quantize_prep.md).
+  If supplied, `x` is ignored and all overhead (stratification, pools,
+  etc.) is taken from `prep`, which is typically much faster when
+  generating many randomizations of the same dataset.
+
+- method:
+
+  Character string specifying the null model algorithm. The default
+  `"curvecat"` uses the categorical curveball algorithm. See
+  [`nullcat`](https://matthewkling.github.io/nullcat/reference/nullcat.md)
+  for alternative options.
+
+- fixed:
+
+  Character string specifying the level at which quantitative values are
+  held fixed during randomization. One of:
+
+  - `"cell"` (the default; only available when `method = "curvecat"`):
+    values remain attached to their original cells and move with them
+    during the categorical randomization. Row and column value
+    distributions are not preserved, but the mapping between each
+    original cell and its randomized destination is fixed.
+
+  - `"stratum"`: values are shuffled globally within each stratum,
+    holding only the overall stratum-level value distribution fixed.
+
+  - `"row"`: values are shuffled within strata separately for each row,
+    holding each row’s value multiset fixed. Not compatible with all
+    `method`s.
+
+  - `"col"`: values are shuffled within strata separately for each
+    column, holding each column’s value multiset fixed.
+
+  Note that this interacts with `method`: different null models fix
+  different margins in the underlying binary representation.
+
+- breaks:
+
+  Numeric vector of stratum breakpoints.
+
+- n_strata:
+
+  Integer giving the number of strata to split the data into. Must be 2
+  or greater. Larger values yield randomizations with less mixing but
+  higher fidelity to the original marginal distributions. Default is
+  `5`. Ignored unless `breaks = NULL`.
+
+- transform:
+
+  A function used to transform the values in `x` before assigning them
+  to `n_strata` equal-width intervals. Examples include `sqrt`, `log`,
+  `rank` (for equal-occupancy strata), etc.; the default is `identity`.
+  If `zero_stratum = TRUE`, the transformation is only applied on
+  nonzero values. The function should pass NA values. This argument is
+  ignored unless `breaks = NULL`.
+
+- offset:
+
+  Numeric value between -1 and 1 (default 0) indicating how much to
+  shift stratum breakpoints relative to the binwidth (applied during
+  quantization as: `breaks <- breaks + offset * bw`). To assess
+  sensitivity to stratum boundaries, run `quantize()` multiple times
+  with different offset values. Ignored unless `breaks = NULL`.
+
+- zero_stratum:
+
+  Logical indicating whether to segregate zeros into their own stratum.
+  If `FALSE` (the default), zeros will likely be combined into a stratum
+  that also includes small positive numbers. If `breaks` is specified,
+  zero simply gets added as an additional break; if not, one of the
+  `n_strata` will represent zeros and the others will be nonzero ranges.
+
+- n_iter:
+
+  Number of iterations. Default is 1000. Larger values yield more
+  thorough mixing. Ignored for non-sequential methods. Minimum burn-in
+  times can be estimated with
+  [suggest_n_iter](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md).
+
+## Value
+
+A randomized version of `x`, with the same dimensions and dimnames. For
+`method = "curvecat"`, the quantitative values are reassigned within
+strata while preserving row and column stratum multisets. For binary
+methods, the result corresponds to applying the chosen binary null model
+to each stratum and recombining.
+
+## Details
+
+By default, `quantize()` will compute all necessary overhead for a given
+dataset (strata, pools, etc.) internally. For repeated randomization of
+the same matrix (e.g. to build a null distribution), this overhead can
+be computed once using
+[`quantize_prep`](https://matthewkling.github.io/nullcat/reference/quantize_prep.md)
+and reused by supplying the resulting object via the `prep` argument.
+
+## Examples
+
+``` r
+# \donttest{
+# toy quantitative community matrix
+set.seed(1)
+comm <- matrix(rexp(50 * 40), nrow = 50,
+               dimnames = list(paste0("site", 1:50),
+                               paste0("sp", 1:40)))
+
+# default: curvecat-backed stratified randomization
+rand1 <- quantize(comm)
+
+# change stratification and preservation mode
+rand2 <- quantize(comm, n_strata = 4,
+                  transform = sqrt,
+                  fixed  = "row",
+                  n_iter    = 2000)
+
+# use a different randomization algorithm
+rand3 <- quantize(comm, method = "swapcat", n_iter = 10000)
+
+# precompute overhead and reuse for many randomizations
+prep  <- quantize_prep(comm, method = "curvecat",
+                       n_strata = 5, fixed = "row")
+rand4 <- quantize(prep = prep)
+rand5 <- quantize(prep = prep)
+# }
+```
