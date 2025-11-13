@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 ```
 
 
-# nullcat
+# nullcat <a href="https://matthewkling.github.io/nullcat/"><img src="man/figures/logo.png" align="right" height="139" alt="nullcat website" /></a>
 
 `nullcat` provides novel null model algorithms for categorical and quantitative community ecology data. It extends classic **binary** null models (e.g., curveball, swap) to work with **categorical** data, and introduces a stratified randomization framework for **continuous** data that addresses limitations in existing quantitative null model methods.
 

@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# nullcat
+# nullcat <a href="https://matthewkling.github.io/nullcat/"><img src="man/figures/logo.png" align="right" height="139" alt="nullcat website" /></a>
 
 `nullcat` provides novel null model algorithms for categorical and
 quantitative community ecology data. It extends classic **binary** null
