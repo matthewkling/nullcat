@@ -24,7 +24,7 @@ nullcat(
 - method:
 
   Character specifying the randomization algorithm to use. Options
-  include:
+  include the following; see details and linked functions for more info.
 
   - `"curvecat"`: categorical analog to \`curveball\`; see
     [curvecat](https://matthewkling.github.io/nullcat/reference/curvecat.md)
@@ -73,6 +73,16 @@ values (when `output = "category"`) or an integer index matrix
 describing the permutation of entries (when `output = "index"`).
 
 ## Details
+
+\`curvecat\`, \`swapcat\`, and \`tswapcat\` are sequential algorithms
+that hold category multisets fixed in every row and column. These three
+algorithms typically reach the same stationary distribution. They differ
+primarily in efficiency, with \`curvecat\` being the most efficient
+(i.e. fewest steps to become fully mixed); \`swapcat\` and \`tswapcat\`
+are thus useful mainly for methodological comparison.
+
+The \`r0cat\` algorithm holds category multisets fixed in rows but not
+columns, while \`c0cat\` does the opposite.
 
 Note that categorical null models are for cell-level categorical data.
 Site-level attributes (e.g., land cover) or species-level attributes

@@ -159,8 +159,7 @@ Internally, `quantize_prep()`:
 
 The returned object can be reused across calls to
 [`quantize()`](https://matthewkling.github.io/nullcat/reference/quantize.md),
-[`quantize_null()`](https://matthewkling.github.io/nullcat/reference/quantize_null.md),
-or other helpers that accept a `prep` argument.
+`quantize_null()`, or other helpers that accept a `prep` argument.
 
 ## Examples
 

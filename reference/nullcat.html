@@ -57,7 +57,8 @@ Values should represent category or stratum membership for each cell.</p></dd>
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
 <dd><p>Character specifying the randomization algorithm to use.
-Options include:</p><ul><li><p><code>"curvecat"</code>: categorical analog to `curveball`;
+Options include the following; see details and linked functions
+for more info.</p><ul><li><p><code>"curvecat"</code>: categorical analog to `curveball`;
        see <a href="curvecat.html">curvecat</a> for details.</p></li>
 <li><p><code>"swapcat"</code>: categorical analog to `swap`;
        see <a href="swapcat.html">swapcat</a> for details.</p></li>
@@ -95,7 +96,15 @@ burn-in times can be estimated with <a href="suggest_n_iter.html">suggest_n_iter
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Note that categorical null models are for cell-level categorical data. Site-level
+    <p>`curvecat`, `swapcat`, and `tswapcat` are sequential algorithms that hold
+category multisets fixed in every row and column. These three algorithms
+typically reach the same stationary distribution. They differ primarily in
+efficiency, with `curvecat` being the most efficient (i.e. fewest steps to
+become fully mixed); `swapcat` and `tswapcat` are thus useful mainly for
+methodological comparison.</p>
+<p>The `r0cat` algorithm holds category multisets fixed in rows but not columns,
+while `c0cat` does the opposite.</p>
+<p>Note that categorical null models are for cell-level categorical data. Site-level
 attributes (e.g., land cover) or species-level attributes (e.g., functional
 traits) should be analyzed using different approaches.</p>
     </div>

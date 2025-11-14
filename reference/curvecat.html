@@ -83,12 +83,16 @@ burn-in times can be estimated with <a href="suggest_n_iter.html">suggest_n_iter
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The curvecat algorithm operates on pairs of rows at a time,
-grouping differing entries by unordered category pairs and
-redistributing the orientation of those pairs while preserving
-the multiset of categories within each row. When there are only
-two categories, `curvecat()` reduces to the behavior of the
-original binary curveball algorithm applied to a 0/1 matrix.</p>
+    <p>The curvecat algorithm randomizes a categorical matrix while keeping
+the category multisets of each row and column fixed. In other words,
+the permuted matrix has the same set of integer values in every row
+and every column as the original matrix, but they are permuted. It
+operates on pairs of rows at a time, grouping differing entries by
+unordered category pairs and redistributing the orientation of those
+pairs while preservingn the multiset of categories within each row.
+When there are only two categories, `curvecat()` reduces to the
+behavior of the original binary curveball algorithm applied to a 0/1
+matrix.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>

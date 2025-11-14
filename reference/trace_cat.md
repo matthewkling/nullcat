@@ -72,9 +72,7 @@ trace_cat(
 
   Arguments to the chosen `fun`
   ([`nullcat()`](https://matthewkling.github.io/nullcat/reference/nullcat.md)
-  or
-  [`quantize_null()`](https://matthewkling.github.io/nullcat/reference/quantize_null.md)),
-  such as `method`, `n_strata`, `fixed`, etc.
+  or `quantize_null()`), such as `method`, `n_strata`, `fixed`, etc.
 
 ## Value
 

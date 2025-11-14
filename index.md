@@ -60,12 +60,10 @@ existing quantitative null model methods, with flexible options for:
   Automatically suggest burn-in iterations
 - **[`quantize_prep()`](https://matthewkling.github.io/nullcat/reference/quantize_prep.md)**:
   Pre-compute overhead for efficient repeated randomization
-- **[`quantize_null()`](https://matthewkling.github.io/nullcat/reference/quantize_null.md)**:
-  Generate null distributions with optional parallelization
-- **[`commsim_cat()`](https://matthewkling.github.io/nullcat/reference/commsim_cat.md)
-  &
-  [`commsim_cat_seq()`](https://matthewkling.github.io/nullcat/reference/commsim_cat_seq.md)**:
-  Integration with `vegan` null model workflows
+- **`quantize_null()`**: Generate null distributions with optional
+  parallelization
+- **`commsim_cat()` & `commsim_cat_seq()`**: Integration with `vegan`
+  null model workflows
 
 All core algorithms are implemented in C++ via Rcpp for computational
 efficiency.

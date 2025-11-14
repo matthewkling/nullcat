@@ -4,6 +4,8 @@
 
 - [`nullcat()`](https://matthewkling.github.io/nullcat/reference/nullcat.md)
   : Categorical matrix randomization
+- [`nullcat_batch()`](https://matthewkling.github.io/nullcat/reference/nullcat_batch.md)
+  : Generate a batch of null matrices using \`nullcat()\`
 - [`nullcat_methods()`](https://matthewkling.github.io/nullcat/reference/nullcat_methods.md)
   : Supported nullcat methods
 - [`c0cat()`](https://matthewkling.github.io/nullcat/reference/c0cat.md)
@@ -21,10 +23,10 @@
 
 - [`quantize()`](https://matthewkling.github.io/nullcat/reference/quantize.md)
   : Stratified randomization of a quantitative community matrix
+- [`quantize_batch()`](https://matthewkling.github.io/nullcat/reference/quantize_batch.md)
+  : Generate a batch of null matrices using \`quantize()\`
 - [`quantize_prep()`](https://matthewkling.github.io/nullcat/reference/quantize_prep.md)
   : Prepare stratified null model overhead for quantize()
-- [`quantize_null()`](https://matthewkling.github.io/nullcat/reference/quantize_null.md)
-  : Generate a null distribution using quantize()
 - [`stratify()`](https://matthewkling.github.io/nullcat/reference/stratify.md)
   : Bin quantitative data into strata
 
@@ -39,7 +41,11 @@
 
 ## Vegan integration
 
-- [`commsim_cat()`](https://matthewkling.github.io/nullcat/reference/commsim_cat.md)
-  : Categorical nullcat commsim (non-sequential)
-- [`commsim_cat_seq()`](https://matthewkling.github.io/nullcat/reference/commsim_cat_seq.md)
-  : Categorical curveball commsim (sequential / Markov chain)
+- [`nullcat_commsim()`](https://matthewkling.github.io/nullcat/reference/nullcat_commsim.md)
+  : Nullcat-based commsim (non-sequential)
+- [`nullcat_commsim_seq()`](https://matthewkling.github.io/nullcat/reference/nullcat_commsim_seq.md)
+  : Nullcat-based commsim (sequential / Markov chain)
+- [`quantize_commsim()`](https://matthewkling.github.io/nullcat/reference/quantize_commsim.md)
+  : Quantize-based commsim (non-sequential)
+- [`quantize_commsim_seq()`](https://matthewkling.github.io/nullcat/reference/quantize_commsim_seq.md)
+  : Quantile-based quantize commsim (sequential / Markov chain)

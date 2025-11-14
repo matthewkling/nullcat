@@ -119,9 +119,9 @@
 <li>
 <strong><code><a href="reference/quantize_prep.html">quantize_prep()</a></code></strong>: Pre-compute overhead for efficient repeated randomization</li>
 <li>
-<strong><code><a href="reference/quantize_null.html">quantize_null()</a></code></strong>: Generate null distributions with optional parallelization</li>
+<strong><code>quantize_null()</code></strong>: Generate null distributions with optional parallelization</li>
 <li>
-<strong><code><a href="reference/commsim_cat.html">commsim_cat()</a></code> &amp; <code><a href="reference/commsim_cat_seq.html">commsim_cat_seq()</a></code></strong>: Integration with <code>vegan</code> null model workflows</li>
+<strong><code>commsim_cat()</code> &amp; <code>commsim_cat_seq()</code></strong>: Integration with <code>vegan</code> null model workflows</li>
 </ul>
 <p>All core algorithms are implemented in C++ via Rcpp for computational efficiency.</p>
 </div>
@@ -197,7 +197,7 @@
 <code class="sourceCode R"><span><span class="co"># Generate null distribution of randomized matrices</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">101</span><span class="op">)</span></span>
 <span><span class="va">comm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Exponential.html" class="external-link">rexp</a></span><span class="op">(</span><span class="fl">30</span> <span class="op">*</span> <span class="fl">20</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">30</span><span class="op">)</span></span>
-<span><span class="va">null_dist</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/quantize_null.html">quantize_null</a></span><span class="op">(</span><span class="va">comm</span>, n_reps <span class="op">=</span> <span class="fl">999</span>, </span>
+<span><span class="va">null_dist</span> <span class="op">&lt;-</span> <span class="fu">quantize_null</span><span class="op">(</span><span class="va">comm</span>, n_reps <span class="op">=</span> <span class="fl">999</span>, </span>
 <span>                           n_strata <span class="op">=</span> <span class="fl">4</span>, fixed <span class="op">=</span> <span class="st">"row"</span>,</span>
 <span>                           n_cores <span class="op">=</span> <span class="fl">5</span><span class="op">)</span>  <span class="co"># Set n_cores &gt; 1 for parallelization</span></span></code></pre></div>
 </div>
@@ -209,7 +209,7 @@
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://vegandevs.github.io/vegan/" class="external-link">vegan</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Create commsim object for categorical data</span></span>
-<span><span class="va">cs</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/commsim_cat_seq.html">commsim_cat_seq</a></span><span class="op">(</span>method <span class="op">=</span> <span class="st">"curvecat"</span><span class="op">)</span></span>
+<span><span class="va">cs</span> <span class="op">&lt;-</span> <span class="fu">commsim_cat_seq</span><span class="op">(</span>method <span class="op">=</span> <span class="st">"curvecat"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Use with vegan's nullmodel framework</span></span>
 <span><span class="va">nm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://vegandevs.github.io/vegan/reference/nullmodel.html" class="external-link">nullmodel</a></span><span class="op">(</span><span class="va">cat_matrix</span>, method <span class="op">=</span> <span class="va">cs</span><span class="op">)</span></span>
