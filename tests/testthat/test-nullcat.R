@@ -2,7 +2,7 @@
 test_that("nullcat returns a result for all methods", {
 
       set.seed(123)
-      m1 <- matrix(sample(1:4, 20*30, replace = T), nrow = 30)
+      m1 <- cat_mat(500)
 
       for(method in nullcat_methods()){
 
@@ -20,7 +20,7 @@ test_that("nullcat returns a result for all methods", {
 test_that("`category` and `index` modes agree (given a shared seed)", {
 
       set.seed(123)
-      m <- matrix(sample(1:4, 20*30, replace = T), nrow = 30)
+      m <- cat_mat(500)
 
       for(method in nullcat_methods()){
 
@@ -48,7 +48,7 @@ test_that("row and column multisets are fixed as indended", {
       }
 
       set.seed(123)
-      m0 <- matrix(sample(1:4, 20*30, replace = T), nrow = 30)
+      m0 <- cat_mat(500)
 
       # methods with fixed rows and cols
       for(method in c("curvecat", "swapcat", "tswapcat")){
@@ -79,7 +79,6 @@ test_that("stationary distributions match vegan versions, given binary data", {
       set.seed(1234)
       b <- matrix(sample(0:1, 16, replace = T), nrow = 4)
 
-
       bins <- c("curveball", "swap", "tswap")
       cats <- c("curvecat", "swapcat", "tswapcat")
 
@@ -96,8 +95,4 @@ test_that("stationary distributions match vegan versions, given binary data", {
             # test proportional MAE
             expect_lt(mean(abs(cb - cc) / cc), .1)
       }
-
-
 })
-
-

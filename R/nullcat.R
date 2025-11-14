@@ -65,19 +65,3 @@ nullcat <- function(x,
       })
 }
 
-
-# internal helper. set seed, run expression, reinstate prior seed.
-with_seed <- function(seed, expr) {
-      if (is.null(seed)) return(eval.parent(substitute(expr)))
-      old_exists <- exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
-      if (old_exists) old_seed <- get(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
-      set.seed(as.integer(seed))
-      on.exit({
-            if (old_exists) {
-                  assign(".Random.seed", old_seed, envir = .GlobalEnv)
-            } else if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)) {
-                  rm(".Random.seed", envir = .GlobalEnv)
-            }
-      }, add = TRUE)
-      eval.parent(substitute(expr))
-}

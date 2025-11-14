@@ -219,12 +219,6 @@ kappa <- function(a, b) {
 
 
 
-cat_mat <- function(nrow = 100, ncol = 50, ncat = 4, prob = NULL){
-      matrix(sample(1:ncat, nrow * ncol, replace = T, prob = prob), nrow = nrow)
-}
-
-
-
 #' @export
 plot.cat_trace <- function(x, ...) {
       tr <- x$traces
