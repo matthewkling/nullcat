@@ -6,6 +6,7 @@ reference:
 - title: Categorical randomizations
 - contents:
   - nullcat
+  - nullcat_batch
   - nullcat_methods
   - c0cat
   - curvecat
@@ -15,8 +16,8 @@ reference:
 - title: Quantize routines
 - contents:
   - quantize
+  - quantize_batch
   - quantize_prep
-  - quantize_null
   - stratify
 - title: Mixing diagnostics
 - contents:
@@ -25,5 +26,7 @@ reference:
   - kappa
 - title: Vegan integration
 - contents:
-  - commsim_cat
-  - commsim_cat_seq
+  - nullcat_commsim
+  - nullcat_commsim_seq
+  - quantize_commsim
+  - quantize_commsim_seq
