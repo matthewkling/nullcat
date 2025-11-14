@@ -35,12 +35,16 @@ is a convenience wrapper around [nullcat()] with
 `method = "curvecat"`.
 }
 \details{
-The curvecat algorithm operates on pairs of rows at a time,
-grouping differing entries by unordered category pairs and
-redistributing the orientation of those pairs while preserving
-the multiset of categories within each row. When there are only
-two categories, `curvecat()` reduces to the behavior of the
-original binary curveball algorithm applied to a 0/1 matrix.
+The curvecat algorithm randomizes a categorical matrix while keeping
+the category multisets of each row and column fixed. In other words,
+the permuted matrix has the same set of integer values in every row
+and every column as the original matrix, but they are permuted. It
+operates on pairs of rows at a time, grouping differing entries by
+unordered category pairs and redistributing the orientation of those
+pairs while preservingn the multiset of categories within each row.
+When there are only two categories, `curvecat()` reduces to the
+behavior of the original binary curveball algorithm applied to a 0/1
+matrix.
 }
 \references{
 Strona, G., Nappo, D., Boccacci, F., Fattorini, S., & San-Miguel-Ayanz, J.

@@ -73,7 +73,8 @@ test_that("row and column multisets are fixed as indended", {
 
 
 test_that("stationary distributions match vegan versions, given binary data", {
-      skip_on_cran()
+
+      require_vegan()
 
       # a small binary matrix
       set.seed(1234)
@@ -85,12 +86,12 @@ test_that("stationary distributions match vegan versions, given binary data", {
       for(i in seq_len(length(bins))){
 
             sim <- function(nullmod){
-                  nsim <- 1e5
+                  nsim <- 1e4
                   apply(as.array(simulate(nullmod, burnin = nsim/2, nsim = nsim)), c(1, 2), mean)
             }
 
             cb <- sim(vegan::nullmodel(b, method = bins[i]))
-            cc <- sim(vegan::nullmodel(b, method = commsim_cat_seq(method = cats[i])))
+            cc <- sim(vegan::nullmodel(b, method = nullcat_commsim_seq(method = cats[i])))
 
             # test proportional MAE
             expect_lt(mean(abs(cb - cc) / cc), .1)

@@ -6,7 +6,8 @@
 #' @param x A matrix of categorical data, encoded as integers.
 #'   Values should represent category or stratum membership for each cell.
 #' @param method Character specifying the randomization algorithm to use.
-#'   Options include:
+#'   Options include the following; see details and linked functions
+#'   for more info.
 #'   \itemize{
 #'     \item \code{"curvecat"}: categorical analog to `curveball`;
 #'          see \link{curvecat} for details.
@@ -31,6 +32,16 @@
 #' @param seed Integer used to seed random number generator, for reproducibility.
 #'
 #' @details
+#' `curvecat`, `swapcat`, and `tswapcat` are sequential algorithms that hold
+#' category multisets fixed in every row and column. These three algorithms
+#' typically reach the same stationary distribution. They differ primarily in
+#' efficiency, with `curvecat` being the most efficient (i.e. fewest steps to
+#' become fully mixed); `swapcat` and `tswapcat` are thus useful mainly for
+#' methodological comparison.
+#'
+#' The `r0cat` algorithm holds category multisets fixed in rows but not columns,
+#' while `c0cat` does the opposite.
+#'
 #' Note that categorical null models are for cell-level categorical data. Site-level
 #' attributes (e.g., land cover) or species-level attributes (e.g., functional
 #' traits) should be analyzed using different approaches.
