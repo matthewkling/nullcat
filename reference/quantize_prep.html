@@ -178,7 +178,7 @@ burn-in times can be estimated with <a href="suggest_n_iter.html">suggest_n_iter
 <li><p>assembles arguments for the underlying null model call
     (<code><a href="curvecat.html">curvecat</a></code> or <code><a href="https://vegandevs.github.io/vegan/reference/nullmodel.html" class="external-link">simulate.nullmodel</a></code>).</p></li>
 </ul><p>The returned object can be reused across calls to <code><a href="quantize.html">quantize()</a></code>,
-<code>quantize_null()</code>, or other helpers that accept a <code>prep</code>
+<code><a href="quantize_batch.html">quantize_batch()</a></code>, or other helpers that accept a <code>prep</code>
 argument.</p>
     </div>
 
@@ -201,12 +201,8 @@ argument.</p>
 <span class="r-in"><span><span class="va">rand2</span> <span class="op">&lt;-</span> <span class="fu"><a href="quantize.html">quantize</a></span><span class="op">(</span>prep <span class="op">=</span> <span class="va">prep</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># use a binary vegan method on each stratum</span></span></span>
-<span class="r-in"><span><span class="va">prep_bin</span> <span class="op">&lt;-</span> <span class="fu">quantize_prep</span><span class="op">(</span><span class="va">comm</span>, method <span class="op">=</span> <span class="st">"swap"</span>,</span></span>
-<span class="r-in"><span>                          n_strata <span class="op">=</span> <span class="fl">4</span>,</span></span>
-<span class="r-in"><span>                          burnin <span class="op">=</span> <span class="fl">10000</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in quantize_prep(comm, method = "swap", n_strata = 4, burnin = 10000):</span> unused argument (burnin = 10000)</span>
+<span class="r-in"><span><span class="va">prep_bin</span> <span class="op">&lt;-</span> <span class="fu">quantize_prep</span><span class="op">(</span><span class="va">comm</span>, method <span class="op">=</span> <span class="st">"swap"</span>, n_strata <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">rand3</span> <span class="op">&lt;-</span> <span class="fu"><a href="quantize.html">quantize</a></span><span class="op">(</span>prep <span class="op">=</span> <span class="va">prep_bin</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'prep_bin' not found</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

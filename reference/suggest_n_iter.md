@@ -83,7 +83,7 @@ Applications, Vol. I. Wiley.
 
 ``` r
 set.seed(1234)
-x <- matrix(sample(1:5, 2500, replace = T), 50)
+x <- matrix(sample(1:5, 2500, replace = TRUE), 50)
 
 # call `trace_cat`, then pass result to `suggest_n_iter`:
 trace <- trace_cat(x = x, fun = "nullcat", n_iter = 1000,
@@ -91,7 +91,7 @@ trace <- trace_cat(x = x, fun = "nullcat", n_iter = 1000,
 suggest_n_iter(trace, tail_frac = 0.3, plot = TRUE)
 
 #> suggested_n_iter object
-#> ───────────────────────
+#> -----------------------
 #> Converged: TRUE 
 #> Suggested n iterations: 420 
 
@@ -100,6 +100,6 @@ x <- matrix(runif(2500), 50)
 n_iter <- suggest_n_iter(
     x = x, n_chains = 5, n_iter = 1000, tail_frac = 0.3,
     fun = "quantize", n_strata = 4, fixed = "stratum",
-    method = "curvecat", plot = T)
+    method = "curvecat", plot = TRUE)
 
 ```

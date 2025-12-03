@@ -159,7 +159,8 @@ Internally, `quantize_prep()`:
 
 The returned object can be reused across calls to
 [`quantize()`](https://matthewkling.github.io/nullcat/reference/quantize.md),
-`quantize_null()`, or other helpers that accept a `prep` argument.
+[`quantize_batch()`](https://matthewkling.github.io/nullcat/reference/quantize_batch.md),
+or other helpers that accept a `prep` argument.
 
 ## Examples
 
@@ -181,11 +182,7 @@ rand1 <- quantize(prep = prep)
 rand2 <- quantize(prep = prep)
 
 # use a binary vegan method on each stratum
-prep_bin <- quantize_prep(comm, method = "swap",
-                          n_strata = 4,
-                          burnin = 10000)
-#> Error in quantize_prep(comm, method = "swap", n_strata = 4, burnin = 10000): unused argument (burnin = 10000)
+prep_bin <- quantize_prep(comm, method = "swap", n_strata = 4)
 rand3 <- quantize(prep = prep_bin)
-#> Error: object 'prep_bin' not found
 # }
 ```

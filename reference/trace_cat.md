@@ -72,7 +72,9 @@ trace_cat(
 
   Arguments to the chosen `fun`
   ([`nullcat()`](https://matthewkling.github.io/nullcat/reference/nullcat.md)
-  or `quantize_null()`), such as `method`, `n_strata`, `fixed`, etc.
+  or
+  [`quantize_batch()`](https://matthewkling.github.io/nullcat/reference/quantize_batch.md)),
+  such as `method`, `n_strata`, `fixed`, etc.
 
 ## Value
 
@@ -93,7 +95,7 @@ Plotting is available via `plot(cat_trace)`.
 ``` r
 # nullcat trace
 set.seed(123)
-x <- matrix(sample(1:5, 2500, replace = T), 50)
+x <- matrix(sample(1:5, 2500, replace = TRUE), 50)
 tr <- trace_cat(x, n_iter = 1000, n_chains = 5, fun = "nullcat",
                 method = "curvecat")
 plot(tr)

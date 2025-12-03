@@ -95,8 +95,10 @@ and the function returns <code>NA</code> with attribute <code>converged = FALSE<
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
-    <p>Heidelberger, P. &amp; Welch, P.D. (1983). Simulation run length control in the presence of an initial transient. Operations Research, 31(6): 1109–1144.</p>
-<p>Geweke, J. (1992). Evaluating the accuracy of sampling-based approaches to the calculation of posterior moments. In Bayesian Statistics 4, pp. 169–193.</p>
+    <p>Heidelberger, P. &amp; Welch, P.D. (1983). Simulation run length control in the presence of
+an initial transient. Operations Research, 31(6): 1109–1144.</p>
+<p>Geweke, J. (1992). Evaluating the accuracy of sampling-based approaches to the calculation
+of posterior moments. In Bayesian Statistics 4, pp. 169–193.</p>
 <p>Geyer, C.J. (1992). Practical Markov Chain Monte Carlo. Statistical Science, 7(4): 473–483.</p>
 <p>Feller, W. (1968). An Introduction to Probability Theory and Its Applications, Vol. I. Wiley.</p>
     </div>
@@ -104,7 +106,7 @@ and the function returns <code>NA</code> with attribute <code>converged = FALSE<
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="fl">2500</span>, replace <span class="op">=</span> <span class="cn">T</span><span class="op">)</span>, <span class="fl">50</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="fl">2500</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, <span class="fl">50</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># call `trace_cat`, then pass result to `suggest_n_iter`:</span></span></span>
 <span class="r-in"><span><span class="va">trace</span> <span class="op">&lt;-</span> <span class="fu"><a href="trace_cat.html">trace_cat</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, fun <span class="op">=</span> <span class="st">"nullcat"</span>, n_iter <span class="op">=</span> <span class="fl">1000</span>,</span></span>
@@ -112,7 +114,7 @@ and the function returns <code>NA</code> with attribute <code>converged = FALSE<
 <span class="r-in"><span><span class="fu">suggest_n_iter</span><span class="op">(</span><span class="va">trace</span>, tail_frac <span class="op">=</span> <span class="fl">0.3</span>, plot <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="suggest_n_iter-1.png" alt="" width="700" height="433"></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> suggested_n_iter object</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ───────────────────────</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -----------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Converged: TRUE </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Suggested n iterations: 420 </span>
 <span class="r-in"><span></span></span>
@@ -121,7 +123,7 @@ and the function returns <code>NA</code> with attribute <code>converged = FALSE<
 <span class="r-in"><span><span class="va">n_iter</span> <span class="op">&lt;-</span> <span class="fu">suggest_n_iter</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    x <span class="op">=</span> <span class="va">x</span>, n_chains <span class="op">=</span> <span class="fl">5</span>, n_iter <span class="op">=</span> <span class="fl">1000</span>, tail_frac <span class="op">=</span> <span class="fl">0.3</span>,</span></span>
 <span class="r-in"><span>    fun <span class="op">=</span> <span class="st">"quantize"</span>, n_strata <span class="op">=</span> <span class="fl">4</span>, fixed <span class="op">=</span> <span class="st">"stratum"</span>,</span></span>
-<span class="r-in"><span>    method <span class="op">=</span> <span class="st">"curvecat"</span>, plot <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    method <span class="op">=</span> <span class="st">"curvecat"</span>, plot <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="suggest_n_iter-2.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
