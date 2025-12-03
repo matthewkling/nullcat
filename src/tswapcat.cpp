@@ -3,7 +3,7 @@
 #include <cmath>
 #include <unordered_map>  // needed by inline helpers in cat.hpp
 
-#include "cat.hpp"
+#include "cat.h"
 
 using namespace Rcpp;
 using namespace nullcat;

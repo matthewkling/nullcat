@@ -7,14 +7,14 @@ test_that("quantize commsim functions run, and can be used, without erroring", {
       # quantize_commsim
       expect_no_error({
             cs <- quantize_commsim(n_iter = 100, method = "curvecat", n_strata = 3)
-            nm <- nullmodel(x, cs)
+            nm <- vegan::nullmodel(x, cs)
             sims <- simulate(nm, nsim = 10)
       })
 
       # quantize_commsim_seq
       expect_no_error({
             cs <- quantize_commsim_seq(method = "curvecat", transform = sqrt)
-            nm <- nullmodel(x, cs)
+            nm <- vegan::nullmodel(x, cs)
             sims <- simulate(nm, nsim = 10, thin = 5, burnin = 40)
       })
 

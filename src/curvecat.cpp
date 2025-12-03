@@ -4,7 +4,7 @@
 #include <cmath>
 #include <algorithm>
 
-#include "cat.hpp"
+#include "cat.h"
 
 using namespace Rcpp;
 using namespace nullcat;

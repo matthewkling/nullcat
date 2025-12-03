@@ -40,7 +40,7 @@ Pearson's correlation for quantize.}
 
 \item{plot}{If TRUE, plot the traces.}
 
-\item{...}{Arguments to the chosen \code{fun} (\code{nullcat()} or \code{quantize_null()}),
+\item{...}{Arguments to the chosen \code{fun} (\code{nullcat()} or \code{quantize_batch()}),
 such as \code{method}, \code{n_strata}, \code{fixed}, etc.}
 }
 \value{
@@ -60,7 +60,7 @@ a summary statistic at each iteration to help assess mixing on a given dataset.
 \examples{
 # nullcat trace
 set.seed(123)
-x <- matrix(sample(1:5, 2500, replace = T), 50)
+x <- matrix(sample(1:5, 2500, replace = TRUE), 50)
 tr <- trace_cat(x, n_iter = 1000, n_chains = 5, fun = "nullcat",
                 method = "curvecat")
 plot(tr)

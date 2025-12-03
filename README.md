@@ -3,7 +3,7 @@
 
 # nullcat <a href="https://matthewkling.github.io/nullcat/"><img src="man/figures/logo.png" align="right" height="139" alt="nullcat website" /></a>
 
-`nullcat` provides novel null model algorithms for categorical and
+`nullcat` provides null model algorithms for categorical and
 quantitative community ecology data. It extends classic **binary** null
 models (e.g., curveball, swap) to work with **categorical** data, and
 introduces a stratified randomization framework for **continuous** data
@@ -18,9 +18,9 @@ The package is currently in development. Install from GitHub:
 remotes::install_github("matthewkling/nullcat")
 ```
 
-## Key Features
+## Key functionality
 
-### 1. Categorical Null Models
+### 1. Categorical null models
 
 `nullcat` generalizes binary null model algorithms to handle categorical
 data (site-by-species matrices of integers representing discrete strata
@@ -35,7 +35,7 @@ or categories):
 These algorithms preserve the multiset of categories in fixed margins
 (rows and/or columns) while randomizing their spatial arrangement.
 
-### 2. Stratified Quantitative Null Models
+### 2. Stratified quantitative null models
 
 The `quantize()` function provides a principled approach to randomizing
 quantitative community data (abundance, biomass, cover, SDM
@@ -54,13 +54,13 @@ existing quantitative null model methods, with flexible options for:
 - Preservation levels (cell, stratum, row, or column)
 - Multiple randomization algorithms
 
-### 3. Diagnostic & Utility Functions
+### 3. Diagnostic & utility functions
 
 - **`trace_cat()`**: Trace mixing diagnostics for MCMC convergence
 - **`suggest_n_iter()`**: Automatically suggest burn-in iterations
 - **`quantize_prep()`**: Pre-compute overhead for efficient repeated
   randomization
-- **`quantize_null()`**: Generate null distributions with optional
+- **`quantize_batch()`**: Generate null distributions with optional
   parallelization
 - **`commsim_cat()` & `commsim_cat_seq()`**: Integration with `vegan`
   null model workflows
@@ -68,9 +68,9 @@ existing quantitative null model methods, with flexible options for:
 All core algorithms are implemented in C++ via Rcpp for computational
 efficiency.
 
-## Quick Start
+## Quick start
 
-### Categorical Data
+### Categorical data
 
 ``` r
 library(nullcat)
@@ -89,7 +89,7 @@ all.equal(sort(cat_matrix[,1]), sort(randomized[,1]))  # Column preserved
 #> [1] TRUE
 ```
 
-### Quantitative Data
+### Quantitative data
 
 ``` r
 # Create a quantitative community matrix
@@ -109,7 +109,7 @@ all.equal(rowSums(comm), rowSums(rand2))
 #> [1] TRUE
 ```
 
-### Trace Diagnostics
+### Trace diagnostics
 
 ``` r
 # Assess mixing behavior
@@ -129,18 +129,18 @@ plot(trace)
 suggested <- suggest_n_iter(trace, tail_frac = 0.3)
 print(suggested)
 #> suggested_n_iter object
-#> ───────────────────────
+#> -----------------------
 #> Converged: TRUE 
 #> Suggested n iterations: 260
 ```
 
-### Efficient Repeated Randomization
+### Efficient repeated randomization
 
 ``` r
 # Generate null distribution of randomized matrices
 set.seed(101)
 comm <- matrix(rexp(30 * 20), nrow = 30)
-null_dist <- quantize_null(comm, n_reps = 999, 
+null_dist <- quantize_batch(comm, n_reps = 999, 
                            n_strata = 4, fixed = "row",
                            n_cores = 5)  # Set n_cores > 1 for parallelization
 ```
@@ -157,15 +157,6 @@ cs <- commsim_cat_seq(method = "curvecat")
 nm <- nullmodel(cat_matrix, method = cs)
 sims <- simulate(nm, nsim = 99, burnin = 1000, thin = 100)
 ```
-
-## Related Packages
-
-- **vegan**: Classic null models for binary community matrices
-- **picante**: Phylogenetic and trait-based null models  
-- **EcoSimR**: Suite of null model algorithms
-
-`nullcat` complements these packages by extending null model
-capabilities to categorical and stratified quantitative data.
 
 ------------------------------------------------------------------------
 

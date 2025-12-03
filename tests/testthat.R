@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(quantize)
+library(nullcat)
 
-test_check("quantize")
+test_check("nullcat")

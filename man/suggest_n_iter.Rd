@@ -43,7 +43,7 @@ and the function returns \code{NA} with attribute \code{converged = FALSE}.
 }
 \examples{
 set.seed(1234)
-x <- matrix(sample(1:5, 2500, replace = T), 50)
+x <- matrix(sample(1:5, 2500, replace = TRUE), 50)
 
 # call `trace_cat`, then pass result to `suggest_n_iter`:
 trace <- trace_cat(x = x, fun = "nullcat", n_iter = 1000,
@@ -55,13 +55,15 @@ x <- matrix(runif(2500), 50)
 n_iter <- suggest_n_iter(
     x = x, n_chains = 5, n_iter = 1000, tail_frac = 0.3,
     fun = "quantize", n_strata = 4, fixed = "stratum",
-    method = "curvecat", plot = T)
+    method = "curvecat", plot = TRUE)
 
 }
 \references{
-Heidelberger, P. & Welch, P.D. (1983). Simulation run length control in the presence of an initial transient. Operations Research, 31(6): 1109–1144.
+Heidelberger, P. & Welch, P.D. (1983). Simulation run length control in the presence of
+an initial transient. Operations Research, 31(6): 1109–1144.
 
-Geweke, J. (1992). Evaluating the accuracy of sampling-based approaches to the calculation of posterior moments. In Bayesian Statistics 4, pp. 169–193.
+Geweke, J. (1992). Evaluating the accuracy of sampling-based approaches to the calculation
+of posterior moments. In Bayesian Statistics 4, pp. 169–193.
 
 Geyer, C.J. (1992). Practical Markov Chain Monte Carlo. Statistical Science, 7(4): 473–483.
 

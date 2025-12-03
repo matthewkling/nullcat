@@ -17,7 +17,7 @@
 #'   Pearson's correlation for quantize.
 #' @param seed Optional integer seed for reproducible traces.
 #' @param plot If TRUE, plot the traces.
-#' @param ... Arguments to the chosen \code{fun} (\code{nullcat()} or \code{quantize_null()}),
+#' @param ... Arguments to the chosen \code{fun} (\code{nullcat()} or \code{quantize_batch()}),
 #'   such as \code{method}, \code{n_strata}, \code{fixed}, etc.
 #'
 #' @return An object of class \code{"cat_trace"} with elements:
@@ -32,7 +32,7 @@
 #' @examples
 #' # nullcat trace
 #' set.seed(123)
-#' x <- matrix(sample(1:5, 2500, replace = T), 50)
+#' x <- matrix(sample(1:5, 2500, replace = TRUE), 50)
 #' tr <- trace_cat(x, n_iter = 1000, n_chains = 5, fun = "nullcat",
 #'                 method = "curvecat")
 #' plot(tr)
@@ -261,7 +261,7 @@ print.cat_trace <- function(x, digits = 3, ...) {
       stat_name <- x$stat_name
 
       cat("\nCategorical trace diagnostics\n")
-      cat("───────────────────────────────\n")
+      cat("-------------------------------\n")
       cat(sprintf(" Randomization method:   %s\n", x$fun))
       cat(sprintf(" Chains:   %d (%d recorded steps per chain)\n", n_chains, n_steps))
       cat(sprintf(" Iterations: %d total  (thin = %d)\n", total_iter, thin))

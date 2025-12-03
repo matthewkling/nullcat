@@ -16,7 +16,7 @@ test_that("suggest_n_iter runs without error", {
             n_iter <- suggest_n_iter(
                   x = x, n_chains = 2, n_iter = 200, tail_frac = 0.3,
                   fun = "quantize", n_strata = 4, fixed = "stratum",
-                  method = "curvecat", plot = T)
+                  method = "curvecat", plot = TRUE)
       )
 
 })

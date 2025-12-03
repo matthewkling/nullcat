@@ -124,7 +124,7 @@ Internally, \code{quantize_prep()}:
     (\code{\link{curvecat}} or \code{\link[vegan]{simulate.nullmodel}}).
 }
 The returned object can be reused across calls to \code{\link{quantize}()},
-\code{\link{quantize_null}()}, or other helpers that accept a \code{prep}
+\code{\link{quantize_batch}()}, or other helpers that accept a \code{prep}
 argument.
 }
 \examples{
@@ -145,9 +145,7 @@ rand1 <- quantize(prep = prep)
 rand2 <- quantize(prep = prep)
 
 # use a binary vegan method on each stratum
-prep_bin <- quantize_prep(comm, method = "swap",
-                          n_strata = 4,
-                          burnin = 10000)
+prep_bin <- quantize_prep(comm, method = "swap", n_strata = 4)
 rand3 <- quantize(prep = prep_bin)
 }
 
