@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nullcat</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -61,46 +61,46 @@ Values should represent category or stratum membership for each cell.</p></dd>
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
 <dd><p>Character specifying the randomization algorithm to use.
 Options include the following; see details and linked functions
-for more info.</p><ul><li><p><code>"curvecat"</code>: categorical analog to `curveball`;
-       see <a href="curvecat.html">curvecat</a> for details.</p></li>
-<li><p><code>"swapcat"</code>: categorical analog to `swap`;
-       see <a href="swapcat.html">swapcat</a> for details.</p></li>
-<li><p><code>"tswapcat"</code>: categorical analog to `tswap`;
-       see <a href="tswapcat.html">tswapcat</a> for details.</p></li>
-<li><p><code>"r0cat"</code>: categorical analog to `r0`;
-       see <a href="r0cat.html">r0cat</a> for details.</p></li>
-<li><p><code>"c0cat"</code>: categorical analog to `c0`;
-       see <a href="c0cat.html">c0cat</a> for details.</p></li>
+for more info.</p><ul><li><p><code>"curvecat"</code>: categorical analog to <code>curveball</code>;
+see <code><a href="curvecat.html">curvecat()</a></code> for details.</p></li>
+<li><p><code>"swapcat"</code>: categorical analog to <code>swap</code>;
+see <code><a href="swapcat.html">swapcat()</a></code> for details.</p></li>
+<li><p><code>"tswapcat"</code>: categorical analog to <code>tswap</code>;
+see <code><a href="tswapcat.html">tswapcat()</a></code> for details.</p></li>
+<li><p><code>"r0cat"</code>: categorical analog to <code>r0</code>;
+see <code><a href="r0cat.html">r0cat()</a></code> for details.</p></li>
+<li><p><code>"c0cat"</code>: categorical analog to <code>c0</code>;
+see <code><a href="c0cat.html">c0cat()</a></code> for details.</p></li>
 </ul></dd>
 
 
 <dt id="arg-n-iter">n_iter<a class="anchor" aria-label="anchor" href="#arg-n-iter"></a></dt>
 <dd><p>Number of iterations. Default is 1000. Larger values yield
 more thorough mixing. Ignored for non-sequential methods. Minimum
-burn-in times can be estimated with <a href="suggest_n_iter.html">suggest_n_iter</a>.</p></dd>
+burn-in times can be estimated with <code><a href="suggest_n_iter.html">suggest_n_iter()</a></code>.</p></dd>
 
 
 <dt id="arg-output">output<a class="anchor" aria-label="anchor" href="#arg-output"></a></dt>
 <dd><p>Character indicating type of result to return:</p><ul><li><p><code>"category"</code> (default) returns randomized matrix</p></li>
 <li><p><code>"index"</code> returns an index matrix describing where original
-       entries (a.k.a. "tokens") moved. Useful mainly for testing, and for
-       applications like <code><a href="quantize.html">quantize()</a></code> that care about token tracking
-       in addition to generic integer categories.</p></li>
+entries (a.k.a. "tokens") moved. Useful mainly for testing, and for
+applications like <code><a href="quantize.html">quantize()</a></code> that care about token tracking
+in addition to generic integer categories.</p></li>
 </ul></dd>
 
 
 <dt id="arg-swaps">swaps<a class="anchor" aria-label="anchor" href="#arg-swaps"></a></dt>
 <dd><p>Character string controlling the direction of token movement.
-Only used when method is `curvecat`, `swapcat`, or `tswapcat`.
+Only used when method is <code>"curvecat"</code>, <code>"swapcat"</code>, or <code>"tswapcat"</code>.
 Affects the result only when <code>output = "index"</code>, otherwise it only affects
 computation speed. Options include:</p><ul><li><p><code>"vertical"</code>: Tokens move between rows (stay within columns).</p></li>
-<li><p><code>"horizontal"</code>: Tokens move between columns (stay within rows).</p></li>
+<li><p>"<code>horizontal"</code>: Tokens move between columns (stay within rows).</p></li>
 <li><p><code>"alternating"</code>: Tokens move in both dimensions, alternating between
-    vertical and horizontal swaps. Provides full 2D mixing without preserving
-    either row or column token sets.</p></li>
+vertical and horizontal swaps. Provides full 2D mixing without preserving
+either row or column token sets.</p></li>
 <li><p><code>"auto"</code> (default): For <code>output = "category"</code>,
-    automatically selects the fastest option based on matrix dimensions. For
-    <code>output = "index"</code>, defaults to <code>"alternating"</code> for full mixing.</p></li>
+automatically selects the fastest option based on matrix dimensions. For
+<code>output = "index"</code>, defaults to <code>"alternating"</code> for full mixing.</p></li>
 </ul></dd>
 
 
@@ -111,22 +111,27 @@ computation speed. Options include:</p><ul><li><p><code>"vertical"</code>: Token
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A matrix of the same dimensions as <code>x</code>, either randomized
-  categorical values (when <code>output = "category"</code>) or an integer index
-  matrix describing the permutation of entries (when <code>output = "index"</code>).</p>
+categorical values (when <code>output = "category"</code>) or an integer index
+matrix describing the permutation of entries (when <code>output = "index"</code>).</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>`curvecat`, `swapcat`, and `tswapcat` are sequential algorithms that hold
+    <p><code>curvecat</code>, <code>swapcat</code>, and <code>tswapcat</code> are sequential algorithms that hold
 category multisets fixed in every row and column. These three algorithms
 typically reach the same stationary distribution. They differ primarily in
-efficiency, with `curvecat` being the most efficient (i.e. fewest steps to
-become fully mixed); `swapcat` and `tswapcat` are thus useful mainly for
+efficiency, with <code>curvecat</code> being the most efficient (i.e. fewest steps to
+become fully mixed); <code>swapcat</code> and <code>tswapcat</code> are thus useful mainly for
 methodological comparison.</p>
-<p>The `r0cat` algorithm holds category multisets fixed in rows but not columns,
-while `c0cat` does the opposite.</p>
+<p>The <code>r0cat</code> algorithm holds category multisets fixed in rows but not columns,
+while <code>c0cat</code> does the opposite.</p>
 <p>Note that categorical null models are for cell-level categorical data. Site-level
 attributes (e.g., land cover) or species-level attributes (e.g., functional
 traits) should be analyzed using different approaches.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><code><a href="nullcat_batch.html">nullcat_batch()</a></code> for efficient generation of multiple randomized
+matrices; <code><a href="nullcat_commsim.html">nullcat_commsim()</a></code> for integration with <code>vegan</code>.</p></div>
     </div>
 
     <div class="section level2">

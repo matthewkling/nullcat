@@ -1,8 +1,8 @@
 # Column-constrained categorical randomization (c0cat)
 
-\`c0cat()\` preserves the multiset of categories within each column but
+`c0cat()` preserves the multiset of categories within each column but
 randomizes their positions across rows, leaving row margins free. This
-is the categorical analog to vegan's \`c0\` algorithm. It is a
+is the categorical analog to vegan's `c0` algorithm. It is a
 non-sequential method.
 
 ## Usage
@@ -23,7 +23,7 @@ c0cat(x, n_iter = 1L, output = c("category", "index"), seed = NULL)
   Number of iterations. Default is 1000. Larger values yield more
   thorough mixing. Ignored for non-sequential methods. Minimum burn-in
   times can be estimated with
-  [suggest_n_iter](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md).
+  [`suggest_n_iter()`](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md).
 
 - output:
 

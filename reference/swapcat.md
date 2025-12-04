@@ -2,7 +2,8 @@
 
 Categorical generalization of the binary 2x2 swap algorithm to matrices
 of categorical data. This function is a convenience wrapper around
-\[nullcat()\] with \`method = "swapcat"\`.
+[`nullcat()`](https://matthewkling.github.io/nullcat/reference/nullcat.md)
+with `method = "swapcat"`.
 
 ## Usage
 
@@ -28,7 +29,7 @@ swapcat(
   Number of iterations. Default is 1000. Larger values yield more
   thorough mixing. Ignored for non-sequential methods. Minimum burn-in
   times can be estimated with
-  [suggest_n_iter](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md).
+  [`suggest_n_iter()`](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md).
 
 - output:
 
@@ -46,13 +47,13 @@ swapcat(
 - swaps:
 
   Character string controlling the direction of token movement. Only
-  used when method is \`curvecat\`, \`swapcat\`, or \`tswapcat\`.
+  used when method is `"curvecat"`, `"swapcat"`, or `"tswapcat"`.
   Affects the result only when `output = "index"`, otherwise it only
   affects computation speed. Options include:
 
   - `"vertical"`: Tokens move between rows (stay within columns).
 
-  - `"horizontal"`: Tokens move between columns (stay within rows).
+  - "`horizontal"`: Tokens move between columns (stay within rows).
 
   - `"alternating"`: Tokens move in both dimensions, alternating between
     vertical and horizontal swaps. Provides full 2D mixing without
@@ -74,28 +75,30 @@ describing the permutation of entries (when `output = "index"`).
 
 ## Details
 
-The swapcat algorithm attempts random 2x2 swaps of the form
+The swapcat algorithm attempts random 2x2 swaps of the form:
 
-\$\$ \begin{pmatrix} a & b \\ b & a \end{pmatrix} \leftrightarrow
-\begin{pmatrix} b & a \\ a & b \end{pmatrix} \$\$
+    a b        b a
+    b a   <->  a b
 
 where \\a\\ and \\b\\ are distinct categories. These swaps preserve the
 multiset of categories in each row and column. With only two categories
-present, \`swapcat()\` reduces to the behavior of the standard binary
-swap algorithm.
+present, `swapcat()` reduces to the behavior of the standard binary swap
+algorithm.
 
 ## References
 
 Gotelli, N. J. (2000). Null model analysis of species co-occurrence
-patterns. \*Ecology\*, 81(9), 2606–2621.
+patterns. *Ecology*, 81(9), 2606–2621.
 
-See also Gotelli & Entsminger (2003) \*EcoSim: Null models software for
-ecology\* (Version 7.0) for implementation details of the binary swap
+See also Gotelli & Entsminger (2003) *EcoSim: Null models software for
+ecology* (Version 7.0) for implementation details of the binary swap
 algorithm.
 
 ## See also
 
-\[nullcat()\], \[nullcat_methods()\]
+[`curvecat()`](https://matthewkling.github.io/nullcat/reference/curvecat.md)
+for an algorithm that produces equivalent results with better
+computational efficiency.
 
 ## Examples
 

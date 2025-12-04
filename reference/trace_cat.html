@@ -9,7 +9,7 @@ a summary statistic at each iteration to help assess mixing on a given dataset."
 
     <a class="navbar-brand me-2" href="../index.html">nullcat</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -78,18 +78,18 @@ Smaller values increase resolution but increase run time.</p></dd>
 
 
 <dt id="arg-n-chains">n_chains<a class="anchor" aria-label="anchor" href="#arg-n-chains"></a></dt>
-<dd><p>Number of independent chains to run, to assess consistency (default 5).</p></dd>
+<dd><p>Number of independent chains to run, to assess consistency (default <code>5</code>).</p></dd>
 
 
 <dt id="arg-n-cores">n_cores<a class="anchor" aria-label="anchor" href="#arg-n-cores"></a></dt>
-<dd><p>Parallel chains (default 1).</p></dd>
+<dd><p>Parallel chains (default <code>1</code>).</p></dd>
 
 
 <dt id="arg-stat">stat<a class="anchor" aria-label="anchor" href="#arg-stat"></a></dt>
 <dd><p>Function that compares <code>x</code> to a permuted <code>x_rand</code> to quantify their
 similarity. Either a function <code>f(x, x_rand)</code> returning a scalar, or <code>NULL</code>.
-If <code>NULL</code> (the default), traces use Cohen's kappa for nullcat or
-Pearson's correlation for quantize.</p></dd>
+If <code>NULL</code> (the default), traces use Cohen's kappa for <code><a href="nullcat.html">nullcat()</a></code> or Pearson's
+correlation for <code><a href="quantize.html">quantize()</a></code>.</p></dd>
 
 
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
@@ -101,7 +101,7 @@ Pearson's correlation for quantize.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Arguments to the chosen <code>fun</code> (<code><a href="nullcat.html">nullcat()</a></code> or <code><a href="quantize_batch.html">quantize_batch()</a></code>),
+<dd><p>Arguments to the chosen <code>fun</code> (<code><a href="nullcat.html">nullcat()</a></code> or <code><a href="quantize.html">quantize()</a></code>),
 such as <code>method</code>, <code>n_strata</code>, <code>fixed</code>, etc.</p></dd>
 
 </dl></div>

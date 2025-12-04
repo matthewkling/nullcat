@@ -47,18 +47,20 @@ trace_cat(
 - n_chains:
 
   Number of independent chains to run, to assess consistency (default
-  5).
+  `5`).
 
 - n_cores:
 
-  Parallel chains (default 1).
+  Parallel chains (default `1`).
 
 - stat:
 
   Function that compares `x` to a permuted `x_rand` to quantify their
   similarity. Either a function `f(x, x_rand)` returning a scalar, or
-  `NULL`. If `NULL` (the default), traces use Cohen's kappa for nullcat
-  or Pearson's correlation for quantize.
+  `NULL`. If `NULL` (the default), traces use Cohen's kappa for
+  [`nullcat()`](https://matthewkling.github.io/nullcat/reference/nullcat.md)
+  or Pearson's correlation for
+  [`quantize()`](https://matthewkling.github.io/nullcat/reference/quantize.md).
 
 - seed:
 
@@ -73,7 +75,7 @@ trace_cat(
   Arguments to the chosen `fun`
   ([`nullcat()`](https://matthewkling.github.io/nullcat/reference/nullcat.md)
   or
-  [`quantize_batch()`](https://matthewkling.github.io/nullcat/reference/quantize_batch.md)),
+  [`quantize()`](https://matthewkling.github.io/nullcat/reference/quantize.md)),
   such as `method`, `n_strata`, `fixed`, etc.
 
 ## Value

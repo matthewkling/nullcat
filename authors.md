@@ -9,14 +9,14 @@
 Source:
 [`DESCRIPTION`](https://github.com/matthewkling/nullcat/blob/main/DESCRIPTION)
 
-Kling M (2025). *nullcat: Null models for categorical and continuous
-community matrices*. R package version 0.1.0,
+Kling M (2025). *nullcat: Null Models for Categorical and Continuous
+Community Matrices*. R package version 0.0.0.9000,
 <https://github.com/matthewkling/nullcat>.
 
     @Manual{,
-      title = {nullcat: Null models for categorical and continuous community matrices},
+      title = {nullcat: Null Models for Categorical and Continuous Community Matrices},
       author = {Matthew Kling},
       year = {2025},
-      note = {R package version 0.1.0},
+      note = {R package version 0.0.0.9000},
       url = {https://github.com/matthewkling/nullcat},
     }

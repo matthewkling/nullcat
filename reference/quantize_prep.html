@@ -17,7 +17,7 @@ object can be passed to quantize(prep = ...) for fast repeated draws."><meta pro
 
     <a class="navbar-brand me-2" href="../index.html">nullcat</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -81,23 +81,23 @@ should be prepared.</p></dd>
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
 <dd><p>Character string specifying the null model algorithm.
 The default <code>"curvecat"</code> uses the categorical curveball algorithm.
-See <code><a href="nullcat.html">nullcat</a></code> for alternative options.</p></dd>
+See <code><a href="nullcat.html">nullcat()</a></code> for alternative options.</p></dd>
 
 
 <dt id="arg-fixed">fixed<a class="anchor" aria-label="anchor" href="#arg-fixed"></a></dt>
 <dd><p>Character string specifying the level at which quantitative
-  values are held fixed during randomization. One of:</p><ul><li><p><code>"cell"</code> (the default; only available when <code>method = "curvecat"</code>):
-      values remain attached to their original cells and move with them during
-      the categorical randomization. Row and column value
-      distributions are not preserved, but the mapping between each original
-      cell and its randomized destination is fixed.</p></li>
+values are held fixed during randomization. One of:</p><ul><li><p><code>"cell"</code> (the default; only available when <code>method = "curvecat"</code>):
+values remain attached to their original cells and move with them during
+the categorical randomization. Row and column value
+distributions are not preserved, but the mapping between each original
+cell and its randomized destination is fixed.</p></li>
 <li><p><code>"stratum"</code>: values are shuffled globally within each stratum,
-      holding only the overall stratum-level value distribution fixed.</p></li>
+holding only the overall stratum-level value distribution fixed.</p></li>
 <li><p><code>"row"</code>: values are shuffled within strata separately for each
-      row, holding each row’s value multiset fixed. Not compatible with all
-      <code>method</code>s.</p></li>
+row, holding each row’s value multiset fixed. Not compatible with all
+<code>method</code>s.</p></li>
 <li><p><code>"col"</code>: values are shuffled within strata separately for each
-      column, holding each column’s value multiset fixed.</p></li>
+column, holding each column’s value multiset fixed.</p></li>
 </ul><p>Note that this interacts with <code>method</code>: different null models
 fix different margins in the underlying binary representation.</p></dd>
 
@@ -142,46 +142,38 @@ of the <code>n_strata</code> will represent zeros and the others will be nonzero
 <dt id="arg-n-iter">n_iter<a class="anchor" aria-label="anchor" href="#arg-n-iter"></a></dt>
 <dd><p>Number of iterations. Default is 1000. Larger values yield
 more thorough mixing. Ignored for non-sequential methods. Minimum
-burn-in times can be estimated with <a href="suggest_n_iter.html">suggest_n_iter</a>.</p></dd>
+burn-in times can be estimated with <code><a href="suggest_n_iter.html">suggest_n_iter()</a></code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A list with class <code>"quantize_prep"</code> (if you want to set it)
-  containing the components needed by <code><a href="quantize.html">quantize()</a></code>:</p><ul><li><p><code>x</code>: original quantitative marix <code>x</code>,</p></li>
+containing the components needed by <code><a href="quantize.html">quantize()</a></code>:</p><ul><li><p><code>x</code>: original quantitative marix <code>x</code>,</p></li>
 <li><p><code>strata</code>: integer matrix of the same dimension as <code>x</code>,
-      giving the stratum index (1, ..., <code>n_strata</code>) for each cell.</p></li>
-<li><p><code>stratarray</code>: for binary methods, a 3D array of dimension
-      <code>n_strata</code> × <code>nrow(x)</code> × <code>ncol(x)</code> containing the
-      binary incidence matrix for each stratum; <code>NULL</code> for
-      <code>method = "curvecat"</code>.</p></li>
+giving the stratum index (<code>1:n_strata</code>) for each cell.</p></li>
 <li><p><code>pool</code>: data structure encoding the quantitative value pools
-      used during reassignment. For <code>"curvecat"</code>, this is a list of
-      per-stratum or per-row/column pools depending on <code>fixed</code>; for
-      binary methods, it is a matrix of pre-shuffled values.</p></li>
-<li><p><code>method</code>: the null model method used (as in the
-      <code>method</code> argument).</p></li>
+used during reassignment.</p></li>
+<li><p><code>method</code>: the null model method used (as in the <code>method</code> argument).</p></li>
 <li><p><code>n_strata</code>, <code>transform</code>, <code>offset</code>, <code>fixed</code>:
-      the stratification and reassignment settings used to construct
-      <code>strata</code> and <code>pool</code>.</p></li>
-<li><p><code>sim_args</code>: named list of arguments to be passed on to
-      <code><a href="https://vegandevs.github.io/vegan/reference/nullmodel.html" class="external-link">simulate.nullmodel</a></code> (for binary methods) or used
-      internally by <code>curvecat</code> (e.g. <code>n_iter</code>).</p></li>
-</ul><p>This object is intended to be passed unchanged to <code><a href="quantize.html">quantize()</a></code>
-  via its <code>prep</code> argument.</p>
+the stratification and reassignment settings used to construct
+<code>strata</code> and <code>pool</code>.</p></li>
+<li><p><code>sim_args</code>: named list of arguments passed to <code><a href="nullcat.html">nullcat()</a></code>
+(e.g. <code>n_iter</code>).</p></li>
+</ul><p>This object is intended to be passed unchanged to the <code>prep</code> argument of
+<code><a href="quantize.html">quantize()</a></code> or <code><a href="quantize_batch.html">quantize_batch()</a></code>.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>Internally, <code>quantize_prep()</code>:</p><ul><li><p>transforms and stratifies <code>x</code> into <code>n_strata</code> numeric
-    intervals (via <code><a href="stratify.html">stratify()</a></code>),</p></li>
-<li><p>constructs the appropriate value pools given <code>fixed</code>
-    (either for the categorical <code>"curvecat"</code> backend or for binary
-    vegan methods), and</p></li>
-<li><p>assembles arguments for the underlying null model call
-    (<code><a href="curvecat.html">curvecat</a></code> or <code><a href="https://vegandevs.github.io/vegan/reference/nullmodel.html" class="external-link">simulate.nullmodel</a></code>).</p></li>
+intervals (via <code><a href="stratify.html">stratify()</a></code>),</p></li>
+<li><p>constructs the appropriate value pools given <code>fixed</code>, and</p></li>
+<li><p>assembles arguments for the underlying null model call to <code><a href="nullcat.html">nullcat()</a></code>.</p></li>
 </ul><p>The returned object can be reused across calls to <code><a href="quantize.html">quantize()</a></code>,
-<code><a href="quantize_batch.html">quantize_batch()</a></code>, or other helpers that accept a <code>prep</code>
-argument.</p>
+<code><a href="quantize_batch.html">quantize_batch()</a></code>, or other helpers that accept a <code>prep</code> argument.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><code><a href="quantize.html">quantize()</a></code>, <code><a href="quantize_batch.html">quantize_batch()</a></code></p></div>
     </div>
 
     <div class="section level2">
@@ -200,10 +192,6 @@ argument.</p>
 <span class="r-in"><span><span class="co"># fast repeated randomizations using the same prep</span></span></span>
 <span class="r-in"><span><span class="va">rand1</span> <span class="op">&lt;-</span> <span class="fu"><a href="quantize.html">quantize</a></span><span class="op">(</span>prep <span class="op">=</span> <span class="va">prep</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">rand2</span> <span class="op">&lt;-</span> <span class="fu"><a href="quantize.html">quantize</a></span><span class="op">(</span>prep <span class="op">=</span> <span class="va">prep</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># use a binary vegan method on each stratum</span></span></span>
-<span class="r-in"><span><span class="va">prep_bin</span> <span class="op">&lt;-</span> <span class="fu">quantize_prep</span><span class="op">(</span><span class="va">comm</span>, method <span class="op">=</span> <span class="st">"swap"</span>, n_strata <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">rand3</span> <span class="op">&lt;-</span> <span class="fu"><a href="quantize.html">quantize</a></span><span class="op">(</span>prep <span class="op">=</span> <span class="va">prep_bin</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

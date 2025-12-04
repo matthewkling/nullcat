@@ -37,7 +37,7 @@ quantize_prep(
 
   Character string specifying the null model algorithm. The default
   `"curvecat"` uses the categorical curveball algorithm. See
-  [`nullcat`](https://matthewkling.github.io/nullcat/reference/nullcat.md)
+  [`nullcat()`](https://matthewkling.github.io/nullcat/reference/nullcat.md)
   for alternative options.
 
 - fixed:
@@ -107,7 +107,7 @@ quantize_prep(
   Number of iterations. Default is 1000. Larger values yield more
   thorough mixing. Ignored for non-sequential methods. Minimum burn-in
   times can be estimated with
-  [suggest_n_iter](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md).
+  [`suggest_n_iter()`](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md).
 
 ## Value
 
@@ -118,29 +118,24 @@ the components needed by
 - `x`: original quantitative marix `x`,
 
 - `strata`: integer matrix of the same dimension as `x`, giving the
-  stratum index (1, ..., `n_strata`) for each cell.
-
-- `stratarray`: for binary methods, a 3D array of dimension `n_strata` ×
-  `nrow(x)` × `ncol(x)` containing the binary incidence matrix for each
-  stratum; `NULL` for `method = "curvecat"`.
+  stratum index (`1:n_strata`) for each cell.
 
 - `pool`: data structure encoding the quantitative value pools used
-  during reassignment. For `"curvecat"`, this is a list of per-stratum
-  or per-row/column pools depending on `fixed`; for binary methods, it
-  is a matrix of pre-shuffled values.
+  during reassignment.
 
 - `method`: the null model method used (as in the `method` argument).
 
 - `n_strata`, `transform`, `offset`, `fixed`: the stratification and
   reassignment settings used to construct `strata` and `pool`.
 
-- `sim_args`: named list of arguments to be passed on to
-  [`simulate.nullmodel`](https://vegandevs.github.io/vegan/reference/nullmodel.html)
-  (for binary methods) or used internally by `curvecat` (e.g. `n_iter`).
+- `sim_args`: named list of arguments passed to
+  [`nullcat()`](https://matthewkling.github.io/nullcat/reference/nullcat.md)
+  (e.g. `n_iter`).
 
-This object is intended to be passed unchanged to
+This object is intended to be passed unchanged to the `prep` argument of
 [`quantize()`](https://matthewkling.github.io/nullcat/reference/quantize.md)
-via its `prep` argument.
+or
+[`quantize_batch()`](https://matthewkling.github.io/nullcat/reference/quantize_batch.md).
 
 ## Details
 
@@ -149,18 +144,20 @@ Internally, `quantize_prep()`:
 - transforms and stratifies `x` into `n_strata` numeric intervals (via
   [`stratify()`](https://matthewkling.github.io/nullcat/reference/stratify.md)),
 
-- constructs the appropriate value pools given `fixed` (either for the
-  categorical `"curvecat"` backend or for binary vegan methods), and
+- constructs the appropriate value pools given `fixed`, and
 
-- assembles arguments for the underlying null model call
-  ([`curvecat`](https://matthewkling.github.io/nullcat/reference/curvecat.md)
-  or
-  [`simulate.nullmodel`](https://vegandevs.github.io/vegan/reference/nullmodel.html)).
+- assembles arguments for the underlying null model call to
+  [`nullcat()`](https://matthewkling.github.io/nullcat/reference/nullcat.md).
 
 The returned object can be reused across calls to
 [`quantize()`](https://matthewkling.github.io/nullcat/reference/quantize.md),
 [`quantize_batch()`](https://matthewkling.github.io/nullcat/reference/quantize_batch.md),
 or other helpers that accept a `prep` argument.
+
+## See also
+
+[`quantize()`](https://matthewkling.github.io/nullcat/reference/quantize.md),
+[`quantize_batch()`](https://matthewkling.github.io/nullcat/reference/quantize_batch.md)
 
 ## Examples
 
@@ -179,8 +176,4 @@ prep <- quantize_prep(comm, method = "curvecat",
 # fast repeated randomizations using the same prep
 rand1 <- quantize(prep = prep)
 rand2 <- quantize(prep = prep)
-
-# use a binary vegan method on each stratum
-prep_bin <- quantize_prep(comm, method = "swap", n_strata = 4)
-rand3 <- quantize(prep = prep_bin)
 ```

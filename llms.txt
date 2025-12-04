@@ -10,6 +10,10 @@ and count data.
 ## Installation
 
 ``` r
+# Install stable version from CRAN:
+install.packages("nullcat")
+
+# Or dev version from GitHub:
 # install.packages("remotes")
 remotes::install_github("matthewkling/nullcat")
 ```
@@ -117,8 +121,6 @@ for comprehensive documentation including:
   : Suggest a reasonable n_iter for a randomization
 - [`trace_cat()`](https://matthewkling.github.io/nullcat/reference/trace_cat.md)
   : Trace diagnostics for categorical randomizations
-- [`kappa()`](https://matthewkling.github.io/nullcat/reference/kappa.md)
-  : Cohen's kappa for categorical data
 
 ## Vegan integration
 

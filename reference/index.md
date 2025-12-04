@@ -36,8 +36,6 @@
   : Suggest a reasonable n_iter for a randomization
 - [`trace_cat()`](https://matthewkling.github.io/nullcat/reference/trace_cat.md)
   : Trace diagnostics for categorical randomizations
-- [`kappa()`](https://matthewkling.github.io/nullcat/reference/kappa.md)
-  : Cohen's kappa for categorical data
 
 ## Vegan integration
 

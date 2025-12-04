@@ -2,7 +2,9 @@
 
 Categorical generalization of the binary curveball algorithm (Strona et
 al.) to matrices of categorical data. This function is a convenience
-wrapper around \[nullcat()\] with \`method = "curvecat"\`.
+wrapper around
+[`nullcat()`](https://matthewkling.github.io/nullcat/reference/nullcat.md)
+with `method = "curvecat"`.
 
 ## Usage
 
@@ -22,7 +24,7 @@ curvecat(x, n_iter = 1000L, output = "category", swaps = "auto", seed = NULL)
   Number of iterations. Default is 1000. Larger values yield more
   thorough mixing. Ignored for non-sequential methods. Minimum burn-in
   times can be estimated with
-  [suggest_n_iter](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md).
+  [`suggest_n_iter()`](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md).
 
 - output:
 
@@ -40,13 +42,13 @@ curvecat(x, n_iter = 1000L, output = "category", swaps = "auto", seed = NULL)
 - swaps:
 
   Character string controlling the direction of token movement. Only
-  used when method is \`curvecat\`, \`swapcat\`, or \`tswapcat\`.
+  used when method is `"curvecat"`, `"swapcat"`, or `"tswapcat"`.
   Affects the result only when `output = "index"`, otherwise it only
   affects computation speed. Options include:
 
   - `"vertical"`: Tokens move between rows (stay within columns).
 
-  - `"horizontal"`: Tokens move between columns (stay within rows).
+  - "`horizontal"`: Tokens move between columns (stay within rows).
 
   - `"alternating"`: Tokens move in both dimensions, alternating between
     vertical and horizontal swaps. Provides full 2D mixing without
@@ -75,7 +77,7 @@ every column as the original matrix, but they are permuted. It operates
 on pairs of rows at a time, grouping differing entries by unordered
 category pairs and redistributing the orientation of those pairs while
 preservingn the multiset of categories within each row. When there are
-only two categories, \`curvecat()\` reduces to the behavior of the
+only two categories, `curvecat()` reduces to the behavior of the
 original binary curveball algorithm applied to a 0/1 matrix.
 
 ## References
@@ -87,7 +89,8 @@ matrices with fixed row and column totals. *Nature Communications*, 5,
 
 ## See also
 
-\[nullcat()\], \[nullcat_methods()\]
+[`nullcat()`](https://matthewkling.github.io/nullcat/reference/nullcat.md),
+[`nullcat_methods()`](https://matthewkling.github.io/nullcat/reference/nullcat_methods.md)
 
 ## Examples
 

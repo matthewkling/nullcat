@@ -1,19 +1,10 @@
 # Stratified randomization of a quantitative community matrix
 
-This approach provides a framework for preserving row and/or column
-value distributions in continuous data. When using `fixed = "row"` or
-`fixed = "col"`, one dimension's value multisets are preserved exactly
-while the other is preserved at the resolution of strata, approximating
-a fixed-fixed null model for quantitative data. The number of strata
-controls the tradeoff between preservation fidelity and randomization
-strength.
-
-By default, `quantize()` will compute all necessary overhead for a given
-dataset (strata, pools, etc.) internally. For repeated randomization of
-the same matrix (e.g. to build a null distribution), this overhead can
-be computed once using
-[`quantize_prep`](https://matthewkling.github.io/nullcat/reference/quantize_prep.md)
-and reused by supplying the resulting object via the `prep` argument.
+`quantize()` is a community null model for quantitative community data
+(e.g. abundance, biomass, or occurrence probability). It works by
+converting quantitative values into discrete strata, randomizing the
+stratified matrix using a categorical null model, and reassigning
+quantitative values within strata according to a specified constraint.
 
 ## Usage
 
@@ -44,7 +35,7 @@ quantize(
 - prep:
 
   Optional precomputed object returned by
-  [`quantize_prep`](https://matthewkling.github.io/nullcat/reference/quantize_prep.md).
+  [`quantize_prep()`](https://matthewkling.github.io/nullcat/reference/quantize_prep.md).
   If supplied, `x` is ignored and all overhead (stratification, pools,
   etc.) is taken from `prep`, which is typically much faster when
   generating many randomizations of the same dataset.
@@ -53,7 +44,7 @@ quantize(
 
   Character string specifying the null model algorithm. The default
   `"curvecat"` uses the categorical curveball algorithm. See
-  [`nullcat`](https://matthewkling.github.io/nullcat/reference/nullcat.md)
+  [`nullcat()`](https://matthewkling.github.io/nullcat/reference/nullcat.md)
   for alternative options.
 
 - fixed:
@@ -121,7 +112,7 @@ quantize(
   Number of iterations. Default is 1000. Larger values yield more
   thorough mixing. Ignored for non-sequential methods. Minimum burn-in
   times can be estimated with
-  [suggest_n_iter](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md).
+  [`suggest_n_iter()`](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md).
 
 - seed:
 
@@ -137,16 +128,31 @@ to each stratum and recombining.
 
 ## Details
 
-`quantize()` is a community null model for quantitative community data
-(e.g. abundance, biomass, or occurrence probability). It works by
-converting quantitative values into discrete strata, randomizing the
-stratified matrix using a categorical null model, and reassigning
-quantitative values within strata according to a specified constraint.
+This approach provides a framework for preserving row and/or column
+value distributions in continuous data. When using `fixed = "row"` or
+`fixed = "col"`, one dimension's value multisets are preserved exactly
+while the other is preserved at the resolution of strata, approximating
+a fixed-fixed null model for quantitative data. The number of strata
+controls the tradeoff between preservation fidelity and randomization
+strength.
+
+By default, `quantize()` will compute all necessary overhead for a given
+dataset (strata, pools, etc.) internally. For repeated randomization of
+the same matrix (e.g. to build a null distribution), this overhead can
+be computed once using
+[`quantize_prep()`](https://matthewkling.github.io/nullcat/reference/quantize_prep.md)
+and reused by supplying the resulting object via the `prep` argument.
+
+## See also
+
+[`quantize_batch()`](https://matthewkling.github.io/nullcat/reference/quantize_batch.md)
+for efficient generation of multiple randomized matrices;
+[`quantize_commsim()`](https://matthewkling.github.io/nullcat/reference/quantize_commsim.md)
+for integration with `vegan`.
 
 ## Examples
 
 ``` r
-# \donttest{
 # toy quantitative community matrix
 set.seed(1)
 comm <- matrix(rexp(50 * 40), nrow = 50,
@@ -170,5 +176,4 @@ prep  <- quantize_prep(comm, method = "curvecat",
                        n_strata = 5, fixed = "row")
 rand4 <- quantize(prep = prep)
 rand5 <- quantize(prep = prep)
-# }
 ```

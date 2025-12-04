@@ -13,7 +13,7 @@ tswapcat() extends this logic to categorical matrices.'><meta property="og:image
 
     <a class="navbar-brand me-2" href="../index.html">nullcat</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -69,30 +69,30 @@ Values should represent category or stratum membership for each cell.</p></dd>
 <dt id="arg-n-iter">n_iter<a class="anchor" aria-label="anchor" href="#arg-n-iter"></a></dt>
 <dd><p>Number of iterations. Default is 1000. Larger values yield
 more thorough mixing. Ignored for non-sequential methods. Minimum
-burn-in times can be estimated with <a href="suggest_n_iter.html">suggest_n_iter</a>.</p></dd>
+burn-in times can be estimated with <code><a href="suggest_n_iter.html">suggest_n_iter()</a></code>.</p></dd>
 
 
 <dt id="arg-output">output<a class="anchor" aria-label="anchor" href="#arg-output"></a></dt>
 <dd><p>Character indicating type of result to return:</p><ul><li><p><code>"category"</code> (default) returns randomized matrix</p></li>
 <li><p><code>"index"</code> returns an index matrix describing where original
-       entries (a.k.a. "tokens") moved. Useful mainly for testing, and for
-       applications like <code><a href="quantize.html">quantize()</a></code> that care about token tracking
-       in addition to generic integer categories.</p></li>
+entries (a.k.a. "tokens") moved. Useful mainly for testing, and for
+applications like <code><a href="quantize.html">quantize()</a></code> that care about token tracking
+in addition to generic integer categories.</p></li>
 </ul></dd>
 
 
 <dt id="arg-swaps">swaps<a class="anchor" aria-label="anchor" href="#arg-swaps"></a></dt>
 <dd><p>Character string controlling the direction of token movement.
-Only used when method is `curvecat`, `swapcat`, or `tswapcat`.
+Only used when method is <code>"curvecat"</code>, <code>"swapcat"</code>, or <code>"tswapcat"</code>.
 Affects the result only when <code>output = "index"</code>, otherwise it only affects
 computation speed. Options include:</p><ul><li><p><code>"vertical"</code>: Tokens move between rows (stay within columns).</p></li>
-<li><p><code>"horizontal"</code>: Tokens move between columns (stay within rows).</p></li>
+<li><p>"<code>horizontal"</code>: Tokens move between columns (stay within rows).</p></li>
 <li><p><code>"alternating"</code>: Tokens move in both dimensions, alternating between
-    vertical and horizontal swaps. Provides full 2D mixing without preserving
-    either row or column token sets.</p></li>
+vertical and horizontal swaps. Provides full 2D mixing without preserving
+either row or column token sets.</p></li>
 <li><p><code>"auto"</code> (default): For <code>output = "category"</code>,
-    automatically selects the fastest option based on matrix dimensions. For
-    <code>output = "index"</code>, defaults to <code>"alternating"</code> for full mixing.</p></li>
+automatically selects the fastest option based on matrix dimensions. For
+<code>output = "index"</code>, defaults to <code>"alternating"</code> for full mixing.</p></li>
 </ul></dd>
 
 
@@ -103,17 +103,22 @@ computation speed. Options include:</p><ul><li><p><code>"vertical"</code>: Token
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A matrix of the same dimensions as <code>x</code>, either randomized
-  categorical values (when <code>output = "category"</code>) or an integer index
-  matrix describing the permutation of entries (when <code>output = "index"</code>).</p>
+categorical values (when <code>output = "category"</code>) or an integer index
+matrix describing the permutation of entries (when <code>output = "index"</code>).</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
     <p>Gotelli, N. J. (2000). Null model analysis of species co-occurrence patterns.
-*Ecology*, 81(9), 2606–2621.</p>
+<em>Ecology</em>, 81(9), 2606–2621.</p>
 <p>Miklós, I. &amp; Podani, J. (2004). Randomization of presence–absence matrices:
-comments and new algorithms. *Ecology*, 85(1), 86–92.</p>
-<p>Gotelli, N. J. &amp; Entsminger, G. L. (2003). *EcoSim: Null models software for
-ecology* (Version 7.0). Acquired Intelligence Inc. &amp; Kesey-Bear, Jericho (VT).</p>
+comments and new algorithms. <em>Ecology</em>, 85(1), 86–92.</p>
+<p>Gotelli, N. J. &amp; Entsminger, G. L. (2003). <em>EcoSim: Null models software for
+ecology</em> (Version 7.0). Acquired Intelligence Inc. &amp; Kesey-Bear, Jericho (VT).</p>
+    </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><code><a href="curvecat.html">curvecat()</a></code> for an algorithm that produces equivalent results with
+better computational efficiency.</p></div>
     </div>
 
     <div class="section level2">

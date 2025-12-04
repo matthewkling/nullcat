@@ -1,11 +1,11 @@
 # Suggest a reasonable n_iter for a randomization
 
 Uses trace diagnostics to estimate how many burn-in iterations are
-needed for a \`nullcat\` or \`quantize\` randomization to reach its
-apparent stationary distribution, given a dataset and randomization
-method. Uses a "first pre-tail sign-crossing" rule per chain, then
-returns the maximum across chains. Can be called on a community matrix
-or a \`cat_trace\` object.
+needed for a `nullcat` or `quantize` randomization to reach its apparent
+stationary distribution, given a dataset and randomization method. Uses
+a "first pre-tail sign-crossing" rule per chain, then returns the
+maximum across chains. Can be called on a community matrix or a
+`cat_trace` object.
 
 ## Usage
 

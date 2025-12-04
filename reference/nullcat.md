@@ -27,24 +27,24 @@ nullcat(
   Character specifying the randomization algorithm to use. Options
   include the following; see details and linked functions for more info.
 
-  - `"curvecat"`: categorical analog to \`curveball\`; see
-    [curvecat](https://matthewkling.github.io/nullcat/reference/curvecat.md)
+  - `"curvecat"`: categorical analog to `curveball`; see
+    [`curvecat()`](https://matthewkling.github.io/nullcat/reference/curvecat.md)
     for details.
 
-  - `"swapcat"`: categorical analog to \`swap\`; see
-    [swapcat](https://matthewkling.github.io/nullcat/reference/swapcat.md)
+  - `"swapcat"`: categorical analog to `swap`; see
+    [`swapcat()`](https://matthewkling.github.io/nullcat/reference/swapcat.md)
     for details.
 
-  - `"tswapcat"`: categorical analog to \`tswap\`; see
-    [tswapcat](https://matthewkling.github.io/nullcat/reference/tswapcat.md)
+  - `"tswapcat"`: categorical analog to `tswap`; see
+    [`tswapcat()`](https://matthewkling.github.io/nullcat/reference/tswapcat.md)
     for details.
 
-  - `"r0cat"`: categorical analog to \`r0\`; see
-    [r0cat](https://matthewkling.github.io/nullcat/reference/r0cat.md)
+  - `"r0cat"`: categorical analog to `r0`; see
+    [`r0cat()`](https://matthewkling.github.io/nullcat/reference/r0cat.md)
     for details.
 
-  - `"c0cat"`: categorical analog to \`c0\`; see
-    [c0cat](https://matthewkling.github.io/nullcat/reference/c0cat.md)
+  - `"c0cat"`: categorical analog to `c0`; see
+    [`c0cat()`](https://matthewkling.github.io/nullcat/reference/c0cat.md)
     for details.
 
 - n_iter:
@@ -52,7 +52,7 @@ nullcat(
   Number of iterations. Default is 1000. Larger values yield more
   thorough mixing. Ignored for non-sequential methods. Minimum burn-in
   times can be estimated with
-  [suggest_n_iter](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md).
+  [`suggest_n_iter()`](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md).
 
 - output:
 
@@ -70,13 +70,13 @@ nullcat(
 - swaps:
 
   Character string controlling the direction of token movement. Only
-  used when method is \`curvecat\`, \`swapcat\`, or \`tswapcat\`.
+  used when method is `"curvecat"`, `"swapcat"`, or `"tswapcat"`.
   Affects the result only when `output = "index"`, otherwise it only
   affects computation speed. Options include:
 
   - `"vertical"`: Tokens move between rows (stay within columns).
 
-  - `"horizontal"`: Tokens move between columns (stay within rows).
+  - "`horizontal"`: Tokens move between columns (stay within rows).
 
   - `"alternating"`: Tokens move in both dimensions, alternating between
     vertical and horizontal swaps. Provides full 2D mixing without
@@ -98,19 +98,26 @@ describing the permutation of entries (when `output = "index"`).
 
 ## Details
 
-\`curvecat\`, \`swapcat\`, and \`tswapcat\` are sequential algorithms
-that hold category multisets fixed in every row and column. These three
+`curvecat`, `swapcat`, and `tswapcat` are sequential algorithms that
+hold category multisets fixed in every row and column. These three
 algorithms typically reach the same stationary distribution. They differ
-primarily in efficiency, with \`curvecat\` being the most efficient
-(i.e. fewest steps to become fully mixed); \`swapcat\` and \`tswapcat\`
-are thus useful mainly for methodological comparison.
+primarily in efficiency, with `curvecat` being the most efficient (i.e.
+fewest steps to become fully mixed); `swapcat` and `tswapcat` are thus
+useful mainly for methodological comparison.
 
-The \`r0cat\` algorithm holds category multisets fixed in rows but not
-columns, while \`c0cat\` does the opposite.
+The `r0cat` algorithm holds category multisets fixed in rows but not
+columns, while `c0cat` does the opposite.
 
 Note that categorical null models are for cell-level categorical data.
 Site-level attributes (e.g., land cover) or species-level attributes
 (e.g., functional traits) should be analyzed using different approaches.
+
+## See also
+
+[`nullcat_batch()`](https://matthewkling.github.io/nullcat/reference/nullcat_batch.md)
+for efficient generation of multiple randomized matrices;
+[`nullcat_commsim()`](https://matthewkling.github.io/nullcat/reference/nullcat_commsim.md)
+for integration with `vegan`.
 
 ## Examples
 

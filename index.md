@@ -10,6 +10,10 @@ and count data.
 ## Installation
 
 ``` r
+# Install stable version from CRAN:
+install.packages("nullcat")
+
+# Or dev version from GitHub:
 # install.packages("remotes")
 remotes::install_github("matthewkling/nullcat")
 ```
