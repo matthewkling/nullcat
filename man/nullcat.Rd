@@ -68,3 +68,27 @@ Note that categorical null models are for cell-level categorical data. Site-leve
 attributes (e.g., land cover) or species-level attributes (e.g., functional
 traits) should be analyzed using different approaches.
 }
+\examples{
+# Create a categorical matrix
+set.seed(123)
+x <- matrix(sample(1:4, 100, replace = TRUE), nrow = 10)
+
+# Randomize using curvecat method (preserves row & column margins)
+x_rand <- nullcat(x, method = "curvecat", n_iter = 1000)
+
+# Check that row multisets are preserved
+all.equal(sort(x[1, ]), sort(x_rand[1, ]))
+
+# Get index output showing where each cell moved
+idx <- nullcat(x, method = "curvecat", n_iter = 1000, output = "index")
+
+# Use different methods
+x_swap <- nullcat(x, method = "swapcat", n_iter = 1000)
+x_r0 <- nullcat(x, method = "r0cat")
+
+# Use with a seed for reproducibility
+x_rand1 <- nullcat(x, method = "curvecat", n_iter = 1000, seed = 42)
+x_rand2 <- nullcat(x, method = "curvecat", n_iter = 1000, seed = 42)
+identical(x_rand1, x_rand2)
+
+}

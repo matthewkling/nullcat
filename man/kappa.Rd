@@ -13,3 +13,4 @@ kappa(a, b)
 Computes Cohen's kappa between two categorical matrices,
 treating each cell as a paired categorical observation.
 }
+\keyword{internal}

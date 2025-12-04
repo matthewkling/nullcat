@@ -50,3 +50,15 @@ An object the same size as x, with integer values representing
 \description{
 Bin quantitative data into strata
 }
+\examples{
+# Stratify a numeric vector
+x <- c(0, 0, 0.1, 0.5, 1.2, 3.4, 5.6, 10.2)
+stratify(x, n_strata = 3)
+
+# With transformation
+stratify(x, n_strata = 3, transform = log1p)
+
+# Separate zero stratum
+stratify(x, n_strata = 3, zero_stratum = TRUE)
+
+}

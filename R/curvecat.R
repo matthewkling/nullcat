@@ -28,6 +28,23 @@
 #' matrices with fixed row and column totals. \emph{Nature Communications}, 5,
 #' 4114.
 #'
+#' @examples
+#' # Create a categorical matrix
+#' set.seed(123)
+#' x <- matrix(sample(1:4, 100, replace = TRUE), nrow = 10)
+#'
+#' # Randomize preserving row and column category multisets
+#' x_rand <- curvecat(x, n_iter = 1000)
+#'
+#' # Verify margins are preserved
+#' all.equal(sort(x[1, ]), sort(x_rand[1, ])) # row multisets preserved
+#' all.equal(sort(x[, 1]), sort(x_rand[, 1])) # column multisets preserved
+#'
+#' # Use with a seed for reproducibility
+#' x_rand1 <- curvecat(x, n_iter = 1000, seed = 42)
+#' x_rand2 <- curvecat(x, n_iter = 1000, seed = 42)
+#' identical(x_rand1, x_rand2)
+#'
 #' @export
 curvecat <- function(x, n_iter = 1000L, output = c("category", "index"), seed = NULL) {
       nullcat(x, method = "curvecat", n_iter = n_iter, output = output, seed = seed)

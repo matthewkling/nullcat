@@ -29,8 +29,20 @@ A matrix of the same dimensions as \code{x}, either randomized
   matrix describing the permutation of entries (when \code{output = "index"}).
 }
 \description{
-`r0cat()` preserves the multiset of categories within each column but
+`c0cat()` preserves the multiset of categories within each column but
 randomizes their positions across rows, leaving row margins free.
 This is the categorical analog to vegan's `c0` algorithm. It is a
 non-sequential method.
+}
+\examples{
+set.seed(123)
+x <- matrix(sample(1:4, 100, replace = TRUE), nrow = 10)
+
+# Randomize within columns (column margins fixed, row margins free)
+x_rand <- c0cat(x)
+
+# Verify columns are preserved but rows are not
+all.equal(sort(x[, 1]), sort(x_rand[, 1]))
+any(sort(x[1, ]) != sort(x_rand[1, ]))
+
 }

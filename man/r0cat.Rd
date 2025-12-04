@@ -34,3 +34,15 @@ randomizes their positions across columns, leaving column margins free.
 This is the categorical analog to vegan's `r0` algorithm. It is a
 non-sequential method.
 }
+\examples{
+set.seed(123)
+x <- matrix(sample(1:4, 100, replace = TRUE), nrow = 10)
+
+# Randomize within rows (row margins fixed, column margins free)
+x_rand <- r0cat(x)
+
+# Verify rows are preserved but columns are not
+all.equal(sort(x[1, ]), sort(x_rand[1, ]))
+any(sort(x[, 1]) != sort(x_rand[, 1]))
+
+}

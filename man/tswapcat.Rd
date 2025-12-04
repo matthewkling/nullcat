@@ -34,6 +34,18 @@ attempts random 2×2 swaps until a valid one is found in each iteration,
 reducing the number of wasted draws compared to the simple swap.
 \code{tswapcat()} extends this logic to categorical matrices.
 }
+\examples{
+set.seed(123)
+x <- matrix(sample(1:4, 100, replace = TRUE), nrow = 10)
+
+# Randomize using swap algorithm
+x_rand <- tswapcat(x, n_iter = 1000)
+
+# Verify fixed-fixed constraint (row and column margins preserved)
+all.equal(sort(x[1, ]), sort(x_rand[1, ]))
+all.equal(sort(x[, 1]), sort(x_rand[, 1]))
+
+}
 \references{
 Gotelli, N. J. (2000). Null model analysis of species co-occurrence patterns.
 *Ecology*, 81(9), 2606–2621.

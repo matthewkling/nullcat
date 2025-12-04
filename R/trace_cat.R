@@ -208,6 +208,8 @@ trace_chain <- function(x0,
 #' treating each cell as a paired categorical observation.
 #'
 #' @param a,b Matrices or arrays of the same dimensions with categorical entries.
+#'
+#' @keywords internal
 kappa <- function(a, b) {
       stopifnot(all(dim(a) == dim(b)))
       p_ref <- prop.table(table(as.vector(b)))

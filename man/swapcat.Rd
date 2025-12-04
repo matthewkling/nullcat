@@ -53,6 +53,18 @@ preserve the multiset of categories in each row and column.
 With only two categories present, `swapcat()` reduces to the
 behavior of the standard binary swap algorithm.
 }
+\examples{
+set.seed(123)
+x <- matrix(sample(1:4, 100, replace = TRUE), nrow = 10)
+
+# Randomize using swap algorithm
+x_rand <- swapcat(x, n_iter = 1000)
+
+# Verify fixed-fixed constraint (row and column margins preserved)
+all.equal(sort(x[1, ]), sort(x_rand[1, ]))
+all.equal(sort(x[, 1]), sort(x_rand[, 1]))
+
+}
 \references{
 Gotelli, N. J. (2000). Null model analysis of species co-occurrence patterns.
 *Ecology*, 81(9), 2606–2621.

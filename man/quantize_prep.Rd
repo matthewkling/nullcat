@@ -128,7 +128,6 @@ The returned object can be reused across calls to \code{\link{quantize}()},
 argument.
 }
 \examples{
-\donttest{
 set.seed(1)
 comm <- matrix(rexp(50 * 40), nrow = 50,
                dimnames = list(paste0("site", 1:50),
@@ -147,6 +146,5 @@ rand2 <- quantize(prep = prep)
 # use a binary vegan method on each stratum
 prep_bin <- quantize_prep(comm, method = "swap", n_strata = 4)
 rand3 <- quantize(prep = prep_bin)
-}
 
 }
