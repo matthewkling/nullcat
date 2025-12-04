@@ -4,7 +4,8 @@
 quantitative community ecology data. It extends classic binary null
 models (e.g., curveball, swap) to work with categorical data, and
 introduces a stratified randomization framework for continuous data that
-addresses limitations in existing quantitative null model methods.
+addresses limitations in existing methods for randomizing quantitative
+and count data.
 
 ## Installation
 

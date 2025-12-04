@@ -3,7 +3,7 @@ pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
   nullcat: nullcat.html
-last_built: 2025-12-04T04:48Z
+last_built: 2025-12-04T14:25Z
 urls:
   reference: https://matthewkling.github.io/nullcat/reference
   article: https://matthewkling.github.io/nullcat/articles
