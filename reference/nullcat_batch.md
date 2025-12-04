@@ -8,7 +8,7 @@ analog of \`quantize_batch()\`.
 ## Usage
 
 ``` r
-nullcat_batch(x, n_reps = 999L, stat = NULL, n_cores = 1L, ...)
+nullcat_batch(x, n_reps = 999L, stat = NULL, n_cores = 1L, seed = NULL, ...)
 ```
 
 ## Arguments
@@ -33,6 +33,10 @@ nullcat_batch(x, n_reps = 999L, stat = NULL, n_cores = 1L, ...)
   Number of compute cores to use for parallel processing. Default is
   \`1\`.
 
+- seed:
+
+  Integer used to seed random number generator, for reproducibility.
+
 - ...:
 
   Additional arguments passed to \[nullcat()\] (e.g. \`method\`,
@@ -43,3 +47,17 @@ nullcat_batch(x, n_reps = 999L, stat = NULL, n_cores = 1L, ...)
 If \`stat\` is \`NULL\`, returns a 3D array (rows × cols × n_reps). If
 \`stat\` is not \`NULL\`, returns a numeric array of statistic values
 (dimensionality depends on \`stat\`).
+
+## Examples
+
+``` r
+set.seed(123)
+x <- matrix(sample(1:4, 100, replace = TRUE), nrow = 10)
+
+# Generate 99 randomized matrices
+nulls <- nullcat_batch(x, n_reps = 99, method = "curvecat", n_iter = 100)
+
+# Or compute a statistic on each
+row_sums <- nullcat_batch(x, n_reps = 99, stat = rowSums,
+                          method = "curvecat", n_iter = 100)
+```

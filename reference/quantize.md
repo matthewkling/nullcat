@@ -1,11 +1,19 @@
 # Stratified randomization of a quantitative community matrix
 
-`quantize()` is a community null model for quantitative community data
-(e.g. abundance, biomass, or occurrence probability). It works by
-converting quantitative values into a small number of categorical
-strata, randomizing the categorical layout under a chosen categorical
-null model, and then reassigning quantitative values within each
-stratum.
+This approach provides a framework for preserving row and/or column
+value distributions in continuous data. When using `fixed = "row"` or
+`fixed = "col"`, one dimension's value multisets are preserved exactly
+while the other is preserved at the resolution of strata, approximating
+a fixed-fixed null model for quantitative data. The number of strata
+controls the tradeoff between preservation fidelity and randomization
+strength.
+
+By default, `quantize()` will compute all necessary overhead for a given
+dataset (strata, pools, etc.) internally. For repeated randomization of
+the same matrix (e.g. to build a null distribution), this overhead can
+be computed once using
+[`quantize_prep`](https://matthewkling.github.io/nullcat/reference/quantize_prep.md)
+and reused by supplying the resulting object via the `prep` argument.
 
 ## Usage
 
@@ -20,7 +28,8 @@ quantize(
   transform = identity,
   offset = 0,
   zero_stratum = FALSE,
-  n_iter = 1000
+  n_iter = 1000,
+  seed = NULL
 )
 ```
 
@@ -114,6 +123,10 @@ quantize(
   times can be estimated with
   [suggest_n_iter](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md).
 
+- seed:
+
+  Integer used to seed random number generator, for reproducibility.
+
 ## Value
 
 A randomized version of `x`, with the same dimensions and dimnames. For
@@ -124,12 +137,11 @@ to each stratum and recombining.
 
 ## Details
 
-By default, `quantize()` will compute all necessary overhead for a given
-dataset (strata, pools, etc.) internally. For repeated randomization of
-the same matrix (e.g. to build a null distribution), this overhead can
-be computed once using
-[`quantize_prep`](https://matthewkling.github.io/nullcat/reference/quantize_prep.md)
-and reused by supplying the resulting object via the `prep` argument.
+`quantize()` is a community null model for quantitative community data
+(e.g. abundance, biomass, or occurrence probability). It works by
+converting quantitative values into discrete strata, randomizing the
+stratified matrix using a categorical null model, and reassigning
+quantitative values within strata according to a specified constraint.
 
 ## Examples
 
