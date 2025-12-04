@@ -1,4 +1,4 @@
-#' Generate a batch of null matrices using `nullcat()`
+#' Generate a batch of null matrices using nullcat()
 #'
 #' Runs the categorical null model implemented in [nullcat()] repeatedly,
 #' generating a batch of randomized matrices or, optionally, a batch of

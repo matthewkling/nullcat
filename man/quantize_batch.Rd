@@ -2,7 +2,7 @@
 % Please edit documentation in R/quantize_batch.R
 \name{quantize_batch}
 \alias{quantize_batch}
-\title{Generate a batch of null matrices using `quantize()`}
+\title{Generate a batch of null matrices using quantize()}
 \usage{
 quantize_batch(x, n_reps = 999L, stat = NULL, n_cores = 1L, seed = NULL, ...)
 }

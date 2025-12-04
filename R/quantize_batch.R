@@ -1,4 +1,4 @@
-#' Generate a batch of null matrices using `quantize()`
+#' Generate a batch of null matrices using quantize()
 #'
 #' Runs the stratified null model implemented in [quantize()] repeatedly,
 #' generating a batch of randomized matrices or, optionally, a batch of

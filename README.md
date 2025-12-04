@@ -1,5 +1,9 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+<!-- badges: start -->
+
+[![R-CMD-check](https://github.com/matthewkling/nullcat/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/matthewkling/nullcat/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
 
 # nullcat <a href="https://matthewkling.github.io/nullcat/"><img src="man/figures/logo.png" align="right" height="139" alt="nullcat website" /></a>
 
@@ -7,7 +11,8 @@
 quantitative community ecology data. It extends classic binary null
 models (e.g., curveball, swap) to work with categorical data, and
 introduces a stratified randomization framework for continuous data that
-addresses limitations in existing quantitative null model methods.
+addresses limitations in existing methods for randomizing quantitative
+and count data.
 
 ## Installation
 

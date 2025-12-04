@@ -2,7 +2,7 @@
 % Please edit documentation in R/nullcat_batch.R
 \name{nullcat_batch}
 \alias{nullcat_batch}
-\title{Generate a batch of null matrices using `nullcat()`}
+\title{Generate a batch of null matrices using nullcat()}
 \usage{
 nullcat_batch(x, n_reps = 999L, stat = NULL, n_cores = 1L, seed = NULL, ...)
 }
