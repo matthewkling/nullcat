@@ -112,10 +112,11 @@ quantize <- function(x = NULL,
       }
 
       mode <- ifelse(prep$fixed == "cell", "index", "category")
+      swaps <- ifelse(prep$fixed == "cell", "alternating", "auto")
 
       rand_strata <- nullcat(prep$strata, method = prep$method,
                              n_iter = prep$n_iter, output = mode,
-                             seed = seed)
+                             swaps = swaps, seed = seed)
 
       with_seed(seed, {
             rand <- fill_from_pool(

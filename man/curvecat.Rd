@@ -4,7 +4,7 @@
 \alias{curvecat}
 \title{Categorical curveball randomization (curvecat)}
 \usage{
-curvecat(x, n_iter = 1000L, output = c("category", "index"), seed = NULL)
+curvecat(x, n_iter = 1000L, output = "category", swaps = "auto", seed = NULL)
 }
 \arguments{
 \item{x}{A matrix of categorical data, encoded as integers.
@@ -18,7 +18,24 @@ burn-in times can be estimated with \link{suggest_n_iter}.}
 \itemize{
   \item \code{"category"} (default) returns randomized matrix
   \item \code{"index"} returns an index matrix describing where original
-       entries moved.
+       entries (a.k.a. "tokens") moved. Useful mainly for testing, and for
+       applications like \code{quantize()} that care about token tracking
+       in addition to generic integer categories.
+}}
+
+\item{swaps}{Character string controlling the direction of token movement.
+Only used when method is `curvecat`, `swapcat`, or `tswapcat`.
+Affects the result only when \code{output = "index"}, otherwise it only affects
+computation speed. Options include:
+\itemize{
+  \item \code{"vertical"}: Tokens move between rows (stay within columns).
+  \item \code{"horizontal"}: Tokens move between columns (stay within rows).
+  \item \code{"alternating"}: Tokens move in both dimensions, alternating between
+    vertical and horizontal swaps. Provides full 2D mixing without preserving
+    either row or column token sets.
+  \item \code{"auto"} (default): For \code{output = "category"},
+    automatically selects the fastest option based on matrix dimensions. For
+    \code{output = "index"}, defaults to \code{"alternating"} for full mixing.
 }}
 
 \item{seed}{Integer used to seed random number generator, for reproducibility.}

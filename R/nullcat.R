@@ -27,7 +27,23 @@
 #'   \itemize{
 #'     \item \code{"category"} (default) returns randomized matrix
 #'     \item \code{"index"} returns an index matrix describing where original
-#'          entries moved.
+#'          entries (a.k.a. "tokens") moved. Useful mainly for testing, and for
+#'          applications like \code{quantize()} that care about token tracking
+#'          in addition to generic integer categories.
+#'   }
+#' @param swaps Character string controlling the direction of token movement.
+#'   Only used when method is `curvecat`, `swapcat`, or `tswapcat`.
+#'   Affects the result only when \code{output = "index"}, otherwise it only affects
+#'   computation speed. Options include:
+#'   \itemize{
+#'     \item \code{"vertical"}: Tokens move between rows (stay within columns).
+#'     \item \code{"horizontal"}: Tokens move between columns (stay within rows).
+#'     \item \code{"alternating"}: Tokens move in both dimensions, alternating between
+#'       vertical and horizontal swaps. Provides full 2D mixing without preserving
+#'       either row or column token sets.
+#'     \item \code{"auto"} (default): For \code{output = "category"},
+#'       automatically selects the fastest option based on matrix dimensions. For
+#'       \code{output = "index"}, defaults to \code{"alternating"} for full mixing.
 #'   }
 #' @param seed Integer used to seed random number generator, for reproducibility.
 #'
@@ -78,21 +94,36 @@ nullcat <- function(x,
                     method = nullcat_methods(),
                     n_iter = 1000L,
                     output = c("category", "index"),
+                    swaps = c("auto", "vertical", "horizontal", "alternating"),
                     seed = NULL) {
 
       method <- match.arg(method, NULLCAT_METHODS)
       output <- match.arg(output)
+      swaps <- match.arg(swaps)
       n_iter <- as.integer(n_iter)
 
       x <- as.matrix(x)
       storage.mode(x) <- "integer"
 
+      # Handle "auto" swaps setting
+      if (swaps == "auto" & method %in% c("curvecat", "swapcat", "tswapcat")){
+            if (output == "category") {
+                  # Pick fastest based on dimensions
+                  # (confirmed with benchmarking. it's likely about minimizing the inner loop
+                  # iterations, not about the sampling space or cache)
+                  swaps <- if (nrow(x) > ncol(x)) "vertical" else "horizontal"
+            } else {
+                  # For token tracking, use alternating for full 2D mixing
+                  swaps <- "alternating"
+            }
+      }
+
       with_seed(seed, {
             switch(
                   method,
-                  "curvecat" = curvecat_cpp(x, n_iter = n_iter, output = output),
-                  "swapcat"  = swapcat_cpp(x, n_iter = n_iter, output = output),
-                  "tswapcat"  = tswapcat_cpp(x, n_iter = n_iter, output = output),
+                  "curvecat" = curvecat_cpp(x, n_iter = n_iter, output = output, swaps = swaps),
+                  "swapcat"  = swapcat_cpp(x, n_iter = n_iter, output = output, swaps = swaps),
+                  "tswapcat"  = tswapcat_cpp(x, n_iter = n_iter, output = output, swaps = swaps),
                   "r0cat"  = r0cat_cpp(x, n_iter = 1, output = output),
                   "c0cat"  = c0cat_cpp(x, n_iter = 1, output = output)
             )

@@ -19,15 +19,22 @@ test_that("`fixed` parameter correctly preserves marginal sums and conditional d
       set.seed(123)
       m <- matrix(runif(200), nrow = 20)
 
-      r <- quantize(m, n_iter = 100, n_strata = 3, method = "curvecat", fixed = "row")
-      expect_equal(rowSums(m), rowSums(r))
-      expect_true(any(colSums(m) != colSums(r)))
-      expect_equal(apply(m, 1, sort), apply(r, 1, sort))
+      # "row" should preserve row sums and multisets, but not columns
+      fr <- quantize(m, n_iter = 100, n_strata = 3, method = "curvecat", fixed = "row")
+      expect_equal(rowSums(m), rowSums(fr))
+      expect_true(any(colSums(m) != colSums(fr)))
+      expect_equal(apply(m, 1, sort), apply(fr, 1, sort))
 
-      r <- quantize(m, n_iter = 100, n_strata = 3, method = "curvecat", fixed = "col")
-      expect_equal(colSums(m), colSums(r))
-      expect_true(any(rowSums(m) != rowSums(r)))
-      expect_equal(apply(m, 2, sort), apply(r, 2, sort))
+      # "col" should preserve column sums and multisets, but not rows
+      fc <- quantize(m, n_iter = 100, n_strata = 3, method = "curvecat", fixed = "col")
+      expect_equal(colSums(m), colSums(fc))
+      expect_true(any(rowSums(m) != rowSums(fc)))
+      expect_equal(apply(m, 2, sort), apply(fc, 2, sort))
+
+      # "cell" should preserve neither
+      ft <- quantize(m, n_iter = 100, n_strata = 3, method = "curvecat", fixed = "cell")
+      expect_false(all(colSums(m) == colSums(ft)))
+      expect_false(all(rowSums(m) == rowSums(ft)))
 })
 
 

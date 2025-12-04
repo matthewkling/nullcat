@@ -18,7 +18,9 @@ burn-in times can be estimated with \link{suggest_n_iter}.}
 \itemize{
   \item \code{"category"} (default) returns randomized matrix
   \item \code{"index"} returns an index matrix describing where original
-       entries moved.
+       entries (a.k.a. "tokens") moved. Useful mainly for testing, and for
+       applications like \code{quantize()} that care about token tracking
+       in addition to generic integer categories.
 }}
 
 \item{seed}{Integer used to seed random number generator, for reproducibility.}

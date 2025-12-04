@@ -5,19 +5,19 @@ c0cat_cpp <- function(mat, n_iter, output = "category") {
     .Call(`_nullcat_c0cat_cpp`, mat, n_iter, output)
 }
 
-curvecat_cpp <- function(mat, n_iter, output = "category") {
-    .Call(`_nullcat_curvecat_cpp`, mat, n_iter, output)
+curvecat_cpp <- function(mat, n_iter, swaps = "vertical", output = "category") {
+    .Call(`_nullcat_curvecat_cpp`, mat, n_iter, swaps, output)
 }
 
 r0cat_cpp <- function(mat, n_iter, output = "category") {
     .Call(`_nullcat_r0cat_cpp`, mat, n_iter, output)
 }
 
-swapcat_cpp <- function(mat, n_iter, output = "category") {
-    .Call(`_nullcat_swapcat_cpp`, mat, n_iter, output)
+swapcat_cpp <- function(mat, n_iter, swaps = "vertical", output = "category") {
+    .Call(`_nullcat_swapcat_cpp`, mat, n_iter, swaps, output)
 }
 
-tswapcat_cpp <- function(mat, n_iter, output = "category") {
-    .Call(`_nullcat_tswapcat_cpp`, mat, n_iter, output)
+tswapcat_cpp <- function(mat, n_iter, swaps = "vertical", output = "category") {
+    .Call(`_nullcat_tswapcat_cpp`, mat, n_iter, swaps, output)
 }
 

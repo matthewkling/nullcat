@@ -11,19 +11,17 @@ using namespace nullcat;
 // Swapcat algorithm internals
 //------------------------------------------------------------------------------
 
-// Perform one categorical swap between two rows and two columns.
-// If idx is non-null, we also update an index matrix in lockstep.
+// Perform one categorical swap between two rows and two columns with horizontal flip.
+// Horizontal flip swaps columns within the 2x2 block (tokens move between columns).
 //
 // We look for a 2x2 block:
-//
 //   a  b
 //   c  d
-//
-// where a != b, a == d, b == c.
-// This is the categorical analog of the binary 1-0 / 0-1 pattern,
-// and we flip it to the opposite orientation (AB/BA <-> BA/AB).
-static void swapcat_block(CatState &S, IntegerMatrix *idx,
-                          int r1, int r2, int c1, int c2) {
+// where a != b, a == d, b == c, and flip it horizontally to:
+//   b  a
+//   d  c
+static void swapcat_block_horizontal(CatState &S, IntegerMatrix *idx,
+                                     int r1, int r2, int c1, int c2) {
       // Guard against degenerate cases
       if (r1 == r2 || c1 == c2) return;
 
@@ -46,7 +44,7 @@ static void swapcat_block(CatState &S, IntegerMatrix *idx,
             id = (*idx)(r2, c2);
       }
 
-      // Flip orientation:
+      // Flip horizontally:
       //   a  b        b  a
       //   c  d   ->   d  c
       S.set(r1, c1, b);
@@ -62,8 +60,57 @@ static void swapcat_block(CatState &S, IntegerMatrix *idx,
       }
 }
 
-// Run n_iter swap attempts on CatState, optionally tracking an index matrix.
-static void swapcat_engine(CatState &S, IntegerMatrix *idx, int n_iter) {
+// Perform one categorical swap between two rows and two columns with vertical flip.
+// Vertical flip swaps rows within the 2x2 block (tokens move between rows).
+//
+// We look for a 2x2 block:
+//   a  b
+//   c  d
+// where a != b, a == d, b == c, and flip it vertically to:
+//   c  d
+//   a  b
+static void swapcat_block_vertical(CatState &S, IntegerMatrix *idx,
+                                   int r1, int r2, int c1, int c2) {
+      // Guard against degenerate cases
+      if (r1 == r2 || c1 == c2) return;
+
+      int a = S.get(r1, c1);
+      int b = S.get(r1, c2);
+      int c = S.get(r2, c1);
+      int d = S.get(r2, c2);
+
+      // Check for AB/BA or BA/AB pattern in category ids
+      if (!(a != b && a == d && b == c)) {
+            return; // no valid swap
+      }
+
+      // If tracking indices, pull out the 2x2 block of indices
+      int ia, ib, ic, id;
+      if (idx) {
+            ia = (*idx)(r1, c1);
+            ib = (*idx)(r1, c2);
+            ic = (*idx)(r2, c1);
+            id = (*idx)(r2, c2);
+      }
+
+      // Flip vertically:
+      //   a  b        c  d
+      //   c  d   ->   a  b
+      S.set(r1, c1, c);
+      S.set(r1, c2, d);
+      S.set(r2, c1, a);
+      S.set(r2, c2, b);
+
+      if (idx) {
+            (*idx)(r1, c1) = ic;
+            (*idx)(r1, c2) = id;
+            (*idx)(r2, c1) = ia;
+            (*idx)(r2, c2) = ib;
+      }
+}
+
+// Run n_iter swap attempts with horizontal flips.
+static void swapcat_engine_horizontal(CatState &S, IntegerMatrix *idx, int n_iter) {
       const int nrow = S.n_row;
       const int ncol = S.n_col;
 
@@ -80,7 +127,56 @@ static void swapcat_engine(CatState &S, IntegerMatrix *idx, int n_iter) {
             int c2 = static_cast<int>(std::floor(R::runif(0.0, (double)(ncol - 1))));
             if (c2 >= c1) c2++;
 
-            swapcat_block(S, idx, r1, r2, c1, c2);
+            swapcat_block_horizontal(S, idx, r1, r2, c1, c2);
+      }
+}
+
+// Run n_iter swap attempts with vertical flips.
+static void swapcat_engine_vertical(CatState &S, IntegerMatrix *idx, int n_iter) {
+      const int nrow = S.n_row;
+      const int ncol = S.n_col;
+
+      if (nrow < 2 || ncol < 2 || n_iter <= 0) return;
+
+      for (int it = 0; it < n_iter; ++it) {
+            // Sample two distinct rows
+            int r1 = static_cast<int>(std::floor(R::runif(0.0, (double)nrow)));
+            int r2 = static_cast<int>(std::floor(R::runif(0.0, (double)(nrow - 1))));
+            if (r2 >= r1) r2++;
+
+            // Sample two distinct columns
+            int c1 = static_cast<int>(std::floor(R::runif(0.0, (double)ncol)));
+            int c2 = static_cast<int>(std::floor(R::runif(0.0, (double)(ncol - 1))));
+            if (c2 >= c1) c2++;
+
+            swapcat_block_vertical(S, idx, r1, r2, c1, c2);
+      }
+}
+
+// Run n_iter swap attempts alternating between horizontal and vertical flips.
+static void swapcat_engine_alternating(CatState &S, IntegerMatrix *idx, int n_iter) {
+      const int nrow = S.n_row;
+      const int ncol = S.n_col;
+
+      if (nrow < 2 || ncol < 2 || n_iter <= 0) return;
+
+      for (int it = 0; it < n_iter; ++it) {
+            // Sample two distinct rows
+            int r1 = static_cast<int>(std::floor(R::runif(0.0, (double)nrow)));
+            int r2 = static_cast<int>(std::floor(R::runif(0.0, (double)(nrow - 1))));
+            if (r2 >= r1) r2++;
+
+            // Sample two distinct columns
+            int c1 = static_cast<int>(std::floor(R::runif(0.0, (double)ncol)));
+            int c2 = static_cast<int>(std::floor(R::runif(0.0, (double)(ncol - 1))));
+            if (c2 >= c1) c2++;
+
+            // Alternate between horizontal and vertical
+            if (it % 2 == 0) {
+                  swapcat_block_horizontal(S, idx, r1, r2, c1, c2);
+            } else {
+                  swapcat_block_vertical(S, idx, r1, r2, c1, c2);
+            }
       }
 }
 
@@ -91,6 +187,7 @@ static void swapcat_engine(CatState &S, IntegerMatrix *idx, int n_iter) {
 // [[Rcpp::export]]
 IntegerMatrix swapcat_cpp(IntegerMatrix mat,
                           int n_iter,
+                          std::string swaps = "vertical",
                           std::string output = "category") {
       const int nrow = mat.nrow();
       const int ncol = mat.ncol();
@@ -122,8 +219,16 @@ IntegerMatrix swapcat_cpp(IntegerMatrix mat,
             idx_ptr = &idx;
       }
 
-      // Run the engine
-      swapcat_engine(S, idx_ptr, n_iter);
+      // Run the appropriate engine based on swaps parameter
+      if (swaps == "horizontal") {
+            swapcat_engine_horizontal(S, idx_ptr, n_iter);
+      } else if (swaps == "vertical") {
+            swapcat_engine_vertical(S, idx_ptr, n_iter);
+      } else if (swaps == "alternating") {
+            swapcat_engine_alternating(S, idx_ptr, n_iter);
+      } else {
+            Rcpp::stop("Invalid swaps parameter. Must be 'vertical', 'horizontal', or 'alternating'.");
+      }
 
       // Return either the randomized categories or the index mapping
       if (return_index) {

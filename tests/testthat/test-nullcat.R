@@ -24,18 +24,17 @@ test_that("`category` and `index` modes agree (given a shared seed)", {
 
       for(method in nullcat_methods()){
 
-            set.seed(123)
-            m_rand <- nullcat(m, method = method, n_iter = 1000, output = "category")
+            seed <- 123
+            m_rand <- nullcat(m, method = method, n_iter = 1000,
+                              output = "category", swaps = "alternating", seed = seed)
 
-            set.seed(123)
-            idx <- nullcat(m, method = method, n_iter = 1000, output = "index")
+            idx <- nullcat(m, method = method, n_iter = 1000,
+                           output = "index", swaps = "alternating", seed = seed)
             m_vec <- as.integer(m)
             m_rand2 <- matrix(m_vec[idx], nrow = nrow(m), ncol = ncol(m))
 
             expect_equal(m_rand, m_rand2)
       }
-
-
 })
 
 
@@ -96,4 +95,32 @@ test_that("stationary distributions match vegan versions, given binary data", {
             # test proportional MAE
             expect_lt(mean(abs(cb - cc) / cc), .1)
       }
+})
+
+
+test_that("swap direction operates as expected for curvecat, swapcat, and tswapcat", {
+
+      set.seed(123)
+      x <- matrix(sample(1:4, 2500, replace = TRUE), 50)
+      idx <- matrix(1:length(x), nrow(x))
+
+      for(fun in list(curvecat_cpp, swapcat_cpp, tswapcat_cpp)){
+
+            # vertical swaps: preserve column token sums, not row sums
+            # (with token sums as a proxy for token sets)
+            ver <- fun(x, 1000, swaps = "vertical", output = "index")
+            expect_equal(colSums(idx), colSums(ver))
+            expect_false(identical(rowSums(idx), rowSums(ver)))
+
+            # horizontal swaps: preserve row token sums, not column sums
+            hor <- fun(x, 1000, swaps = "horizontal", output = "index")
+            expect_equal(rowSums(idx), rowSums(hor))
+            expect_false(identical(colSums(idx), colSums(hor)))
+
+            # alternating swaps: preserve neither margin
+            alt <- fun(x, 1000, swaps = "alternating", output = "index")
+            expect_false(identical(colSums(idx), colSums(alt)))
+            expect_false(identical(rowSums(idx), rowSums(alt)))
+      }
+
 })

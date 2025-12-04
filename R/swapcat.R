@@ -48,6 +48,6 @@
 #' all.equal(sort(x[, 1]), sort(x_rand[, 1]))
 #'
 #' @export
-swapcat <- function(x, n_iter = 1000L, output = c("category", "index"), seed = NULL) {
-      nullcat(x, method = "swapcat", n_iter = n_iter, output = output, seed = seed)
+swapcat <- function(x, n_iter = 1000L, output = c("category", "index"), swaps = "auto", seed = NULL) {
+      nullcat(x, method = "swapcat", n_iter = n_iter, output = output, swaps = swaps, seed = seed)
 }

@@ -46,6 +46,6 @@
 #' identical(x_rand1, x_rand2)
 #'
 #' @export
-curvecat <- function(x, n_iter = 1000L, output = c("category", "index"), seed = NULL) {
-      nullcat(x, method = "curvecat", n_iter = n_iter, output = output, seed = seed)
+curvecat <- function(x, n_iter = 1000L, output = "category", swaps = "auto", seed = NULL) {
+      nullcat(x, method = "curvecat", n_iter = n_iter, output = output, swaps = swaps, seed = seed)
 }
