@@ -1,19 +1,11 @@
 
-
-
 #' Stratified randomization of a quantitative community matrix
 #'
 #' \code{quantize()} is a community null model for quantitative community data
 #' (e.g. abundance, biomass, or occurrence probability). It works by converting
-#' quantitative values into a small number of categorical strata, randomizing
-#' the categorical layout under a chosen categorical null model, and then
-#' reassigning quantitative values within each stratum.
-#'
-#' By default, \code{quantize()} will compute all necessary overhead for a
-#' given dataset (strata, pools, etc.) internally. For repeated randomization
-#' of the same matrix (e.g. to build a null distribution), this overhead can be
-#' computed once using \code{\link{quantize_prep}} and reused by supplying the
-#' resulting object via the \code{prep} argument.
+#' quantitative values into discrete strata, randomizing the stratified matrix
+#' using a categorical null model, and reassigning quantitative values within
+#' strata according to a specified constraint.
 #'
 #' @param x Community matrix with sites in rows, species in columns, and
 #'   nonnegative quantitative values in cells. Ignored if \code{prep} is
@@ -47,6 +39,21 @@
 #'
 #' @inheritParams stratify
 #' @inheritParams nullcat
+#'
+#' @description
+#'
+#' This approach provides a framework for preserving row and/or column value
+#' distributions in continuous data. When using \code{fixed = "row"} or
+#' \code{fixed = "col"}, one dimension's value multisets are preserved exactly
+#' while the other is preserved at the resolution of strata, approximating a
+#' fixed-fixed null model for quantitative data. The number of strata controls
+#' the tradeoff between preservation fidelity and randomization strength.
+#'
+#' By default, \code{quantize()} will compute all necessary overhead for a
+#' given dataset (strata, pools, etc.) internally. For repeated randomization
+#' of the same matrix (e.g. to build a null distribution), this overhead can be
+#' computed once using \code{\link{quantize_prep}} and reused by supplying the
+#' resulting object via the \code{prep} argument.
 #'
 #' @return A randomized version of \code{x}, with the same dimensions and
 #'   dimnames. For \code{method = "curvecat"}, the quantitative values are
@@ -92,7 +99,8 @@ quantize <- function(x = NULL,
                      transform = identity,
                      offset = 0,
                      zero_stratum = FALSE,
-                     n_iter = 1000) {
+                     n_iter = 1000,
+                     seed = NULL) {
 
       fixed <- match.arg(fixed)
 
@@ -105,17 +113,20 @@ quantize <- function(x = NULL,
 
       mode <- ifelse(prep$fixed == "cell", "index", "category")
 
-      rand_strata <- nullcat(prep$strata, method = prep$method, n_iter = prep$n_iter, output = mode)
+      rand_strata <- nullcat(prep$strata, method = prep$method,
+                             n_iter = prep$n_iter, output = mode,
+                             seed = seed)
 
-      rand <- fill_from_pool(
-            s = prep$strata,
-            s_rand = rand_strata,
-            pool = prep$pool,
-            fixed = prep$fixed
-      )
+      with_seed(seed, {
+            rand <- fill_from_pool(
+                  s = prep$strata,
+                  s_rand = rand_strata,
+                  pool = prep$pool,
+                  fixed = prep$fixed
+            )
+      })
 
       return(rand)
-
 }
 
 
@@ -178,7 +189,6 @@ quantize <- function(x = NULL,
 #'   via its \code{prep} argument.
 #'
 #' @examples
-#' \donttest{
 #' set.seed(1)
 #' comm <- matrix(rexp(50 * 40), nrow = 50,
 #'                dimnames = list(paste0("site", 1:50),
@@ -197,7 +207,6 @@ quantize <- function(x = NULL,
 #' # use a binary vegan method on each stratum
 #' prep_bin <- quantize_prep(comm, method = "swap", n_strata = 4)
 #' rand3 <- quantize(prep = prep_bin)
-#' }
 #'
 #' @export
 quantize_prep <- function(x,

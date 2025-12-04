@@ -13,16 +13,29 @@
 #' @param ... Additional arguments passed to `quantize()`,
 #'        (e.g. `method`, `breaks`, `n_strata`, `transform`, `offset`, `zero_stratum`,
 #'        `fixed`, `n_iter`, etc.).
+#' @param seed Integer used to seed random number generator, for reproducibility.
 #'
 #' @return If `stat` is `NULL`, returns a 3D array (rows × cols × n_reps).
 #'   If `stat` is not `NULL`, returns a numeric array of statistic values
 #'   (dimensionality depends on `stat`).
+#'
+#' @examples
+#' set.seed(123)
+#' x <- matrix(runif(100), nrow = 10)
+#'
+#' # Generate 99 randomized matrices
+#' nulls <- quantize_batch(x, n_reps = 99, method = "curvecat", n_iter = 100)
+#'
+#' # Or compute a statistic on each
+#' row_sums <- nullcat_batch(x, n_reps = 99, stat = rowSums,
+#'                           method = "curvecat", n_iter = 100)
 #'
 #' @export
 quantize_batch <- function(x,
                           n_reps = 999L,
                           stat = NULL,
                           n_cores = 1L,
+                          seed = NULL,
                           ...) {
 
       # one-time overhead
@@ -35,7 +48,9 @@ quantize_batch <- function(x,
             fun <- function() stat(quantize(prep = prep))
       }
 
-      sims <- mc_replicate(n_reps, fun, n_cores = n_cores)
+      with_seed(seed, {
+            sims <- mc_replicate(n_reps, fun, n_cores = n_cores)
+      })
 
       sims
 }

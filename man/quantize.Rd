@@ -14,7 +14,8 @@ quantize(
   transform = identity,
   offset = 0,
   zero_stratum = FALSE,
-  n_iter = 1000
+  n_iter = 1000,
+  seed = NULL
 )
 }
 \arguments{
@@ -81,6 +82,8 @@ of the \code{n_strata} will represent zeros and the others will be nonzero range
 \item{n_iter}{Number of iterations. Default is 1000. Larger values yield
 more thorough mixing. Ignored for non-sequential methods. Minimum
 burn-in times can be estimated with \link{suggest_n_iter}.}
+
+\item{seed}{Integer used to seed random number generator, for reproducibility.}
 }
 \value{
 A randomized version of \code{x}, with the same dimensions and
@@ -90,18 +93,25 @@ A randomized version of \code{x}, with the same dimensions and
   chosen binary null model to each stratum and recombining.
 }
 \description{
-\code{quantize()} is a community null model for quantitative community data
-(e.g. abundance, biomass, or occurrence probability). It works by converting
-quantitative values into a small number of categorical strata, randomizing
-the categorical layout under a chosen categorical null model, and then
-reassigning quantitative values within each stratum.
-}
-\details{
+This approach provides a framework for preserving row and/or column value
+distributions in continuous data. When using \code{fixed = "row"} or
+\code{fixed = "col"}, one dimension's value multisets are preserved exactly
+while the other is preserved at the resolution of strata, approximating a
+fixed-fixed null model for quantitative data. The number of strata controls
+the tradeoff between preservation fidelity and randomization strength.
+
 By default, \code{quantize()} will compute all necessary overhead for a
 given dataset (strata, pools, etc.) internally. For repeated randomization
 of the same matrix (e.g. to build a null distribution), this overhead can be
 computed once using \code{\link{quantize_prep}} and reused by supplying the
 resulting object via the \code{prep} argument.
+}
+\details{
+\code{quantize()} is a community null model for quantitative community data
+(e.g. abundance, biomass, or occurrence probability). It works by converting
+quantitative values into discrete strata, randomizing the stratified matrix
+using a categorical null model, and reassigning quantitative values within
+strata according to a specified constraint.
 }
 \examples{
 \donttest{
