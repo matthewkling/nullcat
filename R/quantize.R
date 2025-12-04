@@ -1,68 +1,68 @@
 
 #' Stratified randomization of a quantitative community matrix
 #'
-#' \code{quantize()} is a community null model for quantitative community data
+#' `quantize()` is a community null model for quantitative community data
 #' (e.g. abundance, biomass, or occurrence probability). It works by converting
 #' quantitative values into discrete strata, randomizing the stratified matrix
 #' using a categorical null model, and reassigning quantitative values within
 #' strata according to a specified constraint.
 #'
+#' This approach provides a framework for preserving row and/or column value
+#' distributions in continuous data. When using `fixed = "row"` or
+#' `fixed = "col"`, one dimension's value multisets are preserved exactly
+#' while the other is preserved at the resolution of strata, approximating a
+#' fixed-fixed null model for quantitative data. The number of strata controls
+#' the tradeoff between preservation fidelity and randomization strength.
+#'
+#' By default, `quantize()` will compute all necessary overhead for a
+#' given dataset (strata, pools, etc.) internally. For repeated randomization
+#' of the same matrix (e.g. to build a null distribution), this overhead can be
+#' computed once using [quantize_prep()] and reused by supplying the
+#' resulting object via the `prep` argument.
+#'
 #' @param x Community matrix with sites in rows, species in columns, and
-#'   nonnegative quantitative values in cells. Ignored if \code{prep} is
+#'   nonnegative quantitative values in cells. Ignored if `prep` is
 #'   supplied.
 #' @param prep Optional precomputed object returned by
-#'   \code{\link{quantize_prep}}. If supplied, \code{x} is ignored and all
-#'   overhead (stratification, pools, etc.) is taken from \code{prep}, which
+#'   `quantize_prep()`. If supplied, `x` is ignored and all
+#'   overhead (stratification, pools, etc.) is taken from `prep`, which
 #'   is typically much faster when generating many randomizations of the same
 #'   dataset.
 #' @param method Character string specifying the null model algorithm.
-#'   The default \code{"curvecat"} uses the categorical curveball algorithm.
-#'   See \code{\link{nullcat}} for alternative options.
+#'   The default `"curvecat"` uses the categorical curveball algorithm.
+#'   See [nullcat()] for alternative options.
 #' @param fixed Character string specifying the level at which quantitative
 #'   values are held fixed during randomization. One of:
 #'   \itemize{
-#'     \item \code{"cell"} (the default; only available when \code{method = "curvecat"}):
+#'     \item `"cell"` (the default; only available when `method = "curvecat"`):
 #'       values remain attached to their original cells and move with them during
 #'       the categorical randomization. Row and column value
 #'       distributions are not preserved, but the mapping between each original
 #'       cell and its randomized destination is fixed.
-#'     \item \code{"stratum"}: values are shuffled globally within each stratum,
+#'     \item `"stratum"`: values are shuffled globally within each stratum,
 #'       holding only the overall stratum-level value distribution fixed.
-#'     \item \code{"row"}: values are shuffled within strata separately for each
+#'     \item `"row"`: values are shuffled within strata separately for each
 #'       row, holding each row’s value multiset fixed. Not compatible with all
-#'       \code{method}s.
-#'     \item \code{"col"}: values are shuffled within strata separately for each
+#'       `method`s.
+#'     \item `"col"`: values are shuffled within strata separately for each
 #'       column, holding each column’s value multiset fixed.
 #' }
-#' Note that this interacts with \code{method}: different null models
+#' Note that this interacts with `method`: different null models
 #' fix different margins in the underlying binary representation.
 #'
 #' @inheritParams stratify
 #' @inheritParams nullcat
 #'
-#' @description
+#' @seealso [quantize_batch()] for efficient generation of multiple randomized
+#'   matrices; [quantize_commsim()] for integration with `vegan`.
 #'
-#' This approach provides a framework for preserving row and/or column value
-#' distributions in continuous data. When using \code{fixed = "row"} or
-#' \code{fixed = "col"}, one dimension's value multisets are preserved exactly
-#' while the other is preserved at the resolution of strata, approximating a
-#' fixed-fixed null model for quantitative data. The number of strata controls
-#' the tradeoff between preservation fidelity and randomization strength.
-#'
-#' By default, \code{quantize()} will compute all necessary overhead for a
-#' given dataset (strata, pools, etc.) internally. For repeated randomization
-#' of the same matrix (e.g. to build a null distribution), this overhead can be
-#' computed once using \code{\link{quantize_prep}} and reused by supplying the
-#' resulting object via the \code{prep} argument.
-#'
-#' @return A randomized version of \code{x}, with the same dimensions and
-#'   dimnames. For \code{method = "curvecat"}, the quantitative values are
+#' @return A randomized version of `x`, with the same dimensions and
+#'   dimnames. For `method = "curvecat"`, the quantitative values are
 #'   reassigned within strata while preserving row and column stratum
 #'   multisets. For binary methods, the result corresponds to applying the
 #'   chosen binary null model to each stratum and recombining.
 #'
 #' @examples
-#' \donttest{
 #' # toy quantitative community matrix
 #' set.seed(1)
 #' comm <- matrix(rexp(50 * 40), nrow = 50,
@@ -86,7 +86,6 @@
 #'                        n_strata = 5, fixed = "row")
 #' rand4 <- quantize(prep = prep)
 #' rand5 <- quantize(prep = prep)
-#' }
 #'
 #' @export
 #' @rdname quantize
@@ -134,26 +133,22 @@ quantize <- function(x = NULL,
 
 #' Prepare stratified null model overhead for quantize()
 #'
-#' \code{quantize_prep()} precomputes all of the stratification and bookkeeping
-#' needed by \code{\link{quantize}()} for a given quantitative community
+#' `quantize_prep()` precomputes all of the stratification and bookkeeping
+#' needed by [quantize()] for a given quantitative community
 #' matrix. This is useful when you want to generate many randomizations of the
 #' same dataset: the expensive steps (strata assignment, value pools, and
 #' arguments for the underlying null model) are computed once, and the resulting
-#' object can be passed to \code{quantize(prep = ...)} for fast repeated draws.
+#' object can be passed to `quantize(prep = ...)` for fast repeated draws.
 #'
-#' Internally, \code{quantize_prep()}:
+#' Internally, `quantize_prep()`:
 #' \itemize{
-#'   \item transforms and stratifies \code{x} into \code{n_strata} numeric
-#'     intervals (via \code{\link{stratify}()}),
-#'   \item constructs the appropriate value pools given \code{fixed}
-#'     (either for the categorical \code{"curvecat"} backend or for binary
-#'     vegan methods), and
-#'   \item assembles arguments for the underlying null model call
-#'     (\code{\link{curvecat}} or \code{\link[vegan]{simulate.nullmodel}}).
+#'   \item transforms and stratifies `x` into `n_strata` numeric
+#'     intervals (via [stratify()]),
+#'   \item constructs the appropriate value pools given `fixed`, and
+#'   \item assembles arguments for the underlying null model call to [nullcat()].
 #' }
-#' The returned object can be reused across calls to \code{\link{quantize}()},
-#' \code{\link{quantize_batch}()}, or other helpers that accept a \code{prep}
-#' argument.
+#' The returned object can be reused across calls to [quantize()],
+#' [quantize_batch()], or other helpers that accept a `prep` argument.
 #'
 #' @inheritParams quantize
 #'
@@ -162,32 +157,26 @@ quantize <- function(x = NULL,
 #'   This is the dataset for which stratification and null model overhead
 #'   should be prepared.
 #'
-#' @return A list with class \code{"quantize_prep"} (if you want to set it)
-#'   containing the components needed by \code{\link{quantize}()}:
+#' @return A list with class `"quantize_prep"` (if you want to set it)
+#'   containing the components needed by `quantize()`:
 #'   \itemize{
-#'     \item \code{x}: original quantitative marix \code{x},
-#'     \item \code{strata}: integer matrix of the same dimension as \code{x},
-#'       giving the stratum index (1, \dots, \code{n_strata}) for each cell.
-#'     \item \code{stratarray}: for binary methods, a 3D array of dimension
-#'       \code{n_strata} × \code{nrow(x)} × \code{ncol(x)} containing the
-#'       binary incidence matrix for each stratum; \code{NULL} for
-#'       \code{method = "curvecat"}.
-#'     \item \code{pool}: data structure encoding the quantitative value pools
-#'       used during reassignment. For \code{"curvecat"}, this is a list of
-#'       per-stratum or per-row/column pools depending on \code{fixed}; for
-#'       binary methods, it is a matrix of pre-shuffled values.
-#'     \item \code{method}: the null model method used (as in the
-#'       \code{method} argument).
-#'     \item \code{n_strata}, \code{transform}, \code{offset}, \code{fixed}:
+#'     \item `x`: original quantitative marix `x`,
+#'     \item `strata`: integer matrix of the same dimension as `x`,
+#'       giving the stratum index (`1:n_strata`) for each cell.
+#'     \item `pool`: data structure encoding the quantitative value pools
+#'       used during reassignment.
+#'     \item `method`: the null model method used (as in the `method` argument).
+#'     \item `n_strata`, `transform`, `offset`, `fixed`:
 #'       the stratification and reassignment settings used to construct
-#'       \code{strata} and \code{pool}.
-#'     \item \code{sim_args}: named list of arguments to be passed on to
-#'       \code{\link[vegan]{simulate.nullmodel}} (for binary methods) or used
-#'       internally by \code{curvecat} (e.g. \code{n_iter}).
+#'       `strata` and `pool`.
+#'     \item `sim_args`: named list of arguments passed to `nullcat()`
+#'       (e.g. `n_iter`).
 #'   }
 #'
-#'   This object is intended to be passed unchanged to \code{\link{quantize}()}
-#'   via its \code{prep} argument.
+#'   This object is intended to be passed unchanged to the `prep` argument of
+#'   [quantize()] or [quantize_batch()].
+#'
+#' @seealso [quantize()], [quantize_batch()]
 #'
 #' @examples
 #' set.seed(1)
@@ -204,10 +193,6 @@ quantize <- function(x = NULL,
 #' # fast repeated randomizations using the same prep
 #' rand1 <- quantize(prep = prep)
 #' rand2 <- quantize(prep = prep)
-#'
-#' # use a binary vegan method on each stratum
-#' prep_bin <- quantize_prep(comm, method = "swap", n_strata = 4)
-#' rand3 <- quantize(prep = prep_bin)
 #'
 #' @export
 quantize_prep <- function(x,

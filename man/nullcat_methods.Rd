@@ -12,3 +12,7 @@ A character vector of method names.
 \description{
 Return the character vector of supported categorical randomization methods.
 }
+\examples{
+nullcat_methods()
+
+}

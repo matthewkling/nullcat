@@ -3,7 +3,7 @@
 #' The trial-swap ("tswap") algorithm is a fixed–fixed randomization that repeatedly
 #' attempts random 2×2 swaps until a valid one is found in each iteration,
 #' reducing the number of wasted draws compared to the simple swap.
-#' \code{tswapcat()} extends this logic to categorical matrices.
+#' `tswapcat()` extends this logic to categorical matrices.
 #'
 #' @inheritParams nullcat
 #' @inherit nullcat return
@@ -17,6 +17,9 @@
 #'
 #' Gotelli, N. J. & Entsminger, G. L. (2003). *EcoSim: Null models software for
 #' ecology* (Version 7.0). Acquired Intelligence Inc. & Kesey-Bear, Jericho (VT).
+#'
+#' @seealso [curvecat()] for an algorithm that produces equivalent results with
+#'   better computational efficiency.
 #'
 #' @examples
 #' set.seed(123)

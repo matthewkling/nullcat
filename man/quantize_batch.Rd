@@ -9,27 +9,27 @@ quantize_batch(x, n_reps = 999L, stat = NULL, n_cores = 1L, seed = NULL, ...)
 \arguments{
 \item{x}{Community matrix (species × sites, or any numeric matrix).}
 
-\item{n_reps}{Number of randomizations to generate. Default is `999`.}
+\item{n_reps}{Number of randomizations to generate. Default is \code{999}.}
 
 \item{stat}{Optional summary function taking a matrix and returning a numeric
-statistic (e.g. `rowSums` with abundance data would give total abundance per site).
-If `NULL` (default), the function returns the full set of randomized matrices.}
+statistic (e.g. \code{rowSums} with abundance data would give total abundance per site).
+If \code{NULL} (default), the function returns the full set of randomized matrices.}
 
-\item{n_cores}{Number of compute cores to use for parallel processing. Default is `1`.}
+\item{n_cores}{Number of compute cores to use for parallel processing. Default is \code{1}.}
 
 \item{seed}{Integer used to seed random number generator, for reproducibility.}
 
-\item{...}{Additional arguments passed to `quantize()`,
-(e.g. `method`, `breaks`, `n_strata`, `transform`, `offset`, `zero_stratum`,
-`fixed`, `n_iter`, etc.).}
+\item{...}{Additional arguments passed to \code{quantize()},
+(e.g. \code{method}, \code{breaks}, \code{n_strata}, \code{transform}, \code{offset}, \code{zero_stratum},
+\code{fixed}, \code{n_iter}, etc.).}
 }
 \value{
-If `stat` is `NULL`, returns a 3D array (rows × cols × n_reps).
-  If `stat` is not `NULL`, returns a numeric array of statistic values
-  (dimensionality depends on `stat`).
+If \code{stat} is \code{NULL}, returns a 3D array (rows × cols × n_reps).
+If \code{stat} is not \code{NULL}, returns a numeric array of statistic values
+(dimensionality depends on \code{stat}).
 }
 \description{
-Runs the stratified null model implemented in [quantize()] repeatedly,
+Runs the stratified null model implemented in \code{\link[=quantize]{quantize()}} repeatedly,
 generating a batch of randomized matrices or, optionally, a batch of
 summary statistics computed from those matrices.
 }
@@ -43,5 +43,10 @@ nulls <- quantize_batch(x, n_reps = 99, method = "curvecat", n_iter = 100)
 # Or compute a statistic on each
 row_sums <- nullcat_batch(x, n_reps = 99, stat = rowSums,
                           method = "curvecat", n_iter = 100)
+
+\dontrun{
+# Specify multiple cores for parallel processing
+nulls <- quantize_batch(x, n_reps = 99, n_iter = 100, n_cores = 5)
+}
 
 }

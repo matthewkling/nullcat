@@ -45,7 +45,7 @@ of the \code{n_strata} will represent zeros and the others will be nonzero range
 }
 \value{
 An object the same size as x, with integer values representing
-  stratum classifications.
+stratum classifications.
 }
 \description{
 Bin quantitative data into strata

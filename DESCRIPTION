@@ -1,16 +1,20 @@
 Package: nullcat
 Type: Package
-Title: Null models for categorical and continuous community matrices
-Version: 0.1.0
+Title: Null Models for Categorical and Continuous Community Matrices
+Version: 0.0.0.9000
 Authors@R: 
     person("Matthew", "Kling", 
            email = "mattkling@berkeley.edu", 
            role = c("aut", "cre"))
-Description: Provides novel null model algorithms for categorical and quantitative community ecology data. Extends classic binary null models (e.g., curveball, swap) to work with categorical data, and introduces a stratified randomization framework for continuous data.
+Description: Provides null model algorithms for categorical and quantitative 
+    community ecology data. Extends classic binary null models (e.g., 
+    curveball, swap) to work with categorical data. Provides a stratified
+    randomization framework for continuous data.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.2
+Roxygen: list(markdown = TRUE)
 LinkingTo: Rcpp
 Imports: 
     Rcpp

@@ -18,38 +18,38 @@ Values should represent category or stratum membership for each cell.}
 
 \item{n_iter}{Number of iterations. Default is 1000. Larger values yield
 more thorough mixing. Ignored for non-sequential methods. Minimum
-burn-in times can be estimated with \link{suggest_n_iter}.}
+burn-in times can be estimated with \code{suggest_n_iter()}.}
 
 \item{output}{Character indicating type of result to return:
 \itemize{
-  \item \code{"category"} (default) returns randomized matrix
-  \item \code{"index"} returns an index matrix describing where original
-       entries (a.k.a. "tokens") moved. Useful mainly for testing, and for
-       applications like \code{quantize()} that care about token tracking
-       in addition to generic integer categories.
+\item \code{"category"} (default) returns randomized matrix
+\item \code{"index"} returns an index matrix describing where original
+entries (a.k.a. "tokens") moved. Useful mainly for testing, and for
+applications like \code{quantize()} that care about token tracking
+in addition to generic integer categories.
 }}
 
 \item{swaps}{Character string controlling the direction of token movement.
-Only used when method is `curvecat`, `swapcat`, or `tswapcat`.
+Only used when method is \code{"curvecat"}, \code{"swapcat"}, or \code{"tswapcat"}.
 Affects the result only when \code{output = "index"}, otherwise it only affects
 computation speed. Options include:
 \itemize{
-  \item \code{"vertical"}: Tokens move between rows (stay within columns).
-  \item \code{"horizontal"}: Tokens move between columns (stay within rows).
-  \item \code{"alternating"}: Tokens move in both dimensions, alternating between
-    vertical and horizontal swaps. Provides full 2D mixing without preserving
-    either row or column token sets.
-  \item \code{"auto"} (default): For \code{output = "category"},
-    automatically selects the fastest option based on matrix dimensions. For
-    \code{output = "index"}, defaults to \code{"alternating"} for full mixing.
+\item \code{"vertical"}: Tokens move between rows (stay within columns).
+\item "\verb{horizontal"}: Tokens move between columns (stay within rows).
+\item \code{"alternating"}: Tokens move in both dimensions, alternating between
+vertical and horizontal swaps. Provides full 2D mixing without preserving
+either row or column token sets.
+\item \code{"auto"} (default): For \code{output = "category"},
+automatically selects the fastest option based on matrix dimensions. For
+\code{output = "index"}, defaults to \code{"alternating"} for full mixing.
 }}
 
 \item{seed}{Integer used to seed random number generator, for reproducibility.}
 }
 \value{
 A matrix of the same dimensions as \code{x}, either randomized
-  categorical values (when \code{output = "category"}) or an integer index
-  matrix describing the permutation of entries (when \code{output = "index"}).
+categorical values (when \code{output = "category"}) or an integer index
+matrix describing the permutation of entries (when \code{output = "index"}).
 }
 \description{
 The trial-swap ("tswap") algorithm is a fixed–fixed randomization that repeatedly
@@ -71,11 +71,15 @@ all.equal(sort(x[, 1]), sort(x_rand[, 1]))
 }
 \references{
 Gotelli, N. J. (2000). Null model analysis of species co-occurrence patterns.
-*Ecology*, 81(9), 2606–2621.
+\emph{Ecology}, 81(9), 2606–2621.
 
 Miklós, I. & Podani, J. (2004). Randomization of presence–absence matrices:
-comments and new algorithms. *Ecology*, 85(1), 86–92.
+comments and new algorithms. \emph{Ecology}, 85(1), 86–92.
 
-Gotelli, N. J. & Entsminger, G. L. (2003). *EcoSim: Null models software for
-ecology* (Version 7.0). Acquired Intelligence Inc. & Kesey-Bear, Jericho (VT).
+Gotelli, N. J. & Entsminger, G. L. (2003). \emph{EcoSim: Null models software for
+ecology} (Version 7.0). Acquired Intelligence Inc. & Kesey-Bear, Jericho (VT).
+}
+\seealso{
+\code{\link[=curvecat]{curvecat()}} for an algorithm that produces equivalent results with
+better computational efficiency.
 }

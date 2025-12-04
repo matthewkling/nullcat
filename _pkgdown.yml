@@ -23,7 +23,6 @@ reference:
 - contents:
   - suggest_n_iter
   - trace_cat
-  - kappa
 - title: Vegan integration
 - contents:
   - nullcat_commsim

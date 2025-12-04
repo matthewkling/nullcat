@@ -25,10 +25,10 @@ An integer of class \code{"nullcat_n_iter"} with attributes:
 }
 \description{
 Uses trace diagnostics to estimate how many burn-in iterations are
-needed for a `nullcat` or `quantize` randomization to reach its apparent
+needed for a \code{nullcat} or \code{quantize} randomization to reach its apparent
 stationary distribution, given a dataset and randomization method. Uses a
 "first pre-tail sign-crossing" rule per chain, then returns the maximum
-across chains. Can be called on a community matrix or a `cat_trace` object.
+across chains. Can be called on a community matrix or a \code{cat_trace} object.
 }
 \details{
 This function uses a “first pre-tail sign-crossing” heuristic to identify burn-in cutoff.

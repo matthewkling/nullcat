@@ -9,41 +9,41 @@
 #'   Options include the following; see details and linked functions
 #'   for more info.
 #'   \itemize{
-#'     \item \code{"curvecat"}: categorical analog to `curveball`;
-#'          see \link{curvecat} for details.
-#'     \item \code{"swapcat"}: categorical analog to `swap`;
-#'          see \link{swapcat} for details.
-#'     \item \code{"tswapcat"}: categorical analog to `tswap`;
-#'          see \link{tswapcat} for details.
-#'     \item \code{"r0cat"}: categorical analog to `r0`;
-#'          see \link{r0cat} for details.
-#'     \item \code{"c0cat"}: categorical analog to `c0`;
-#'          see \link{c0cat} for details.
+#'     \item `"curvecat"`: categorical analog to `curveball`;
+#'          see [curvecat()] for details.
+#'     \item `"swapcat"`: categorical analog to `swap`;
+#'          see [swapcat()] for details.
+#'     \item `"tswapcat"`: categorical analog to `tswap`;
+#'          see [tswapcat()] for details.
+#'     \item `"r0cat"`: categorical analog to `r0`;
+#'          see [r0cat()] for details.
+#'     \item `"c0cat"`: categorical analog to `c0`;
+#'          see [c0cat()] for details.
 #'   }
 #' @param n_iter Number of iterations. Default is 1000. Larger values yield
 #'   more thorough mixing. Ignored for non-sequential methods. Minimum
-#'   burn-in times can be estimated with \link{suggest_n_iter}.
+#'   burn-in times can be estimated with `suggest_n_iter()`.
 #' @param output Character indicating type of result to return:
 #'   \itemize{
-#'     \item \code{"category"} (default) returns randomized matrix
-#'     \item \code{"index"} returns an index matrix describing where original
+#'     \item `"category"` (default) returns randomized matrix
+#'     \item `"index"` returns an index matrix describing where original
 #'          entries (a.k.a. "tokens") moved. Useful mainly for testing, and for
-#'          applications like \code{quantize()} that care about token tracking
+#'          applications like `quantize()` that care about token tracking
 #'          in addition to generic integer categories.
 #'   }
 #' @param swaps Character string controlling the direction of token movement.
-#'   Only used when method is `curvecat`, `swapcat`, or `tswapcat`.
-#'   Affects the result only when \code{output = "index"}, otherwise it only affects
+#'   Only used when method is `"curvecat"`, `"swapcat"`, or `"tswapcat"`.
+#'   Affects the result only when `output = "index"`, otherwise it only affects
 #'   computation speed. Options include:
 #'   \itemize{
-#'     \item \code{"vertical"}: Tokens move between rows (stay within columns).
-#'     \item \code{"horizontal"}: Tokens move between columns (stay within rows).
-#'     \item \code{"alternating"}: Tokens move in both dimensions, alternating between
+#'     \item `"vertical"`: Tokens move between rows (stay within columns).
+#'     \item "`horizontal"`: Tokens move between columns (stay within rows).
+#'     \item `"alternating"`: Tokens move in both dimensions, alternating between
 #'       vertical and horizontal swaps. Provides full 2D mixing without preserving
 #'       either row or column token sets.
-#'     \item \code{"auto"} (default): For \code{output = "category"},
+#'     \item `"auto"` (default): For `output = "category"`,
 #'       automatically selects the fastest option based on matrix dimensions. For
-#'       \code{output = "index"}, defaults to \code{"alternating"} for full mixing.
+#'       `output = "index"`, defaults to `"alternating"` for full mixing.
 #'   }
 #' @param seed Integer used to seed random number generator, for reproducibility.
 #'
@@ -62,9 +62,12 @@
 #' attributes (e.g., land cover) or species-level attributes (e.g., functional
 #' traits) should be analyzed using different approaches.
 #'
-#' @return A matrix of the same dimensions as \code{x}, either randomized
-#'   categorical values (when \code{output = "category"}) or an integer index
-#'   matrix describing the permutation of entries (when \code{output = "index"}).
+#' @seealso [nullcat_batch()] for efficient generation of multiple randomized
+#'   matrices; [nullcat_commsim()] for integration with `vegan`.
+#'
+#' @return A matrix of the same dimensions as `x`, either randomized
+#'   categorical values (when `output = "category"`) or an integer index
+#'   matrix describing the permutation of entries (when `output = "index"`).
 #'
 #' @examples
 #' # Create a categorical matrix

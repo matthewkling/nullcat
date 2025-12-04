@@ -12,47 +12,48 @@ nullcat_commsim(
 }
 \arguments{
 \item{n_iter}{Integer, number of iterations (trades) per simulated
-matrix. Must be a positive integer. Default is `1e4`.}
+matrix. Must be a positive integer. Default is \code{1e4}.}
 
 \item{method}{Character specifying which nullcat randomization algorithm
-to use. See [nullcat()] and [nullcat_methods()] for details.}
+to use. See \code{\link[=nullcat]{nullcat()}} and \code{\link[=nullcat_methods]{nullcat_methods()}} for details.}
 
-\item{output}{Character, passed to `nullcat(output = ...)`.
-Typically `"category"` (default) or `"index"`.}
+\item{output}{Character, passed to \code{nullcat(output = ...)}.
+Typically \code{"category"} (default) or \code{"index"}.}
 }
 \value{
-An object of class `"commsim"` suitable for use with
-  `vegan::nullmodel()` and `vegan::oecosimu()`.
+An object of class \code{"commsim"} suitable for use with
+\code{vegan::nullmodel()} and \code{vegan::oecosimu()}.
 }
 \description{
-Construct a `vegan::commsim()` object that uses [nullcat()] as a
+Construct a \code{vegan::commsim()} object that uses \code{\link[=nullcat]{nullcat()}} as a
 non-sequential null model for categorical / integer matrices.
 Each simulated matrix is generated independently by applying
-[nullcat()] with `n_iter` trades starting from the original matrix.
+\code{\link[=nullcat]{nullcat()}} with \code{n_iter} trades starting from the original matrix.
 }
 \section{Details}{
 
 
-This generates a commsim object that is **non-sequential**:
+This generates a commsim object that is \strong{non-sequential}:
 each simulated matrix starts from the original matrix and is
-randomized independently using `n_iter` trades of the chosen
-`method`.
+randomized independently using \code{n_iter} trades of the chosen
+\code{method}.
 
-When used via `vegan::simulate.nullmodel()`, the arguments behave as:
+When used via \code{vegan::simulate.nullmodel()}, the arguments behave as:
 \itemize{
-  \item `nsim`: number of simulated matrices to generate.
-  \item `n_iter` (here, in `nullcat_commsim()`): number of trades per
-  simulated matrix (controls how strongly each replicate is shuffled).
-  \item `burnin` and `thin`: are **ignored** for this commsim, because
-  `isSeq = FALSE` (the simulations are not a Markov chain).
+\item \code{nsim}: number of simulated matrices to generate.
+\item \code{n_iter} (here, in \code{nullcat_commsim()}): number of trades per
+simulated matrix (controls how strongly each replicate is shuffled).
+\item \code{burnin} and \code{thin}: are \strong{ignored} for this commsim, because
+\code{isSeq = FALSE} (the simulations are not a Markov chain).
 }
 
-In other words, treat `n_iter` as the tuning parameter for how
+In other words, treat \code{n_iter} as the tuning parameter for how
 thoroughly each independent null matrix is randomized.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (requireNamespace("vegan", quietly = TRUE)) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\donttest{
   library(vegan)
 
   x  <- matrix(sample(1:5, 50, replace = TRUE), 10, 5)
@@ -61,9 +62,9 @@ thoroughly each independent null matrix is randomized.
   nm   <- nullmodel(x, cs)
   sims <- simulate(nm, nsim = 999)
 }
-
+\dontshow{\}) # examplesIf}
 }
 \seealso{
-[nullcat_batch()] if you just want a batch of null matrices
-without going through **vegan**.
+\code{\link[=nullcat_batch]{nullcat_batch()}} if you just want a batch of null matrices
+without going through \strong{vegan}.
 }

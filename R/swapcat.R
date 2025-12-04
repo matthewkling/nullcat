@@ -8,26 +8,20 @@
 #' @inherit nullcat return
 #'
 #' @details
-#' The swapcat algorithm attempts random 2x2 swaps of the form
+#' The swapcat algorithm attempts random 2x2 swaps of the form:
 #'
-#' \deqn{
-#' \begin{pmatrix}
-#' a & b \\
-#' b & a
-#' \end{pmatrix}
-#' \leftrightarrow
-#' \begin{pmatrix}
-#' b & a \\
-#' a & b
-#' \end{pmatrix}
-#' }
+#' ```
+#' a b        b a
+#' b a   <->  a b
+#' ```
 #'
 #' where \eqn{a} and \eqn{b} are distinct categories. These swaps
 #' preserve the multiset of categories in each row and column.
 #' With only two categories present, `swapcat()` reduces to the
 #' behavior of the standard binary swap algorithm.
 #'
-#' @seealso [nullcat()], [nullcat_methods()]
+#' @seealso [curvecat()] for an algorithm that produces equivalent results with
+#'   better computational efficiency.
 #'
 #' @references
 #' Gotelli, N. J. (2000). Null model analysis of species co-occurrence patterns.

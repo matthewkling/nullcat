@@ -14,15 +14,15 @@
 #' long-run mean, indicating that the chain has begun to oscillate around its
 #' stationary value. If the chain does not reach the long-run mean before the
 #' start of the tail window, the chain is determined not to have reached stationarity,
-#' and the function returns \code{NA} with attribute \code{converged = FALSE}.
+#' and the function returns `NA` with attribute `converged = FALSE`.
 #'
-#' @param trace Either a \code{cat_trace} object (as returned by \code{trace_cat()}), or NULL.
-#'   If NULL, arguments to \code{trace_cat()}, including \code{x} and any other relevant
-#'   parameters must be supplied via \code{...}
+#' @param trace Either a `cat_trace` object (as returned by `trace_cat()`), or NULL.
+#'   If NULL, arguments to `trace_cat()`, including `x` and any other relevant
+#'   parameters must be supplied via `...`
 #' @param tail_frac Fraction of the trace (at the end) used as the tail window (default 0.3).
 #' @param plot If TRUE, plot the trace, with a vertical line at the suggested value.
-#' @param ... Arguments passed to \code{trace_cat()} including  arguments it passes to the
-#'   \code{nullcat()} or \code{quantize()} function. Ignored if \code{trace} is non-NULL.
+#' @param ... Arguments passed to `trace_cat()` including  arguments it passes to the
+#'   `nullcat()` or `quantize()` function. Ignored if `trace` is non-NULL.
 #' @references
 #' Heidelberger, P. & Welch, P.D. (1983). Simulation run length control in the presence of
 #' an initial transient. Operations Research, 31(6): 1109–1144.
@@ -33,9 +33,9 @@
 #' Geyer, C.J. (1992). Practical Markov Chain Monte Carlo. Statistical Science, 7(4): 473–483.
 #'
 #' Feller, W. (1968). An Introduction to Probability Theory and Its Applications, Vol. I. Wiley.
-#' @return An integer of class \code{"nullcat_n_iter"} with attributes:
-#' \code{n_iter} (numeric or NA), \code{trace} (matrix), \code{steps} (vector),
-#' \code{tail_mean} (per-chain), \code{per_chain} (data.frame), \code{converged} (logical).
+#' @return An integer of class `"nullcat_n_iter"` with attributes:
+#' `n_iter` (numeric or NA), `trace` (matrix), `steps` (vector),
+#' `tail_mean` (per-chain), `per_chain` (data.frame), `converged` (logical).
 #'
 #' @examples
 #' set.seed(1234)

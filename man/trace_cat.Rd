@@ -27,29 +27,29 @@ trace_cat(
 \item{thin}{Thinning interval (updates per recorded point). Default ~ \code{n_iter/100}.
 Smaller values increase resolution but increase run time.}
 
-\item{n_chains}{Number of independent chains to run, to assess consistency (default 5).}
+\item{n_chains}{Number of independent chains to run, to assess consistency (default \code{5}).}
 
-\item{n_cores}{Parallel chains (default 1).}
+\item{n_cores}{Parallel chains (default \code{1}).}
 
 \item{stat}{Function that compares \code{x} to a permuted \code{x_rand} to quantify their
 similarity. Either a function \code{f(x, x_rand)} returning a scalar, or \code{NULL}.
-If \code{NULL} (the default), traces use Cohen's kappa for nullcat or
-Pearson's correlation for quantize.}
+If \code{NULL} (the default), traces use Cohen's kappa for \code{nullcat()} or Pearson's
+correlation for \code{quantize()}.}
 
 \item{seed}{Optional integer seed for reproducible traces.}
 
 \item{plot}{If TRUE, plot the traces.}
 
-\item{...}{Arguments to the chosen \code{fun} (\code{nullcat()} or \code{quantize_batch()}),
+\item{...}{Arguments to the chosen \code{fun} (\code{nullcat()} or \code{quantize()}),
 such as \code{method}, \code{n_strata}, \code{fixed}, etc.}
 }
 \value{
 An object of class \code{"cat_trace"} with elements:
 \itemize{
-  \item \code{traces}: matrix of size (n_steps+1) x n_chains, including iteration 0
-  \item \code{steps}: integer vector of iteration numbers (starting at 0)
-  \item \code{fun}, \code{n_iter}, \code{thin}, \code{n_chains}, \code{n_cores}, \code{stat_name}, \code{call}
-  \item \code{fun_args}: list of the \code{...} used (for reproducibility)
+\item \code{traces}: matrix of size (n_steps+1) x n_chains, including iteration 0
+\item \code{steps}: integer vector of iteration numbers (starting at 0)
+\item \code{fun}, \code{n_iter}, \code{thin}, \code{n_chains}, \code{n_cores}, \code{stat_name}, \code{call}
+\item \code{fun_args}: list of the \code{...} used (for reproducibility)
 }
 Plotting is available via \code{plot(cat_trace)}.
 }

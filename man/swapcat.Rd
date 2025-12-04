@@ -18,62 +18,54 @@ Values should represent category or stratum membership for each cell.}
 
 \item{n_iter}{Number of iterations. Default is 1000. Larger values yield
 more thorough mixing. Ignored for non-sequential methods. Minimum
-burn-in times can be estimated with \link{suggest_n_iter}.}
+burn-in times can be estimated with \code{suggest_n_iter()}.}
 
 \item{output}{Character indicating type of result to return:
 \itemize{
-  \item \code{"category"} (default) returns randomized matrix
-  \item \code{"index"} returns an index matrix describing where original
-       entries (a.k.a. "tokens") moved. Useful mainly for testing, and for
-       applications like \code{quantize()} that care about token tracking
-       in addition to generic integer categories.
+\item \code{"category"} (default) returns randomized matrix
+\item \code{"index"} returns an index matrix describing where original
+entries (a.k.a. "tokens") moved. Useful mainly for testing, and for
+applications like \code{quantize()} that care about token tracking
+in addition to generic integer categories.
 }}
 
 \item{swaps}{Character string controlling the direction of token movement.
-Only used when method is `curvecat`, `swapcat`, or `tswapcat`.
+Only used when method is \code{"curvecat"}, \code{"swapcat"}, or \code{"tswapcat"}.
 Affects the result only when \code{output = "index"}, otherwise it only affects
 computation speed. Options include:
 \itemize{
-  \item \code{"vertical"}: Tokens move between rows (stay within columns).
-  \item \code{"horizontal"}: Tokens move between columns (stay within rows).
-  \item \code{"alternating"}: Tokens move in both dimensions, alternating between
-    vertical and horizontal swaps. Provides full 2D mixing without preserving
-    either row or column token sets.
-  \item \code{"auto"} (default): For \code{output = "category"},
-    automatically selects the fastest option based on matrix dimensions. For
-    \code{output = "index"}, defaults to \code{"alternating"} for full mixing.
+\item \code{"vertical"}: Tokens move between rows (stay within columns).
+\item "\verb{horizontal"}: Tokens move between columns (stay within rows).
+\item \code{"alternating"}: Tokens move in both dimensions, alternating between
+vertical and horizontal swaps. Provides full 2D mixing without preserving
+either row or column token sets.
+\item \code{"auto"} (default): For \code{output = "category"},
+automatically selects the fastest option based on matrix dimensions. For
+\code{output = "index"}, defaults to \code{"alternating"} for full mixing.
 }}
 
 \item{seed}{Integer used to seed random number generator, for reproducibility.}
 }
 \value{
 A matrix of the same dimensions as \code{x}, either randomized
-  categorical values (when \code{output = "category"}) or an integer index
-  matrix describing the permutation of entries (when \code{output = "index"}).
+categorical values (when \code{output = "category"}) or an integer index
+matrix describing the permutation of entries (when \code{output = "index"}).
 }
 \description{
 Categorical generalization of the binary 2x2 swap algorithm to
 matrices of categorical data. This function is a convenience wrapper
-around [nullcat()] with `method = "swapcat"`.
+around \code{\link[=nullcat]{nullcat()}} with \code{method = "swapcat"}.
 }
 \details{
-The swapcat algorithm attempts random 2x2 swaps of the form
+The swapcat algorithm attempts random 2x2 swaps of the form:
 
-\deqn{
-\begin{pmatrix}
-a & b \\
-b & a
-\end{pmatrix}
-\leftrightarrow
-\begin{pmatrix}
-b & a \\
-a & b
-\end{pmatrix}
-}
+\if{html}{\out{<div class="sourceCode">}}\preformatted{a b        b a
+b a   <->  a b
+}\if{html}{\out{</div>}}
 
 where \eqn{a} and \eqn{b} are distinct categories. These swaps
 preserve the multiset of categories in each row and column.
-With only two categories present, `swapcat()` reduces to the
+With only two categories present, \code{swapcat()} reduces to the
 behavior of the standard binary swap algorithm.
 }
 \examples{
@@ -90,11 +82,12 @@ all.equal(sort(x[, 1]), sort(x_rand[, 1]))
 }
 \references{
 Gotelli, N. J. (2000). Null model analysis of species co-occurrence patterns.
-*Ecology*, 81(9), 2606–2621.
+\emph{Ecology}, 81(9), 2606–2621.
 
-See also Gotelli & Entsminger (2003) *EcoSim: Null models software for ecology*
+See also Gotelli & Entsminger (2003) \emph{EcoSim: Null models software for ecology}
 (Version 7.0) for implementation details of the binary swap algorithm.
 }
 \seealso{
-[nullcat()], [nullcat_methods()]
+\code{\link[=curvecat]{curvecat()}} for an algorithm that produces equivalent results with
+better computational efficiency.
 }

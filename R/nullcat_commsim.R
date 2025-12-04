@@ -38,8 +38,8 @@
 #' @return An object of class `"commsim"` suitable for use with
 #'   `vegan::nullmodel()` and `vegan::oecosimu()`.
 #'
-#' @examples
-#' \dontrun{
+#' @examplesIf requireNamespace("vegan", quietly = TRUE)
+#' \donttest{
 #'   library(vegan)
 #'
 #'   x  <- matrix(sample(1:5, 50, replace = TRUE), 10, 5)
@@ -139,8 +139,8 @@ nullcat_commsim <- function(n_iter = 1e4,
 #' @return An object of class `"commsim"` suitable for use with
 #'   `vegan::nullmodel()` and `vegan::oecosimu()`.
 #'
-#' @examples
-#' \dontrun{
+#' @examplesIf requireNamespace("vegan", quietly = TRUE)
+#' \donttest{
 #'   library(vegan)
 #'
 #'   x  <- matrix(sample(1:5, 50, replace = TRUE), 10, 5)

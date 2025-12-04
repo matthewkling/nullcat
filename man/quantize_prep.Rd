@@ -24,23 +24,23 @@ should be prepared.}
 
 \item{method}{Character string specifying the null model algorithm.
 The default \code{"curvecat"} uses the categorical curveball algorithm.
-See \code{\link{nullcat}} for alternative options.}
+See \code{\link[=nullcat]{nullcat()}} for alternative options.}
 
 \item{fixed}{Character string specifying the level at which quantitative
-  values are held fixed during randomization. One of:
-  \itemize{
-    \item \code{"cell"} (the default; only available when \code{method = "curvecat"}):
-      values remain attached to their original cells and move with them during
-      the categorical randomization. Row and column value
-      distributions are not preserved, but the mapping between each original
-      cell and its randomized destination is fixed.
-    \item \code{"stratum"}: values are shuffled globally within each stratum,
-      holding only the overall stratum-level value distribution fixed.
-    \item \code{"row"}: values are shuffled within strata separately for each
-      row, holding each row’s value multiset fixed. Not compatible with all
-      \code{method}s.
-    \item \code{"col"}: values are shuffled within strata separately for each
-      column, holding each column’s value multiset fixed.
+values are held fixed during randomization. One of:
+\itemize{
+\item \code{"cell"} (the default; only available when \code{method = "curvecat"}):
+values remain attached to their original cells and move with them during
+the categorical randomization. Row and column value
+distributions are not preserved, but the mapping between each original
+cell and its randomized destination is fixed.
+\item \code{"stratum"}: values are shuffled globally within each stratum,
+holding only the overall stratum-level value distribution fixed.
+\item \code{"row"}: values are shuffled within strata separately for each
+row, holding each row’s value multiset fixed. Not compatible with all
+\code{method}s.
+\item \code{"col"}: values are shuffled within strata separately for each
+column, holding each column’s value multiset fixed.
 }
 Note that this interacts with \code{method}: different null models
 fix different margins in the underlying binary representation.}
@@ -74,39 +74,31 @@ of the \code{n_strata} will represent zeros and the others will be nonzero range
 
 \item{n_iter}{Number of iterations. Default is 1000. Larger values yield
 more thorough mixing. Ignored for non-sequential methods. Minimum
-burn-in times can be estimated with \link{suggest_n_iter}.}
+burn-in times can be estimated with \code{suggest_n_iter()}.}
 }
 \value{
 A list with class \code{"quantize_prep"} (if you want to set it)
-  containing the components needed by \code{\link{quantize}()}:
-  \itemize{
-    \item \code{x}: original quantitative marix \code{x},
-    \item \code{strata}: integer matrix of the same dimension as \code{x},
-      giving the stratum index (1, \dots, \code{n_strata}) for each cell.
-    \item \code{stratarray}: for binary methods, a 3D array of dimension
-      \code{n_strata} × \code{nrow(x)} × \code{ncol(x)} containing the
-      binary incidence matrix for each stratum; \code{NULL} for
-      \code{method = "curvecat"}.
-    \item \code{pool}: data structure encoding the quantitative value pools
-      used during reassignment. For \code{"curvecat"}, this is a list of
-      per-stratum or per-row/column pools depending on \code{fixed}; for
-      binary methods, it is a matrix of pre-shuffled values.
-    \item \code{method}: the null model method used (as in the
-      \code{method} argument).
-    \item \code{n_strata}, \code{transform}, \code{offset}, \code{fixed}:
-      the stratification and reassignment settings used to construct
-      \code{strata} and \code{pool}.
-    \item \code{sim_args}: named list of arguments to be passed on to
-      \code{\link[vegan]{simulate.nullmodel}} (for binary methods) or used
-      internally by \code{curvecat} (e.g. \code{n_iter}).
-  }
+containing the components needed by \code{quantize()}:
+\itemize{
+\item \code{x}: original quantitative marix \code{x},
+\item \code{strata}: integer matrix of the same dimension as \code{x},
+giving the stratum index (\code{1:n_strata}) for each cell.
+\item \code{pool}: data structure encoding the quantitative value pools
+used during reassignment.
+\item \code{method}: the null model method used (as in the \code{method} argument).
+\item \code{n_strata}, \code{transform}, \code{offset}, \code{fixed}:
+the stratification and reassignment settings used to construct
+\code{strata} and \code{pool}.
+\item \code{sim_args}: named list of arguments passed to \code{nullcat()}
+(e.g. \code{n_iter}).
+}
 
-  This object is intended to be passed unchanged to \code{\link{quantize}()}
-  via its \code{prep} argument.
+This object is intended to be passed unchanged to the \code{prep} argument of
+\code{\link[=quantize]{quantize()}} or \code{\link[=quantize_batch]{quantize_batch()}}.
 }
 \description{
 \code{quantize_prep()} precomputes all of the stratification and bookkeeping
-needed by \code{\link{quantize}()} for a given quantitative community
+needed by \code{\link[=quantize]{quantize()}} for a given quantitative community
 matrix. This is useful when you want to generate many randomizations of the
 same dataset: the expensive steps (strata assignment, value pools, and
 arguments for the underlying null model) are computed once, and the resulting
@@ -115,17 +107,13 @@ object can be passed to \code{quantize(prep = ...)} for fast repeated draws.
 \details{
 Internally, \code{quantize_prep()}:
 \itemize{
-  \item transforms and stratifies \code{x} into \code{n_strata} numeric
-    intervals (via \code{\link{stratify}()}),
-  \item constructs the appropriate value pools given \code{fixed}
-    (either for the categorical \code{"curvecat"} backend or for binary
-    vegan methods), and
-  \item assembles arguments for the underlying null model call
-    (\code{\link{curvecat}} or \code{\link[vegan]{simulate.nullmodel}}).
+\item transforms and stratifies \code{x} into \code{n_strata} numeric
+intervals (via \code{\link[=stratify]{stratify()}}),
+\item constructs the appropriate value pools given \code{fixed}, and
+\item assembles arguments for the underlying null model call to \code{\link[=nullcat]{nullcat()}}.
 }
-The returned object can be reused across calls to \code{\link{quantize}()},
-\code{\link{quantize_batch}()}, or other helpers that accept a \code{prep}
-argument.
+The returned object can be reused across calls to \code{\link[=quantize]{quantize()}},
+\code{\link[=quantize_batch]{quantize_batch()}}, or other helpers that accept a \code{prep} argument.
 }
 \examples{
 set.seed(1)
@@ -143,8 +131,7 @@ prep <- quantize_prep(comm, method = "curvecat",
 rand1 <- quantize(prep = prep)
 rand2 <- quantize(prep = prep)
 
-# use a binary vegan method on each stratum
-prep_bin <- quantize_prep(comm, method = "swap", n_strata = 4)
-rand3 <- quantize(prep = prep_bin)
-
+}
+\seealso{
+\code{\link[=quantize]{quantize()}}, \code{\link[=quantize_batch]{quantize_batch()}}
 }

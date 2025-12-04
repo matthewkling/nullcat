@@ -7,58 +7,58 @@
 quantize_commsim_seq(...)
 }
 \arguments{
-\item{...}{Arguments passed to [quantize()], such as `breaks`,
-`n_strata`, `transform`, `offset`, `zero_stratum`, `fixed`,
-`method`, `n_iter`, etc. Do **not** supply `x` or `n_iter` here;
-`x` is provided by vegan and `n_iter` is set internally from
-`thin`. See [quantize()] for details.}
+\item{...}{Arguments passed to \code{\link[=quantize]{quantize()}}, such as \code{breaks},
+\code{n_strata}, \code{transform}, \code{offset}, \code{zero_stratum}, \code{fixed},
+\code{method}, \code{n_iter}, etc. Do \strong{not} supply \code{x} or \code{n_iter} here;
+\code{x} is provided by vegan and \code{n_iter} is set internally from
+\code{thin}. See \code{\link[=quantize]{quantize()}} for details.}
 }
 \value{
-An object of class `"commsim"` suitable for
-  [vegan::nullmodel()] and [vegan::oecosimu()].
+An object of class \code{"commsim"} suitable for
+\code{\link[vegan:nullmodel]{vegan::nullmodel()}} and \code{\link[vegan:oecosimu]{vegan::oecosimu()}}.
 }
 \description{
-Construct a [vegan::commsim()] object that uses [quantize()] as a
-*sequential* null model: successive simulated matrices form a
+Construct a \code{\link[vegan:commsim]{vegan::commsim()}} object that uses \code{\link[=quantize]{quantize()}} as a
+\emph{sequential} null model: successive simulated matrices form a
 Markov chain in the space of numeric community matrices.
 Internally, each simulation "step" advances the chain by
-re-applying [quantize()] to the current matrix using the settings
-provided via `...`.
+re-applying \code{\link[=quantize]{quantize()}} to the current matrix using the settings
+provided via \code{...}.
 }
 \section{Details}{
 
 
-This model is **sequential**: simulated matrices form a Markov chain. The current matrix is
+This model is \strong{sequential}: simulated matrices form a Markov chain. The current matrix is
 updated in-place by repeated calls to the randomization model, and successive
 matrices are obtained by advancing the chain.
 
-In `vegan::simulate.nullmodel()`, the control arguments behave as:
+In \code{vegan::simulate.nullmodel()}, the control arguments behave as:
 \itemize{
-  \item `nsim`: number of matrices to *store* from the chain.
-  \item `thin`: number of trades per step. Each "step" of the chain
-  applies `thin` trades of the chosen `method` to the current state
-  before possibly storing it.
-  \item `burnin`: number of initial steps to perform (each with `thin`
-  trades) before storing any matrices, i.e. the Markov chain
-  burn-in.
+\item \code{nsim}: number of matrices to \emph{store} from the chain.
+\item \code{thin}: number of trades per step. Each "step" of the chain
+applies \code{thin} trades of the chosen \code{method} to the current state
+before possibly storing it.
+\item \code{burnin}: number of initial steps to perform (each with \code{thin}
+trades) before storing any matrices, i.e. the Markov chain
+burn-in.
 }
 
-There is no `n_iter` argument here: mixing is controlled entirely by
-`thin` (trades per step) and `burnin` (number of initial steps
+There is no \code{n_iter} argument here: mixing is controlled entirely by
+\code{thin} (trades per step) and \code{burnin} (number of initial steps
 discarded), in the same spirit as sequential swap / curveball models
-in **vegan**.
+in \strong{vegan}.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (requireNamespace("vegan", quietly = TRUE)) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\donttest{
   library(vegan)
 
   x <- matrix(rexp(50), 10, 5)
 
   cs <- quantize_commsim_seq(
-    n_strata = 10,
-    method   = "curvecat",
-    n_iter   = 1000L
+    n_strata = 5,
+    method   = "curvecat"
   )
 
   nm <- nullmodel(x, cs)
@@ -70,5 +70,5 @@ in **vegan**.
     burnin = 100    # 100 initial steps discarded
   )
 }
-
+\dontshow{\}) # examplesIf}
 }

@@ -24,30 +24,30 @@ nonnegative quantitative values in cells. Ignored if \code{prep} is
 supplied.}
 
 \item{prep}{Optional precomputed object returned by
-\code{\link{quantize_prep}}. If supplied, \code{x} is ignored and all
+\code{quantize_prep()}. If supplied, \code{x} is ignored and all
 overhead (stratification, pools, etc.) is taken from \code{prep}, which
 is typically much faster when generating many randomizations of the same
 dataset.}
 
 \item{method}{Character string specifying the null model algorithm.
 The default \code{"curvecat"} uses the categorical curveball algorithm.
-See \code{\link{nullcat}} for alternative options.}
+See \code{\link[=nullcat]{nullcat()}} for alternative options.}
 
 \item{fixed}{Character string specifying the level at which quantitative
-  values are held fixed during randomization. One of:
-  \itemize{
-    \item \code{"cell"} (the default; only available when \code{method = "curvecat"}):
-      values remain attached to their original cells and move with them during
-      the categorical randomization. Row and column value
-      distributions are not preserved, but the mapping between each original
-      cell and its randomized destination is fixed.
-    \item \code{"stratum"}: values are shuffled globally within each stratum,
-      holding only the overall stratum-level value distribution fixed.
-    \item \code{"row"}: values are shuffled within strata separately for each
-      row, holding each row’s value multiset fixed. Not compatible with all
-      \code{method}s.
-    \item \code{"col"}: values are shuffled within strata separately for each
-      column, holding each column’s value multiset fixed.
+values are held fixed during randomization. One of:
+\itemize{
+\item \code{"cell"} (the default; only available when \code{method = "curvecat"}):
+values remain attached to their original cells and move with them during
+the categorical randomization. Row and column value
+distributions are not preserved, but the mapping between each original
+cell and its randomized destination is fixed.
+\item \code{"stratum"}: values are shuffled globally within each stratum,
+holding only the overall stratum-level value distribution fixed.
+\item \code{"row"}: values are shuffled within strata separately for each
+row, holding each row’s value multiset fixed. Not compatible with all
+\code{method}s.
+\item \code{"col"}: values are shuffled within strata separately for each
+column, holding each column’s value multiset fixed.
 }
 Note that this interacts with \code{method}: different null models
 fix different margins in the underlying binary representation.}
@@ -81,18 +81,25 @@ of the \code{n_strata} will represent zeros and the others will be nonzero range
 
 \item{n_iter}{Number of iterations. Default is 1000. Larger values yield
 more thorough mixing. Ignored for non-sequential methods. Minimum
-burn-in times can be estimated with \link{suggest_n_iter}.}
+burn-in times can be estimated with \code{suggest_n_iter()}.}
 
 \item{seed}{Integer used to seed random number generator, for reproducibility.}
 }
 \value{
 A randomized version of \code{x}, with the same dimensions and
-  dimnames. For \code{method = "curvecat"}, the quantitative values are
-  reassigned within strata while preserving row and column stratum
-  multisets. For binary methods, the result corresponds to applying the
-  chosen binary null model to each stratum and recombining.
+dimnames. For \code{method = "curvecat"}, the quantitative values are
+reassigned within strata while preserving row and column stratum
+multisets. For binary methods, the result corresponds to applying the
+chosen binary null model to each stratum and recombining.
 }
 \description{
+\code{quantize()} is a community null model for quantitative community data
+(e.g. abundance, biomass, or occurrence probability). It works by converting
+quantitative values into discrete strata, randomizing the stratified matrix
+using a categorical null model, and reassigning quantitative values within
+strata according to a specified constraint.
+}
+\details{
 This approach provides a framework for preserving row and/or column value
 distributions in continuous data. When using \code{fixed = "row"} or
 \code{fixed = "col"}, one dimension's value multisets are preserved exactly
@@ -103,18 +110,10 @@ the tradeoff between preservation fidelity and randomization strength.
 By default, \code{quantize()} will compute all necessary overhead for a
 given dataset (strata, pools, etc.) internally. For repeated randomization
 of the same matrix (e.g. to build a null distribution), this overhead can be
-computed once using \code{\link{quantize_prep}} and reused by supplying the
+computed once using \code{\link[=quantize_prep]{quantize_prep()}} and reused by supplying the
 resulting object via the \code{prep} argument.
 }
-\details{
-\code{quantize()} is a community null model for quantitative community data
-(e.g. abundance, biomass, or occurrence probability). It works by converting
-quantitative values into discrete strata, randomizing the stratified matrix
-using a categorical null model, and reassigning quantitative values within
-strata according to a specified constraint.
-}
 \examples{
-\donttest{
 # toy quantitative community matrix
 set.seed(1)
 comm <- matrix(rexp(50 * 40), nrow = 50,
@@ -138,6 +137,9 @@ prep  <- quantize_prep(comm, method = "curvecat",
                        n_strata = 5, fixed = "row")
 rand4 <- quantize(prep = prep)
 rand5 <- quantize(prep = prep)
-}
 
+}
+\seealso{
+\code{\link[=quantize_batch]{quantize_batch()}} for efficient generation of multiple randomized
+matrices; \code{\link[=quantize_commsim]{quantize_commsim()}} for integration with \code{vegan}.
 }

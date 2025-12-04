@@ -1,33 +1,33 @@
 
 #' Trace diagnostics for categorical randomizations
 #'
-#' Applies \code{nullcat()} or \code{quantize()} to a community matrix, recording
+#' Applies `nullcat()` or `quantize()` to a community matrix, recording
 #' a summary statistic at each iteration to help assess mixing on a given dataset.
 #'
 #' @param x Matrix of categorical data (integers) or quantitative values.
-#' @param fun Which function to trace: \code{"nullcat"} or \code{"quantize"}.
+#' @param fun Which function to trace: `"nullcat"` or `"quantize"`.
 #' @param n_iter Total number of update iterations to simulate. Default is 1000.
-#' @param thin Thinning interval (updates per recorded point). Default ~ \code{n_iter/100}.
+#' @param thin Thinning interval (updates per recorded point). Default ~ `n_iter/100`.
 #'   Smaller values increase resolution but increase run time.
-#' @param n_chains Number of independent chains to run, to assess consistency (default 5).
-#' @param n_cores Parallel chains (default 1).
-#' @param stat Function that compares \code{x} to a permuted \code{x_rand} to quantify their
-#'   similarity. Either a function \code{f(x, x_rand)} returning a scalar, or \code{NULL}.
-#'   If \code{NULL} (the default), traces use Cohen's kappa for nullcat or
-#'   Pearson's correlation for quantize.
+#' @param n_chains Number of independent chains to run, to assess consistency (default `5`).
+#' @param n_cores Parallel chains (default `1`).
+#' @param stat Function that compares `x` to a permuted `x_rand` to quantify their
+#'   similarity. Either a function `f(x, x_rand)` returning a scalar, or `NULL`.
+#'   If `NULL` (the default), traces use Cohen's kappa for `nullcat()` or Pearson's
+#'   correlation for `quantize()`.
 #' @param seed Optional integer seed for reproducible traces.
 #' @param plot If TRUE, plot the traces.
-#' @param ... Arguments to the chosen \code{fun} (\code{nullcat()} or \code{quantize_batch()}),
-#'   such as \code{method}, \code{n_strata}, \code{fixed}, etc.
+#' @param ... Arguments to the chosen `fun` (`nullcat()` or `quantize()`),
+#'   such as `method`, `n_strata`, `fixed`, etc.
 #'
-#' @return An object of class \code{"cat_trace"} with elements:
+#' @return An object of class `"cat_trace"` with elements:
 #' \itemize{
-#'   \item \code{traces}: matrix of size (n_steps+1) x n_chains, including iteration 0
-#'   \item \code{steps}: integer vector of iteration numbers (starting at 0)
-#'   \item \code{fun}, \code{n_iter}, \code{thin}, \code{n_chains}, \code{n_cores}, \code{stat_name}, \code{call}
-#'   \item \code{fun_args}: list of the \code{...} used (for reproducibility)
+#'   \item `traces`: matrix of size (n_steps+1) x n_chains, including iteration 0
+#'   \item `steps`: integer vector of iteration numbers (starting at 0)
+#'   \item `fun`, `n_iter`, `thin`, `n_chains`, `n_cores`, `stat_name`, `call`
+#'   \item `fun_args`: list of the `...` used (for reproducibility)
 #' }
-#' Plotting is available via \code{plot(cat_trace)}.
+#' Plotting is available via `plot(cat_trace)`.
 #'
 #' @examples
 #' # nullcat trace
@@ -202,14 +202,10 @@ trace_chain <- function(x0,
 
 
 
-#' Cohen's kappa for categorical data
-#'
-#' Computes Cohen's kappa between two categorical matrices,
-#' treating each cell as a paired categorical observation.
-#'
-#' @param a,b Matrices or arrays of the same dimensions with categorical entries.
-#'
-#' @keywords internal
+# Cohen's kappa for categorical data
+#
+# Computes Cohen's kappa (Cohen, 1960) between two categorical matrices,
+# treating each cell as a paired categorical observation.
 kappa <- function(a, b) {
       stopifnot(all(dim(a) == dim(b)))
       p_ref <- prop.table(table(as.vector(b)))

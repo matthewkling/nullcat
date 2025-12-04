@@ -8,48 +8,49 @@ quantize_commsim(n_iter = 10000, ...)
 }
 \arguments{
 \item{n_iter}{Integer, number of iterations (trades) per simulated
-matrix. Must be a positive integer. Default is `1e4`.}
+matrix. Must be a positive integer. Default is \code{1e4}.}
 
-\item{...}{Arguments passed to [quantize()],
-such as `breaks`, `n_strata`, `transform`, `offset`,
-`zero_stratum`, `fixed`, `method`, etc. Do **not** supply `x` or
-`n_iter` here; these are set internally by `quantize_commsim()`.
-See [quantize()] for details.}
+\item{...}{Arguments passed to \code{\link[=quantize]{quantize()}},
+such as \code{breaks}, \code{n_strata}, \code{transform}, \code{offset},
+\code{zero_stratum}, \code{fixed}, \code{method}, etc. Do \strong{not} supply \code{x} or
+\code{n_iter} here; these are set internally by \code{quantize_commsim()}.
+See \code{\link[=quantize]{quantize()}} for details.}
 }
 \value{
-An object of class `"commsim"` suitable for
-  [vegan::nullmodel()] and [vegan::oecosimu()].
+An object of class \code{"commsim"} suitable for
+\code{\link[vegan:nullmodel]{vegan::nullmodel()}} and \code{\link[vegan:oecosimu]{vegan::oecosimu()}}.
 }
 \description{
-Construct a [vegan::commsim()] object that uses [quantize()] as a
+Construct a \code{\link[vegan:commsim]{vegan::commsim()}} object that uses \code{\link[=quantize]{quantize()}} as a
 non-sequential null model for numeric community matrices.
 Each simulated matrix is generated independently by applying
-[quantize()] with `n_iter` trades (via its internal call to
-[nullcat()]) starting from the original matrix.
+\code{\link[=quantize]{quantize()}} with \code{n_iter} trades (via its internal call to
+\code{\link[=nullcat]{nullcat()}}) starting from the original matrix.
 }
 \section{Details}{
 
 
-This generates a commsim object that is **non-sequential**:
+This generates a commsim object that is \strong{non-sequential}:
 each simulated matrix starts from the original matrix and is
-randomized independently using `n_iter` trades of the chosen
-`method`.
+randomized independently using \code{n_iter} trades of the chosen
+\code{method}.
 
-When used via `vegan::simulate.nullmodel()`, the arguments behave as:
+When used via \code{vegan::simulate.nullmodel()}, the arguments behave as:
 \itemize{
-  \item `nsim`: number of simulated matrices to generate.
-  \item `n_iter` (here, in `nullcat_commsim()`): number of trades per
-  simulated matrix (controls how strongly each replicate is shuffled).
-  \item `burnin` and `thin`: are **ignored** for this commsim, because
-  `isSeq = FALSE` (the simulations are not a Markov chain).
+\item \code{nsim}: number of simulated matrices to generate.
+\item \code{n_iter} (here, in \code{nullcat_commsim()}): number of trades per
+simulated matrix (controls how strongly each replicate is shuffled).
+\item \code{burnin} and \code{thin}: are \strong{ignored} for this commsim, because
+\code{isSeq = FALSE} (the simulations are not a Markov chain).
 }
 
-In other words, treat `n_iter` as the tuning parameter for how
+In other words, treat \code{n_iter} as the tuning parameter for how
 thoroughly each independent null matrix is randomized.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (requireNamespace("vegan", quietly = TRUE)) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\donttest{
   library(vegan)
 
   x <- matrix(rexp(50), 10, 5)
@@ -63,9 +64,9 @@ thoroughly each independent null matrix is randomized.
   nm   <- nullmodel(x, cs)
   sims <- simulate(nm, nsim = 999)
 }
-
+\dontshow{\}) # examplesIf}
 }
 \seealso{
-[quantize_batch()] if you just want a batch of null matrices
-without going through **vegan**.
+\code{\link[=quantize_batch]{quantize_batch()}} if you just want a batch of null matrices
+without going through \strong{vegan}.
 }

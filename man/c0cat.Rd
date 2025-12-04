@@ -12,28 +12,28 @@ Values should represent category or stratum membership for each cell.}
 
 \item{n_iter}{Number of iterations. Default is 1000. Larger values yield
 more thorough mixing. Ignored for non-sequential methods. Minimum
-burn-in times can be estimated with \link{suggest_n_iter}.}
+burn-in times can be estimated with \code{suggest_n_iter()}.}
 
 \item{output}{Character indicating type of result to return:
 \itemize{
-  \item \code{"category"} (default) returns randomized matrix
-  \item \code{"index"} returns an index matrix describing where original
-       entries (a.k.a. "tokens") moved. Useful mainly for testing, and for
-       applications like \code{quantize()} that care about token tracking
-       in addition to generic integer categories.
+\item \code{"category"} (default) returns randomized matrix
+\item \code{"index"} returns an index matrix describing where original
+entries (a.k.a. "tokens") moved. Useful mainly for testing, and for
+applications like \code{quantize()} that care about token tracking
+in addition to generic integer categories.
 }}
 
 \item{seed}{Integer used to seed random number generator, for reproducibility.}
 }
 \value{
 A matrix of the same dimensions as \code{x}, either randomized
-  categorical values (when \code{output = "category"}) or an integer index
-  matrix describing the permutation of entries (when \code{output = "index"}).
+categorical values (when \code{output = "category"}) or an integer index
+matrix describing the permutation of entries (when \code{output = "index"}).
 }
 \description{
-`c0cat()` preserves the multiset of categories within each column but
+\code{c0cat()} preserves the multiset of categories within each column but
 randomizes their positions across rows, leaving row margins free.
-This is the categorical analog to vegan's `c0` algorithm. It is a
+This is the categorical analog to vegan's \code{c0} algorithm. It is a
 non-sequential method.
 }
 \examples{

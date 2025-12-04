@@ -21,66 +21,66 @@ Values should represent category or stratum membership for each cell.}
 Options include the following; see details and linked functions
 for more info.
 \itemize{
-  \item \code{"curvecat"}: categorical analog to `curveball`;
-       see \link{curvecat} for details.
-  \item \code{"swapcat"}: categorical analog to `swap`;
-       see \link{swapcat} for details.
-  \item \code{"tswapcat"}: categorical analog to `tswap`;
-       see \link{tswapcat} for details.
-  \item \code{"r0cat"}: categorical analog to `r0`;
-       see \link{r0cat} for details.
-  \item \code{"c0cat"}: categorical analog to `c0`;
-       see \link{c0cat} for details.
+\item \code{"curvecat"}: categorical analog to \code{curveball};
+see \code{\link[=curvecat]{curvecat()}} for details.
+\item \code{"swapcat"}: categorical analog to \code{swap};
+see \code{\link[=swapcat]{swapcat()}} for details.
+\item \code{"tswapcat"}: categorical analog to \code{tswap};
+see \code{\link[=tswapcat]{tswapcat()}} for details.
+\item \code{"r0cat"}: categorical analog to \code{r0};
+see \code{\link[=r0cat]{r0cat()}} for details.
+\item \code{"c0cat"}: categorical analog to \code{c0};
+see \code{\link[=c0cat]{c0cat()}} for details.
 }}
 
 \item{n_iter}{Number of iterations. Default is 1000. Larger values yield
 more thorough mixing. Ignored for non-sequential methods. Minimum
-burn-in times can be estimated with \link{suggest_n_iter}.}
+burn-in times can be estimated with \code{suggest_n_iter()}.}
 
 \item{output}{Character indicating type of result to return:
 \itemize{
-  \item \code{"category"} (default) returns randomized matrix
-  \item \code{"index"} returns an index matrix describing where original
-       entries (a.k.a. "tokens") moved. Useful mainly for testing, and for
-       applications like \code{quantize()} that care about token tracking
-       in addition to generic integer categories.
+\item \code{"category"} (default) returns randomized matrix
+\item \code{"index"} returns an index matrix describing where original
+entries (a.k.a. "tokens") moved. Useful mainly for testing, and for
+applications like \code{quantize()} that care about token tracking
+in addition to generic integer categories.
 }}
 
 \item{swaps}{Character string controlling the direction of token movement.
-Only used when method is `curvecat`, `swapcat`, or `tswapcat`.
+Only used when method is \code{"curvecat"}, \code{"swapcat"}, or \code{"tswapcat"}.
 Affects the result only when \code{output = "index"}, otherwise it only affects
 computation speed. Options include:
 \itemize{
-  \item \code{"vertical"}: Tokens move between rows (stay within columns).
-  \item \code{"horizontal"}: Tokens move between columns (stay within rows).
-  \item \code{"alternating"}: Tokens move in both dimensions, alternating between
-    vertical and horizontal swaps. Provides full 2D mixing without preserving
-    either row or column token sets.
-  \item \code{"auto"} (default): For \code{output = "category"},
-    automatically selects the fastest option based on matrix dimensions. For
-    \code{output = "index"}, defaults to \code{"alternating"} for full mixing.
+\item \code{"vertical"}: Tokens move between rows (stay within columns).
+\item "\verb{horizontal"}: Tokens move between columns (stay within rows).
+\item \code{"alternating"}: Tokens move in both dimensions, alternating between
+vertical and horizontal swaps. Provides full 2D mixing without preserving
+either row or column token sets.
+\item \code{"auto"} (default): For \code{output = "category"},
+automatically selects the fastest option based on matrix dimensions. For
+\code{output = "index"}, defaults to \code{"alternating"} for full mixing.
 }}
 
 \item{seed}{Integer used to seed random number generator, for reproducibility.}
 }
 \value{
 A matrix of the same dimensions as \code{x}, either randomized
-  categorical values (when \code{output = "category"}) or an integer index
-  matrix describing the permutation of entries (when \code{output = "index"}).
+categorical values (when \code{output = "category"}) or an integer index
+matrix describing the permutation of entries (when \code{output = "index"}).
 }
 \description{
 Categorical generalizations of binary community null model algorithms.
 }
 \details{
-`curvecat`, `swapcat`, and `tswapcat` are sequential algorithms that hold
+\code{curvecat}, \code{swapcat}, and \code{tswapcat} are sequential algorithms that hold
 category multisets fixed in every row and column. These three algorithms
 typically reach the same stationary distribution. They differ primarily in
-efficiency, with `curvecat` being the most efficient (i.e. fewest steps to
-become fully mixed); `swapcat` and `tswapcat` are thus useful mainly for
+efficiency, with \code{curvecat} being the most efficient (i.e. fewest steps to
+become fully mixed); \code{swapcat} and \code{tswapcat} are thus useful mainly for
 methodological comparison.
 
-The `r0cat` algorithm holds category multisets fixed in rows but not columns,
-while `c0cat` does the opposite.
+The \code{r0cat} algorithm holds category multisets fixed in rows but not columns,
+while \code{c0cat} does the opposite.
 
 Note that categorical null models are for cell-level categorical data. Site-level
 attributes (e.g., land cover) or species-level attributes (e.g., functional
@@ -109,4 +109,8 @@ x_rand1 <- nullcat(x, method = "curvecat", n_iter = 1000, seed = 42)
 x_rand2 <- nullcat(x, method = "curvecat", n_iter = 1000, seed = 42)
 identical(x_rand1, x_rand2)
 
+}
+\seealso{
+\code{\link[=nullcat_batch]{nullcat_batch()}} for efficient generation of multiple randomized
+matrices; \code{\link[=nullcat_commsim]{nullcat_commsim()}} for integration with \code{vegan}.
 }

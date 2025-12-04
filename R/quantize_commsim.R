@@ -22,8 +22,8 @@
 #' @return An object of class `"commsim"` suitable for
 #'   [vegan::nullmodel()] and [vegan::oecosimu()].
 #'
-#' @examples
-#' \dontrun{
+#' @examplesIf requireNamespace("vegan", quietly = TRUE)
+#' \donttest{
 #'   library(vegan)
 #'
 #'   x <- matrix(rexp(50), 10, 5)
@@ -103,16 +103,15 @@ quantize_commsim <- function(n_iter = 1e4, ...) {
 #' @return An object of class `"commsim"` suitable for
 #'   [vegan::nullmodel()] and [vegan::oecosimu()].
 #'
-#' @examples
-#' \dontrun{
+#' @examplesIf requireNamespace("vegan", quietly = TRUE)
+#' \donttest{
 #'   library(vegan)
 #'
 #'   x <- matrix(rexp(50), 10, 5)
 #'
 #'   cs <- quantize_commsim_seq(
-#'     n_strata = 10,
-#'     method   = "curvecat",
-#'     n_iter   = 1000L
+#'     n_strata = 5,
+#'     method   = "curvecat"
 #'   )
 #'
 #'   nm <- nullmodel(x, cs)
