@@ -69,7 +69,9 @@ burn-in times can be estimated with <a href="suggest_n_iter.html">suggest_n_iter
 <dt id="arg-output">output<a class="anchor" aria-label="anchor" href="#arg-output"></a></dt>
 <dd><p>Character indicating type of result to return:</p><ul><li><p><code>"category"</code> (default) returns randomized matrix</p></li>
 <li><p><code>"index"</code> returns an index matrix describing where original
-       entries moved.</p></li>
+       entries (a.k.a. "tokens") moved. Useful mainly for testing, and for
+       applications like <code><a href="quantize.html">quantize()</a></code> that care about token tracking
+       in addition to generic integer categories.</p></li>
 </ul></dd>
 
 

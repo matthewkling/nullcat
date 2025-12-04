@@ -32,7 +32,11 @@ r0cat(x, n_iter = 1L, output = c("category", "index"), seed = NULL)
   - `"category"` (default) returns randomized matrix
 
   - `"index"` returns an index matrix describing where original entries
-    moved.
+    (a.k.a. "tokens") moved. Useful mainly for testing, and for
+    applications like
+    [`quantize()`](https://matthewkling.github.io/nullcat/reference/quantize.md)
+    that care about token tracking in addition to generic integer
+    categories.
 
 - seed:
 

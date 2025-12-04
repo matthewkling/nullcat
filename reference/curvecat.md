@@ -7,7 +7,7 @@ wrapper around \[nullcat()\] with \`method = "curvecat"\`.
 ## Usage
 
 ``` r
-curvecat(x, n_iter = 1000L, output = c("category", "index"), seed = NULL)
+curvecat(x, n_iter = 1000L, output = "category", swaps = "auto", seed = NULL)
 ```
 
 ## Arguments
@@ -31,7 +31,30 @@ curvecat(x, n_iter = 1000L, output = c("category", "index"), seed = NULL)
   - `"category"` (default) returns randomized matrix
 
   - `"index"` returns an index matrix describing where original entries
-    moved.
+    (a.k.a. "tokens") moved. Useful mainly for testing, and for
+    applications like
+    [`quantize()`](https://matthewkling.github.io/nullcat/reference/quantize.md)
+    that care about token tracking in addition to generic integer
+    categories.
+
+- swaps:
+
+  Character string controlling the direction of token movement. Only
+  used when method is \`curvecat\`, \`swapcat\`, or \`tswapcat\`.
+  Affects the result only when `output = "index"`, otherwise it only
+  affects computation speed. Options include:
+
+  - `"vertical"`: Tokens move between rows (stay within columns).
+
+  - `"horizontal"`: Tokens move between columns (stay within rows).
+
+  - `"alternating"`: Tokens move in both dimensions, alternating between
+    vertical and horizontal swaps. Provides full 2D mixing without
+    preserving either row or column token sets.
+
+  - `"auto"` (default): For `output = "category"`, automatically selects
+    the fastest option based on matrix dimensions. For
+    `output = "index"`, defaults to `"alternating"` for full mixing.
 
 - seed:
 

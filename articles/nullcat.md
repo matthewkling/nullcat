@@ -323,7 +323,7 @@ print(suggested)
 #> suggested_n_iter object
 #> -----------------------
 #> Converged: TRUE 
-#> Suggested n iterations: 290
+#> Suggested n iterations: 410
 ```
 
 ## Integration with `vegan`

@@ -93,7 +93,7 @@ suggest_n_iter(trace, tail_frac = 0.3, plot = TRUE)
 #> suggested_n_iter object
 #> -----------------------
 #> Converged: TRUE 
-#> Suggested n iterations: 420 
+#> Suggested n iterations: 380 
 
 # alternatively, supply `trace_cat` arguments directly to `suggest_n_iter`:
 x <- matrix(runif(2500), 50)
