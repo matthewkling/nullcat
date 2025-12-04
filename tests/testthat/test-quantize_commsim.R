@@ -1,5 +1,6 @@
 test_that("quantize commsim functions run, and can be used, without erroring", {
 
+      skip_if_not_installed("vegan")
       require_vegan()
 
       x <- matrix(runif(100), 10)

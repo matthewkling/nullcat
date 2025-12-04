@@ -1,5 +1,6 @@
 test_that("nullcat commsim functions run awithout error", {
 
+      skip_if_not_installed("vegan")
       require_vegan()
 
       x <- cat_mat(100)

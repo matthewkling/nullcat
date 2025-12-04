@@ -5,7 +5,7 @@ Version: 0.0.0.9000
 Authors@R: 
     person("Matthew", "Kling", 
            email = "mattkling@berkeley.edu", 
-           role = c("aut", "cre"))
+           role = c("aut", "cre", "cph"))
 Description: Provides null model algorithms for categorical and quantitative 
     community ecology data. Extends classic binary null models (e.g., 
     curveball, swap) to work with categorical data. Provides a stratified
