@@ -2,7 +2,7 @@
 
 ## Authors
 
-- **Matthew Kling**. Author, maintainer.
+- **Matthew Kling**. Author, maintainer, copyright holder.
 
 ## Citation
 
