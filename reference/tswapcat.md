@@ -55,3 +55,19 @@ matrices: comments and new algorithms. \*Ecology\*, 85(1), 86–92.
 Gotelli, N. J. & Entsminger, G. L. (2003). \*EcoSim: Null models
 software for ecology\* (Version 7.0). Acquired Intelligence Inc. &
 Kesey-Bear, Jericho (VT).
+
+## Examples
+
+``` r
+set.seed(123)
+x <- matrix(sample(1:4, 100, replace = TRUE), nrow = 10)
+
+# Randomize using swap algorithm
+x_rand <- tswapcat(x, n_iter = 1000)
+
+# Verify fixed-fixed constraint (row and column margins preserved)
+all.equal(sort(x[1, ]), sort(x_rand[1, ]))
+#> [1] TRUE
+all.equal(sort(x[, 1]), sort(x_rand[, 1]))
+#> [1] TRUE
+```

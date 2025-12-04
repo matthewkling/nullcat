@@ -16,8 +16,8 @@
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Null models for categorical and continuous community matrices">
-<meta name="description" content="Provides novel null model algorithms for categorical and quantitative community ecology data. Extends classic binary null models (e.g., curveball, swap) to work with categorical data, and introduces a stratified randomization framework for continuous data that addresses limitations in existing quantitative null model methods.">
-<meta property="og:description" content="Provides novel null model algorithms for categorical and quantitative community ecology data. Extends classic binary null models (e.g., curveball, swap) to work with categorical data, and introduces a stratified randomization framework for continuous data that addresses limitations in existing quantitative null model methods.">
+<meta name="description" content="Provides novel null model algorithms for categorical and quantitative community ecology data. Extends classic binary null models (e.g., curveball, swap) to work with categorical data, and introduces a stratified randomization framework for continuous data.">
+<meta property="og:description" content="Provides novel null model algorithms for categorical and quantitative community ecology data. Extends classic binary null models (e.g., curveball, swap) to work with categorical data, and introduces a stratified randomization framework for continuous data.">
 <meta property="og:image" content="https://matthewkling.github.io/nullcat/logo.png">
 </head>
 <body>
@@ -37,6 +37,7 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
+<li class="nav-item"><a class="nav-link" href="articles/nullcat.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
       </ul>
@@ -58,165 +59,69 @@
 <a class="anchor" aria-label="anchor" href="#nullcat-"></a>
 </h1>
 </div>
-<p><code>nullcat</code> provides null model algorithms for categorical and quantitative community ecology data. It extends classic <strong>binary</strong> null models (e.g., curveball, swap) to work with <strong>categorical</strong> data, and introduces a stratified randomization framework for <strong>continuous</strong> data that addresses limitations in existing quantitative null model methods.</p>
+<p><code>nullcat</code> provides null model algorithms for categorical and quantitative community ecology data. It extends classic binary null models (e.g., curveball, swap) to work with categorical data, and introduces a stratified randomization framework for continuous data that addresses limitations in existing quantitative null model methods.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>The package is currently in development. Install from GitHub:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"matthewkling/nullcat"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="key-functionality">Key functionality<a class="anchor" aria-label="anchor" href="#key-functionality"></a>
-</h2>
-<div class="section level3">
-<h3 id="id_1-categorical-null-models">1. Categorical null models<a class="anchor" aria-label="anchor" href="#id_1-categorical-null-models"></a>
-</h3>
-<p><code>nullcat</code> generalizes binary null model algorithms to handle categorical data (site-by-species matrices of integers representing discrete strata or categories):</p>
-<ul>
-<li>
-<strong><code>curvecat</code></strong>: Categorical curveball algorithm</li>
-<li>
-<strong><code>swapcat</code></strong>: Categorical 2x2 swap algorithm<br>
-</li>
-<li>
-<strong><code>tswapcat</code></strong>: Categorical trial-swap algorithm</li>
-<li>
-<strong><code>r0cat</code></strong>: Row-constrained randomization (fixed row margins)</li>
-<li>
-<strong><code>c0cat</code></strong>: Column-constrained randomization (fixed column margins)</li>
-</ul>
-<p>These algorithms preserve the multiset of categories in fixed margins (rows and/or columns) while randomizing their spatial arrangement.</p>
-</div>
-<div class="section level3">
-<h3 id="id_2-stratified-quantitative-null-models">2. Stratified quantitative null models<a class="anchor" aria-label="anchor" href="#id_2-stratified-quantitative-null-models"></a>
-</h3>
-<p>The <code><a href="reference/quantize.html">quantize()</a></code> function provides a principled approach to randomizing quantitative community data (abundance, biomass, cover, SDM probabilities):</p>
-<ol style="list-style-type: decimal">
-<li>
-<strong>Stratify</strong>: Convert continuous values into discrete strata</li>
-<li>
-<strong>Randomize</strong>: Apply categorical null model to stratified matrix</li>
-<li>
-<strong>Reassign</strong>: Map randomized strata back to original quantitative values</li>
-</ol>
-<p>This approach offers greater control and transparency compared to existing quantitative null model methods, with flexible options for:</p>
-<ul>
-<li>Number and definition of strata</li>
-<li>Value transformations (log, sqrt, rank, etc.)</li>
-<li>Preservation levels (cell, stratum, row, or column)</li>
-<li>Multiple randomization algorithms</li>
-</ul>
-</div>
-<div class="section level3">
-<h3 id="id_3-diagnostic--utility-functions">3. Diagnostic &amp; utility functions<a class="anchor" aria-label="anchor" href="#id_3-diagnostic--utility-functions"></a>
-</h3>
-<ul>
-<li>
-<strong><code><a href="reference/trace_cat.html">trace_cat()</a></code></strong>: Trace mixing diagnostics for MCMC convergence</li>
-<li>
-<strong><code><a href="reference/suggest_n_iter.html">suggest_n_iter()</a></code></strong>: Automatically suggest burn-in iterations</li>
-<li>
-<strong><code><a href="reference/quantize_prep.html">quantize_prep()</a></code></strong>: Pre-compute overhead for efficient repeated randomization</li>
-<li>
-<strong><code><a href="reference/quantize_batch.html">quantize_batch()</a></code></strong>: Generate null distributions with optional parallelization</li>
-<li>
-<strong><code>commsim_cat()</code> &amp; <code>commsim_cat_seq()</code></strong>: Integration with <code>vegan</code> null model workflows</li>
-</ul>
-<p>All core algorithms are implemented in C++ via Rcpp for computational efficiency.</p>
-</div>
-</div>
-<div class="section level2">
 <h2 id="quick-start">Quick start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
 </h2>
-<div class="section level3">
-<h3 id="categorical-data">Categorical data<a class="anchor" aria-label="anchor" href="#categorical-data"></a>
-</h3>
+<div class="section level4">
+<h4 id="categorical-null-models">Categorical null models<a class="anchor" aria-label="anchor" href="#categorical-null-models"></a>
+</h4>
+<p>Generalize binary null models to matrices where cells contain integers representing discrete categories:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/matthewkling/nullcat" class="external-link">nullcat</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Create a categorical matrix (e.g., strata or discrete abundance classes)</span></span>
+<span><span class="co"># Create a categorical matrix</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
 <span><span class="va">cat_matrix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span>, <span class="fl">20</span><span class="op">*</span><span class="fl">10</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Randomize using curvecat (preserves row &amp; column category multisets)</span></span>
 <span><span class="va">randomized</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/curvecat.html">curvecat</a></span><span class="op">(</span><span class="va">cat_matrix</span>, n_iter <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Compare margins</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="va">cat_matrix</span><span class="op">[</span><span class="fl">1</span>,<span class="op">]</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="va">randomized</span><span class="op">[</span><span class="fl">1</span>,<span class="op">]</span><span class="op">)</span><span class="op">)</span>  <span class="co"># Row preserved</span></span>
+<span><span class="co"># Verify margins are preserved</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="va">cat_matrix</span><span class="op">[</span><span class="fl">1</span>,<span class="op">]</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="va">randomized</span><span class="op">[</span><span class="fl">1</span>,<span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] TRUE</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="va">cat_matrix</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="va">randomized</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span>  <span class="co"># Column preserved</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="va">cat_matrix</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="va">randomized</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<p>Available algorithms: <code><a href="reference/curvecat.html">curvecat()</a></code>, <code><a href="reference/swapcat.html">swapcat()</a></code>, <code><a href="reference/tswapcat.html">tswapcat()</a></code>, <code><a href="reference/r0cat.html">r0cat()</a></code>, <code><a href="reference/c0cat.html">c0cat()</a></code></p>
 </div>
-<div class="section level3">
-<h3 id="quantitative-data">Quantitative data<a class="anchor" aria-label="anchor" href="#quantitative-data"></a>
-</h3>
+<div class="section level4">
+<h4 id="quantitative-null-models">Quantitative null models<a class="anchor" aria-label="anchor" href="#quantitative-null-models"></a>
+</h4>
+<p>Apply stratified randomization to continuous community data:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Create a quantitative community matrix</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">456</span><span class="op">)</span></span>
-<span><span class="va">comm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Exponential.html" class="external-link">rexp</a></span><span class="op">(</span><span class="fl">50</span> <span class="op">*</span> <span class="fl">30</span>, rate <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">50</span>,</span>
-<span>               dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"site"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">50</span><span class="op">)</span>,</span>
-<span>                               <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"sp"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">30</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">comm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Exponential.html" class="external-link">rexp</a></span><span class="op">(</span><span class="fl">50</span> <span class="op">*</span> <span class="fl">30</span>, rate <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">50</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Default: curvecat-backed stratified randomization</span></span>
+<span><span class="co"># Stratified randomization with 5 strata</span></span>
 <span><span class="va">rand1</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/quantize.html">quantize</a></span><span class="op">(</span><span class="va">comm</span>, n_strata <span class="op">=</span> <span class="fl">5</span>, n_iter <span class="op">=</span> <span class="fl">2000</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Preserve row value multisets</span></span>
+<span><span class="co"># Preserve row value multisets (row sums maintained)</span></span>
 <span><span class="va">rand2</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/quantize.html">quantize</a></span><span class="op">(</span><span class="va">comm</span>, n_strata <span class="op">=</span> <span class="fl">5</span>, fixed <span class="op">=</span> <span class="st">"row"</span>, n_iter <span class="op">=</span> <span class="fl">2000</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Check row sums are preserved when fixed = "row"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">rowSums</a></span><span class="op">(</span><span class="va">comm</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">rowSums</a></span><span class="op">(</span><span class="va">rand2</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="trace-diagnostics">Trace diagnostics<a class="anchor" aria-label="anchor" href="#trace-diagnostics"></a>
-</h3>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Assess mixing behavior</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">789</span><span class="op">)</span></span>
-<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="fl">2000</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, <span class="fl">40</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">trace</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/trace_cat.html">trace_cat</a></span><span class="op">(</span><span class="va">x</span>, fun <span class="op">=</span> <span class="st">"nullcat"</span>, method <span class="op">=</span> <span class="st">"curvecat"</span>,</span>
-<span>                   n_iter <span class="op">=</span> <span class="fl">1000</span>, n_chains <span class="op">=</span> <span class="fl">5</span>, thin <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">trace</span><span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/README-trace-diagnostics-1.png" width="100%"></p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="co"># Get burn-in recommendation</span></span>
-<span><span class="va">suggested</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/suggest_n_iter.html">suggest_n_iter</a></span><span class="op">(</span><span class="va">trace</span>, tail_frac <span class="op">=</span> <span class="fl">0.3</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">suggested</span><span class="op">)</span></span>
-<span><span class="co">#&gt; suggested_n_iter object</span></span>
-<span><span class="co">#&gt; -----------------------</span></span>
-<span><span class="co">#&gt; Converged: TRUE </span></span>
-<span><span class="co">#&gt; Suggested n iterations: 260</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="efficient-repeated-randomization">Efficient repeated randomization<a class="anchor" aria-label="anchor" href="#efficient-repeated-randomization"></a>
-</h3>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Generate null distribution of randomized matrices</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">101</span><span class="op">)</span></span>
-<span><span class="va">comm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Exponential.html" class="external-link">rexp</a></span><span class="op">(</span><span class="fl">30</span> <span class="op">*</span> <span class="fl">20</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">30</span><span class="op">)</span></span>
-<span><span class="va">null_dist</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/quantize_batch.html">quantize_batch</a></span><span class="op">(</span><span class="va">comm</span>, n_reps <span class="op">=</span> <span class="fl">999</span>, </span>
-<span>                           n_strata <span class="op">=</span> <span class="fl">4</span>, fixed <span class="op">=</span> <span class="st">"row"</span>,</span>
-<span>                           n_cores <span class="op">=</span> <span class="fl">5</span><span class="op">)</span>  <span class="co"># Set n_cores &gt; 1 for parallelization</span></span></code></pre></div>
-</div>
 </div>
 <div class="section level2">
-<h2 id="integration-with-vegan">Integration with vegan<a class="anchor" aria-label="anchor" href="#integration-with-vegan"></a>
+<h2 id="learn-more">Learn more<a class="anchor" aria-label="anchor" href="#learn-more"></a>
 </h2>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://vegandevs.github.io/vegan/" class="external-link">vegan</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Create commsim object for categorical data</span></span>
-<span><span class="va">cs</span> <span class="op">&lt;-</span> <span class="fu">commsim_cat_seq</span><span class="op">(</span>method <span class="op">=</span> <span class="st">"curvecat"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Use with vegan's nullmodel framework</span></span>
-<span><span class="va">nm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://vegandevs.github.io/vegan/reference/nullmodel.html" class="external-link">nullmodel</a></span><span class="op">(</span><span class="va">cat_matrix</span>, method <span class="op">=</span> <span class="va">cs</span><span class="op">)</span></span>
-<span><span class="va">sims</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/simulate.html" class="external-link">simulate</a></span><span class="op">(</span><span class="va">nm</span>, nsim <span class="op">=</span> <span class="fl">99</span>, burnin <span class="op">=</span> <span class="fl">1000</span>, thin <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span></code></pre></div>
-<hr>
-<p><strong>Development Status</strong>: This package is under active development. The API may change before the initial CRAN release. Feedback and contributions are welcome.</p>
+<p>See <code><a href="articles/nullcat.html">vignette("nullcat")</a></code> for comprehensive documentation including:</p>
+<ul>
+<li>Categorical null model algorithms and their constraints</li>
+<li>Quantitative null model workflow and stratification options</li>
+<li>Convergence diagnostics and burn-in estimation</li>
+<li>Efficient batch generation of null distributions</li>
+<li>Integration with the vegan package</li>
+</ul>
+<p><strong>Package website:</strong> <a href="https://matthewkling.github.io/nullcat/" class="uri">https://matthewkling.github.io/nullcat/</a></p>
+<p><strong>Report issues:</strong> <a href="https://github.com/matthewkling/nullcat/issues" class="external-link uri">https://github.com/matthewkling/nullcat/issues</a></p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
@@ -246,7 +151,7 @@
 <div class="developers">
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
-<li>Matthew Kling <br><small class="roles"> Maintainer </small>   </li>
+<li>Matthew Kling <br><small class="roles"> Author, maintainer </small>   </li>
 </ul>
 </div>
 

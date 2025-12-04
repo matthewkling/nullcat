@@ -65,3 +65,26 @@ matrices with fixed row and column totals. *Nature Communications*, 5,
 ## See also
 
 \[nullcat()\], \[nullcat_methods()\]
+
+## Examples
+
+``` r
+# Create a categorical matrix
+set.seed(123)
+x <- matrix(sample(1:4, 100, replace = TRUE), nrow = 10)
+
+# Randomize preserving row and column category multisets
+x_rand <- curvecat(x, n_iter = 1000)
+
+# Verify margins are preserved
+all.equal(sort(x[1, ]), sort(x_rand[1, ])) # row multisets preserved
+#> [1] TRUE
+all.equal(sort(x[, 1]), sort(x_rand[, 1])) # column multisets preserved
+#> [1] TRUE
+
+# Use with a seed for reproducibility
+x_rand1 <- curvecat(x, n_iter = 1000, seed = 42)
+x_rand2 <- curvecat(x, n_iter = 1000, seed = 42)
+identical(x_rand1, x_rand2)
+#> [1] TRUE
+```

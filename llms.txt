@@ -1,168 +1,82 @@
 # nullcat
 
 `nullcat` provides null model algorithms for categorical and
-quantitative community ecology data. It extends classic **binary** null
-models (e.g., curveball, swap) to work with **categorical** data, and
-introduces a stratified randomization framework for **continuous** data
-that addresses limitations in existing quantitative null model methods.
+quantitative community ecology data. It extends classic binary null
+models (e.g., curveball, swap) to work with categorical data, and
+introduces a stratified randomization framework for continuous data that
+addresses limitations in existing quantitative null model methods.
 
 ## Installation
-
-The package is currently in development. Install from GitHub:
 
 ``` r
 # install.packages("remotes")
 remotes::install_github("matthewkling/nullcat")
 ```
 
-## Key functionality
-
-### 1. Categorical null models
-
-`nullcat` generalizes binary null model algorithms to handle categorical
-data (site-by-species matrices of integers representing discrete strata
-or categories):
-
-- **`curvecat`**: Categorical curveball algorithm
-- **`swapcat`**: Categorical 2x2 swap algorithm  
-- **`tswapcat`**: Categorical trial-swap algorithm
-- **`r0cat`**: Row-constrained randomization (fixed row margins)
-- **`c0cat`**: Column-constrained randomization (fixed column margins)
-
-These algorithms preserve the multiset of categories in fixed margins
-(rows and/or columns) while randomizing their spatial arrangement.
-
-### 2. Stratified quantitative null models
-
-The
-[`quantize()`](https://matthewkling.github.io/nullcat/reference/quantize.md)
-function provides a principled approach to randomizing quantitative
-community data (abundance, biomass, cover, SDM probabilities):
-
-1.  **Stratify**: Convert continuous values into discrete strata
-2.  **Randomize**: Apply categorical null model to stratified matrix
-3.  **Reassign**: Map randomized strata back to original quantitative
-    values
-
-This approach offers greater control and transparency compared to
-existing quantitative null model methods, with flexible options for:
-
-- Number and definition of strata
-- Value transformations (log, sqrt, rank, etc.)
-- Preservation levels (cell, stratum, row, or column)
-- Multiple randomization algorithms
-
-### 3. Diagnostic & utility functions
-
-- **[`trace_cat()`](https://matthewkling.github.io/nullcat/reference/trace_cat.md)**:
-  Trace mixing diagnostics for MCMC convergence
-- **[`suggest_n_iter()`](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md)**:
-  Automatically suggest burn-in iterations
-- **[`quantize_prep()`](https://matthewkling.github.io/nullcat/reference/quantize_prep.md)**:
-  Pre-compute overhead for efficient repeated randomization
-- **[`quantize_batch()`](https://matthewkling.github.io/nullcat/reference/quantize_batch.md)**:
-  Generate null distributions with optional parallelization
-- **`commsim_cat()` & `commsim_cat_seq()`**: Integration with `vegan`
-  null model workflows
-
-All core algorithms are implemented in C++ via Rcpp for computational
-efficiency.
-
 ## Quick start
 
-### Categorical data
+#### Categorical null models
+
+Generalize binary null models to matrices where cells contain integers
+representing discrete categories:
 
 ``` r
 library(nullcat)
 
-# Create a categorical matrix (e.g., strata or discrete abundance classes)
+# Create a categorical matrix
 set.seed(123)
 cat_matrix <- matrix(sample(1:4, 20*10, replace = TRUE), nrow = 20)
 
 # Randomize using curvecat (preserves row & column category multisets)
 randomized <- curvecat(cat_matrix, n_iter = 1000)
 
-# Compare margins
-all.equal(sort(cat_matrix[1,]), sort(randomized[1,]))  # Row preserved
+# Verify margins are preserved
+all.equal(sort(cat_matrix[1,]), sort(randomized[1,]))
 #> [1] TRUE
-all.equal(sort(cat_matrix[,1]), sort(randomized[,1]))  # Column preserved
+all.equal(sort(cat_matrix[,1]), sort(randomized[,1]))
 #> [1] TRUE
 ```
 
-### Quantitative data
+Available algorithms:
+[`curvecat()`](https://matthewkling.github.io/nullcat/reference/curvecat.md),
+[`swapcat()`](https://matthewkling.github.io/nullcat/reference/swapcat.md),
+[`tswapcat()`](https://matthewkling.github.io/nullcat/reference/tswapcat.md),
+[`r0cat()`](https://matthewkling.github.io/nullcat/reference/r0cat.md),
+[`c0cat()`](https://matthewkling.github.io/nullcat/reference/c0cat.md)
+
+#### Quantitative null models
+
+Apply stratified randomization to continuous community data:
 
 ``` r
 # Create a quantitative community matrix
 set.seed(456)
-comm <- matrix(rexp(50 * 30, rate = 0.5), nrow = 50,
-               dimnames = list(paste0("site", 1:50),
-                               paste0("sp", 1:30)))
+comm <- matrix(rexp(50 * 30, rate = 0.5), nrow = 50)
 
-# Default: curvecat-backed stratified randomization
+# Stratified randomization with 5 strata
 rand1 <- quantize(comm, n_strata = 5, n_iter = 2000)
 
-# Preserve row value multisets
+# Preserve row value multisets (row sums maintained)
 rand2 <- quantize(comm, n_strata = 5, fixed = "row", n_iter = 2000)
-
-# Check row sums are preserved when fixed = "row"
 all.equal(rowSums(comm), rowSums(rand2))
 #> [1] TRUE
 ```
 
-### Trace diagnostics
+## Learn more
 
-``` r
-# Assess mixing behavior
-set.seed(789)
-x <- matrix(sample(1:5, 2000, replace = TRUE), 40)
+See
+[`vignette("nullcat")`](https://matthewkling.github.io/nullcat/articles/nullcat.md)
+for comprehensive documentation including:
 
-trace <- trace_cat(x, fun = "nullcat", method = "curvecat",
-                   n_iter = 1000, n_chains = 5, thin = 10)
-plot(trace)
-```
+- Categorical null model algorithms and their constraints
+- Quantitative null model workflow and stratification options
+- Convergence diagnostics and burn-in estimation
+- Efficient batch generation of null distributions
+- Integration with the vegan package
 
-![](reference/figures/README-trace-diagnostics-1.png)
+**Package website:** <https://matthewkling.github.io/nullcat/>
 
-``` r
-
-# Get burn-in recommendation
-suggested <- suggest_n_iter(trace, tail_frac = 0.3)
-print(suggested)
-#> suggested_n_iter object
-#> -----------------------
-#> Converged: TRUE 
-#> Suggested n iterations: 260
-```
-
-### Efficient repeated randomization
-
-``` r
-# Generate null distribution of randomized matrices
-set.seed(101)
-comm <- matrix(rexp(30 * 20), nrow = 30)
-null_dist <- quantize_batch(comm, n_reps = 999, 
-                           n_strata = 4, fixed = "row",
-                           n_cores = 5)  # Set n_cores > 1 for parallelization
-```
-
-## Integration with vegan
-
-``` r
-library(vegan)
-
-# Create commsim object for categorical data
-cs <- commsim_cat_seq(method = "curvecat")
-
-# Use with vegan's nullmodel framework
-nm <- nullmodel(cat_matrix, method = cs)
-sims <- simulate(nm, nsim = 99, burnin = 1000, thin = 100)
-```
-
-------------------------------------------------------------------------
-
-**Development Status**: This package is under active development. The
-API may change before the initial CRAN release. Feedback and
-contributions are welcome.
+**Report issues:** <https://github.com/matthewkling/nullcat/issues>
 
 # Package index
 
@@ -216,3 +130,9 @@ contributions are welcome.
 - [`quantize_commsim_seq()`](https://matthewkling.github.io/nullcat/reference/quantize_commsim_seq.md)
   : Quantile-based quantize commsim (sequential / Markov chain)
 
+# Articles
+
+### All vignettes
+
+- [Introduction to
+  nullcat](https://matthewkling.github.io/nullcat/articles/nullcat.md):

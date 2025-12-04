@@ -63,3 +63,26 @@ stratify(
 
 An object the same size as x, with integer values representing stratum
 classifications.
+
+## Examples
+
+``` r
+# Stratify a numeric vector
+x <- c(0, 0, 0.1, 0.5, 1.2, 3.4, 5.6, 10.2)
+stratify(x, n_strata = 3)
+#> [1] 1 1 1 1 1 1 2 3
+#> attr(,"breaks")
+#> [1] -Inf  3.4  6.8  Inf
+
+# With transformation
+stratify(x, n_strata = 3, transform = log1p)
+#> [1] 1 1 1 1 1 2 3 3
+#> attr(,"breaks")
+#> [1] -Inf  1.2  3.4  Inf
+
+# Separate zero stratum
+stratify(x, n_strata = 3, zero_stratum = TRUE)
+#> [1] 1 1 2 2 2 2 3 3
+#> attr(,"breaks")
+#> [1] -Inf 0.00 5.15  Inf
+```

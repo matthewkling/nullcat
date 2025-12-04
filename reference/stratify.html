@@ -15,7 +15,8 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/nullcat.html">Get started</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -99,6 +100,29 @@ of the <code>n_strata</code> will represent zeros and the others will be nonzero
   stratum classifications.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Stratify a numeric vector</span></span></span>
+<span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">0.1</span>, <span class="fl">0.5</span>, <span class="fl">1.2</span>, <span class="fl">3.4</span>, <span class="fl">5.6</span>, <span class="fl">10.2</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">stratify</span><span class="op">(</span><span class="va">x</span>, n_strata <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1 1 1 1 1 1 2 3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"breaks")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] -Inf  3.4  6.8  Inf</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># With transformation</span></span></span>
+<span class="r-in"><span><span class="fu">stratify</span><span class="op">(</span><span class="va">x</span>, n_strata <span class="op">=</span> <span class="fl">3</span>, transform <span class="op">=</span> <span class="va">log1p</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1 1 1 1 1 2 3 3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"breaks")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] -Inf  1.2  3.4  Inf</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Separate zero stratum</span></span></span>
+<span class="r-in"><span><span class="fu">stratify</span><span class="op">(</span><span class="va">x</span>, n_strata <span class="op">=</span> <span class="fl">3</span>, zero_stratum <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1 1 2 2 2 2 3 3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"breaks")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] -Inf 0.00 5.15  Inf</span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 
