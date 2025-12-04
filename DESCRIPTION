@@ -1,7 +1,7 @@
 Package: nullcat
 Type: Package
 Title: Null Models for Categorical and Continuous Community Matrices
-Version: 0.0.0.9000
+Version: 0.1.0
 Authors@R: 
     person("Matthew", "Kling", 
            email = "mattkling@berkeley.edu", 
