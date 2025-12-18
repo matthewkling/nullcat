@@ -6,7 +6,7 @@ test_that("`quantize_batch` works", {
       expect_no_error(quantize_batch(m, n_reps = 10, n_iter = 50,
                                      n_strata = 3, method = "curvecat"))
 
-      # # multicore (skipping because devtools::check() doesn't like multicore)
-      # expect_no_error(quantize_batch(m, n_reps = 10, n_iter = 50, n_cores = 4,
-      #                                n_strata = 3, method = "curvecat"))
+      # multicore
+      expect_no_error(quantize_batch(m, n_reps = 10, n_iter = 50, n_cores = 2,
+                                     n_strata = 3, method = "curvecat"))
 })

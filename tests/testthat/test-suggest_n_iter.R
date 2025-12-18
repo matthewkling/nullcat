@@ -6,7 +6,7 @@ test_that("suggest_n_iter runs without error", {
       expect_no_error({
             trace <- trace_cat(x = x, fun = "nullcat", n_iter = 100,
                                n_chains = 1, method = "curvecat")
-            suggest_n_iter(trace, tail_frac = 0.3, plot = FALSE)
+            suppressWarnings(suggest_n_iter(trace, tail_frac = 0.3, plot = FALSE))
       })
 
       # quantize -- example calling trace internally, and plotting

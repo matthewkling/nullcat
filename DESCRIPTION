@@ -8,7 +8,7 @@ Authors@R:
            role = c("aut", "cre", "cph"))
 Description: Provides null model algorithms for categorical and quantitative 
     community ecology data. Extends classic binary null models (e.g., 
-    curveball, swap) to work with categorical data. Provides a stratified
+    'curveball', 'swap') to work with categorical data. Provides a stratified
     randomization framework for continuous data.
 License: MIT + file LICENSE
 Encoding: UTF-8

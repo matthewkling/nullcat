@@ -1,7 +1,7 @@
 #' Categorical curveball randomization (curvecat)
 #'
 #' Categorical generalization of the binary curveball algorithm
-#' (Strona et al.) to matrices of categorical data. This function
+#' (Strona et al. 2014) to matrices of categorical data. This function
 #' is a convenience wrapper around [nullcat()] with
 #' `method = "curvecat"`.
 #'
@@ -17,8 +17,8 @@
 #' unordered category pairs and redistributing the orientation of those
 #' pairs while preservingn the multiset of categories within each row.
 #' When there are only two categories, `curvecat()` reduces to the
-#' behavior of the original binary curveball algorithm applied to a 0/1
-#' matrix.
+#' behavior of the original binary curveball algorithm (Strona et al. 2014)
+#' applied to a 0/1 matrix.
 #'
 #' @seealso [nullcat()], [nullcat_methods()]
 #'

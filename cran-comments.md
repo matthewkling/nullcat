@@ -1,7 +1,13 @@
-## R CMD check results
+## Resubmission
 
-0 errors | 0 warnings | 0 notes
+This is a resubmission, with the following changes made to address maintainer
+feedback:
 
-* This is a new release.
+* There are currently no references for the novel methods implemented here (a
+  methods paper is in preparation), so this resubmission does not add 
+  references to the DESCRIPTION
+* Limited all examples to maximum 2 cores, per CRAN policy
+* Avoided all use of \dontrun{} in examples
+* Avoid modifying .GlobalEnv by changing with_seed() utility
 
-* There are no references describing the methods in this package.
+All checks pass cleanly.

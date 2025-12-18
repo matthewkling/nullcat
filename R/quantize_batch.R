@@ -30,18 +30,11 @@
 #' row_sums <- nullcat_batch(x, n_reps = 99, stat = rowSums,
 #'                           method = "curvecat", n_iter = 100)
 #'
-#' \dontrun{
 #' # Specify multiple cores for parallel processing
-#' nulls <- quantize_batch(x, n_reps = 99, n_iter = 100, n_cores = 5)
-#' }
+#' nulls <- quantize_batch(x, n_reps = 99, n_iter = 100, n_cores = 2)
 #'
 #' @export
-quantize_batch <- function(x,
-                          n_reps = 999L,
-                          stat = NULL,
-                          n_cores = 1L,
-                          seed = NULL,
-                          ...) {
+quantize_batch <- function(x, n_reps = 999L, stat = NULL, n_cores = 1L, seed = NULL, ...) {
 
       # one-time overhead
       prep <- quantize_prep(as.matrix(x), ...)

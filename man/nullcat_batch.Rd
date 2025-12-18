@@ -44,8 +44,7 @@ nulls <- nullcat_batch(x, n_reps = 99, method = "curvecat", n_iter = 100)
 row_sums <- nullcat_batch(x, n_reps = 99, stat = rowSums,
                           method = "curvecat", n_iter = 100)
 
-\dontrun{
 # Specify multiple cores for parallel processing
-nulls <- nullcat_batch(x, n_reps = 99, n_iter = 100, n_cores = 5)
-}
+nulls <- nullcat_batch(x, n_reps = 99, n_iter = 100, n_cores = 2)
+
 }
