@@ -7,11 +7,15 @@ methods.
 
 ``` r
 nullcat_methods()
+
+nullcat_methods()
 ```
 
 ## Value
 
 A character vector of method names.
+
+Character vector of available method names.
 
 ## Examples
 

@@ -21,7 +21,9 @@ quantize_prep(
   transform = identity,
   offset = 0,
   zero_stratum = FALSE,
-  n_iter = 1000
+  n_iter = 1000,
+  wt_row = NULL,
+  wt_col = NULL
 )
 ```
 
@@ -35,10 +37,28 @@ quantize_prep(
 
 - method:
 
-  Character string specifying the null model algorithm. The default
-  `"curvecat"` uses the categorical curveball algorithm. See
-  [`nullcat()`](https://matthewkling.github.io/nullcat/reference/nullcat.md)
-  for alternative options.
+  Character specifying the randomization algorithm to use. Options
+  include the following; see details and linked functions for more info.
+
+  - `"curvecat"`: categorical analog to `curveball`; see
+    [`curvecat()`](https://matthewkling.github.io/nullcat/reference/curvecat.md)
+    for details.
+
+  - `"swapcat"`: categorical analog to `swap`; see
+    [`swapcat()`](https://matthewkling.github.io/nullcat/reference/swapcat.md)
+    for details.
+
+  - `"tswapcat"`: categorical analog to `tswap`; see
+    [`tswapcat()`](https://matthewkling.github.io/nullcat/reference/tswapcat.md)
+    for details.
+
+  - `"r0cat"`: categorical analog to `r0`; see
+    [`r0cat()`](https://matthewkling.github.io/nullcat/reference/r0cat.md)
+    for details.
+
+  - `"c0cat"`: categorical analog to `c0`; see
+    [`c0cat()`](https://matthewkling.github.io/nullcat/reference/c0cat.md)
+    for details.
 
 - fixed:
 
@@ -55,11 +75,11 @@ quantize_prep(
     holding only the overall stratum-level value distribution fixed.
 
   - `"row"`: values are shuffled within strata separately for each row,
-    holding each row’s value multiset fixed. Not compatible with all
+    holding each row's value multiset fixed. Not compatible with all
     `method`s.
 
   - `"col"`: values are shuffled within strata separately for each
-    column, holding each column’s value multiset fixed.
+    column, holding each column's value multiset fixed.
 
   Note that this interacts with `method`: different null models fix
   different margins in the underlying binary representation.
@@ -109,6 +129,30 @@ quantize_prep(
   times can be estimated with
   [`suggest_n_iter()`](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md).
 
+- wt_row:
+
+  An optional square numeric matrix of non-negative weights controlling
+  which pairs of rows are likely to exchange tokens during
+  randomization. Must be `nrow(x)` by `nrow(x)`. This enables spatially
+  or trait-constrained null models where nearby or similar sites
+  exchange tokens more frequently.
+
+  Values are treated as relative weights (not probabilities) and are
+  normalized internally. The diagonal is ignored. The matrix should be
+  symmetric. Only supported for sequential methods (`curvecat`,
+  `swapcat`, `tswapcat`).
+
+  When both `wt_row` and `wt_col` are supplied, `swaps` is forced to
+  `"alternating"`, producing a Gibbs-like sweep that applies each weight
+  matrix on its respective margin in alternation.
+
+- wt_col:
+
+  An optional square numeric matrix of non-negative weights controlling
+  which pairs of columns are likely to exchange tokens during
+  randomization. Must be `ncol(x)` by `ncol(x)`. See `wt_row` for
+  details on weight interpretation.
+
 ## Value
 
 A list with class `"quantize_prep"` (if you want to set it) containing
@@ -131,6 +175,8 @@ the components needed by
 - `sim_args`: named list of arguments passed to
   [`nullcat()`](https://matthewkling.github.io/nullcat/reference/nullcat.md)
   (e.g. `n_iter`).
+
+- `wt_row`, `wt_col`: the row and column weight matrices (or NULL).
 
 This object is intended to be passed unchanged to the `prep` argument of
 [`quantize()`](https://matthewkling.github.io/nullcat/reference/quantize.md)

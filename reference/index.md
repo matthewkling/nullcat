@@ -22,7 +22,7 @@
 ## Quantize routines
 
 - [`quantize()`](https://matthewkling.github.io/nullcat/reference/quantize.md)
-  : Stratified randomization of a quantitative community matrix
+  : Stratified quantitative null models via quantize
 - [`quantize_batch()`](https://matthewkling.github.io/nullcat/reference/quantize_batch.md)
   : Generate a batch of null matrices using quantize()
 - [`quantize_prep()`](https://matthewkling.github.io/nullcat/reference/quantize_prep.md)

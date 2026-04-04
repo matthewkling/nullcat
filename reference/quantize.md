@@ -1,10 +1,12 @@
-# Stratified randomization of a quantitative community matrix
+# Stratified quantitative null models via quantize
 
-`quantize()` is a community null model for quantitative community data
-(e.g. abundance, biomass, or occurrence probability). It works by
-converting quantitative values into discrete strata, randomizing the
-stratified matrix using a categorical null model, and reassigning
-quantitative values within strata according to a specified constraint.
+`quantize()` implements a stratified randomization framework for
+continuous ecological data. It discretizes quantitative values into
+strata, randomizes the strata assignments using a categorical null model
+algorithm (via
+[`nullcat()`](https://matthewkling.github.io/nullcat/reference/nullcat.md)),
+and then reassigns the original quantitative values according to the new
+stratum layout.
 
 ## Usage
 
@@ -20,6 +22,8 @@ quantize(
   offset = 0,
   zero_stratum = FALSE,
   n_iter = 1000,
+  wt_row = NULL,
+  wt_col = NULL,
   seed = NULL
 )
 ```
@@ -29,23 +33,40 @@ quantize(
 - x:
 
   Community matrix with sites in rows, species in columns, and
-  nonnegative quantitative values in cells. Ignored if `prep` is
-  supplied.
+  nonnegative quantitative values in cells. Can be `NULL` when `prep` is
+  provided.
 
 - prep:
 
-  Optional precomputed object returned by
-  [`quantize_prep()`](https://matthewkling.github.io/nullcat/reference/quantize_prep.md).
-  If supplied, `x` is ignored and all overhead (stratification, pools,
-  etc.) is taken from `prep`, which is typically much faster when
-  generating many randomizations of the same dataset.
+  A `"quantize_prep"` object (from
+  [`quantize_prep()`](https://matthewkling.github.io/nullcat/reference/quantize_prep.md)).
+  If provided, `x` and all stratification arguments are ignored and the
+  precomputed overhead is used directly for fast repeated draws.
 
 - method:
 
-  Character string specifying the null model algorithm. The default
-  `"curvecat"` uses the categorical curveball algorithm. See
-  [`nullcat()`](https://matthewkling.github.io/nullcat/reference/nullcat.md)
-  for alternative options.
+  Character specifying the randomization algorithm to use. Options
+  include the following; see details and linked functions for more info.
+
+  - `"curvecat"`: categorical analog to `curveball`; see
+    [`curvecat()`](https://matthewkling.github.io/nullcat/reference/curvecat.md)
+    for details.
+
+  - `"swapcat"`: categorical analog to `swap`; see
+    [`swapcat()`](https://matthewkling.github.io/nullcat/reference/swapcat.md)
+    for details.
+
+  - `"tswapcat"`: categorical analog to `tswap`; see
+    [`tswapcat()`](https://matthewkling.github.io/nullcat/reference/tswapcat.md)
+    for details.
+
+  - `"r0cat"`: categorical analog to `r0`; see
+    [`r0cat()`](https://matthewkling.github.io/nullcat/reference/r0cat.md)
+    for details.
+
+  - `"c0cat"`: categorical analog to `c0`; see
+    [`c0cat()`](https://matthewkling.github.io/nullcat/reference/c0cat.md)
+    for details.
 
 - fixed:
 
@@ -62,11 +83,11 @@ quantize(
     holding only the overall stratum-level value distribution fixed.
 
   - `"row"`: values are shuffled within strata separately for each row,
-    holding each row’s value multiset fixed. Not compatible with all
+    holding each row's value multiset fixed. Not compatible with all
     `method`s.
 
   - `"col"`: values are shuffled within strata separately for each
-    column, holding each column’s value multiset fixed.
+    column, holding each column's value multiset fixed.
 
   Note that this interacts with `method`: different null models fix
   different margins in the underlying binary representation.
@@ -114,6 +135,30 @@ quantize(
   times can be estimated with
   [`suggest_n_iter()`](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md).
 
+- wt_row:
+
+  An optional square numeric matrix of non-negative weights controlling
+  which pairs of rows are likely to exchange tokens during
+  randomization. Must be `nrow(x)` by `nrow(x)`. This enables spatially
+  or trait-constrained null models where nearby or similar sites
+  exchange tokens more frequently.
+
+  Values are treated as relative weights (not probabilities) and are
+  normalized internally. The diagonal is ignored. The matrix should be
+  symmetric. Only supported for sequential methods (`curvecat`,
+  `swapcat`, `tswapcat`).
+
+  When both `wt_row` and `wt_col` are supplied, `swaps` is forced to
+  `"alternating"`, producing a Gibbs-like sweep that applies each weight
+  matrix on its respective margin in alternation.
+
+- wt_col:
+
+  An optional square numeric matrix of non-negative weights controlling
+  which pairs of columns are likely to exchange tokens during
+  randomization. Must be `ncol(x)` by `ncol(x)`. See `wt_row` for
+  details on weight interpretation.
+
 - seed:
 
   Integer used to seed random number generator, for reproducibility.
@@ -125,23 +170,6 @@ A randomized version of `x`, with the same dimensions and dimnames. For
 strata while preserving row and column stratum multisets. For binary
 methods, the result corresponds to applying the chosen binary null model
 to each stratum and recombining.
-
-## Details
-
-This approach provides a framework for preserving row and/or column
-value distributions in continuous data. When using `fixed = "row"` or
-`fixed = "col"`, one dimension's value multisets are preserved exactly
-while the other is preserved at the resolution of strata, approximating
-a fixed-fixed null model for quantitative data. The number of strata
-controls the tradeoff between preservation fidelity and randomization
-strength.
-
-By default, `quantize()` will compute all necessary overhead for a given
-dataset (strata, pools, etc.) internally. For repeated randomization of
-the same matrix (e.g. to build a null distribution), this overhead can
-be computed once using
-[`quantize_prep()`](https://matthewkling.github.io/nullcat/reference/quantize_prep.md)
-and reused by supplying the resulting object via the `prep` argument.
 
 ## See also
 

@@ -13,6 +13,8 @@ swapcat(
   n_iter = 1000L,
   output = c("category", "index"),
   swaps = "auto",
+  wt_row = NULL,
+  wt_col = NULL,
   seed = NULL
 )
 ```
@@ -62,6 +64,32 @@ swapcat(
   - `"auto"` (default): For `output = "category"`, automatically selects
     the fastest option based on matrix dimensions. For
     `output = "index"`, defaults to `"alternating"` for full mixing.
+    When `wt_row` or `wt_col` is supplied, defaults to the appropriate
+    direction, or `"alternating"` if both are supplied.
+
+- wt_row:
+
+  An optional square numeric matrix of non-negative weights controlling
+  which pairs of rows are likely to exchange tokens during
+  randomization. Must be `nrow(x)` by `nrow(x)`. This enables spatially
+  or trait-constrained null models where nearby or similar sites
+  exchange tokens more frequently.
+
+  Values are treated as relative weights (not probabilities) and are
+  normalized internally. The diagonal is ignored. The matrix should be
+  symmetric. Only supported for sequential methods (`curvecat`,
+  `swapcat`, `tswapcat`).
+
+  When both `wt_row` and `wt_col` are supplied, `swaps` is forced to
+  `"alternating"`, producing a Gibbs-like sweep that applies each weight
+  matrix on its respective margin in alternation.
+
+- wt_col:
+
+  An optional square numeric matrix of non-negative weights controlling
+  which pairs of columns are likely to exchange tokens during
+  randomization. Must be `ncol(x)` by `ncol(x)`. See `wt_row` for
+  details on weight interpretation.
 
 - seed:
 
@@ -90,10 +118,6 @@ algorithm.
 Gotelli, N. J. (2000). Null model analysis of species co-occurrence
 patterns. *Ecology*, 81(9), 2606–2621.
 
-See also Gotelli & Entsminger (2003) *EcoSim: Null models software for
-ecology* (Version 7.0) for implementation details of the binary swap
-algorithm.
-
 ## See also
 
 [`curvecat()`](https://matthewkling.github.io/nullcat/reference/curvecat.md)
@@ -105,13 +129,5 @@ computational efficiency.
 ``` r
 set.seed(123)
 x <- matrix(sample(1:4, 100, replace = TRUE), nrow = 10)
-
-# Randomize using swap algorithm
 x_rand <- swapcat(x, n_iter = 1000)
-
-# Verify fixed-fixed constraint (row and column margins preserved)
-all.equal(sort(x[1, ]), sort(x_rand[1, ]))
-#> [1] TRUE
-all.equal(sort(x[, 1]), sort(x_rand[, 1]))
-#> [1] TRUE
 ```

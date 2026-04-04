@@ -11,6 +11,8 @@ nullcat(
   n_iter = 1000L,
   output = c("category", "index"),
   swaps = c("auto", "vertical", "horizontal", "alternating"),
+  wt_row = NULL,
+  wt_col = NULL,
   seed = NULL
 )
 ```
@@ -85,6 +87,32 @@ nullcat(
   - `"auto"` (default): For `output = "category"`, automatically selects
     the fastest option based on matrix dimensions. For
     `output = "index"`, defaults to `"alternating"` for full mixing.
+    When `wt_row` or `wt_col` is supplied, defaults to the appropriate
+    direction, or `"alternating"` if both are supplied.
+
+- wt_row:
+
+  An optional square numeric matrix of non-negative weights controlling
+  which pairs of rows are likely to exchange tokens during
+  randomization. Must be `nrow(x)` by `nrow(x)`. This enables spatially
+  or trait-constrained null models where nearby or similar sites
+  exchange tokens more frequently.
+
+  Values are treated as relative weights (not probabilities) and are
+  normalized internally. The diagonal is ignored. The matrix should be
+  symmetric. Only supported for sequential methods (`curvecat`,
+  `swapcat`, `tswapcat`).
+
+  When both `wt_row` and `wt_col` are supplied, `swaps` is forced to
+  `"alternating"`, producing a Gibbs-like sweep that applies each weight
+  matrix on its respective margin in alternation.
+
+- wt_col:
+
+  An optional square numeric matrix of non-negative weights controlling
+  which pairs of columns are likely to exchange tokens during
+  randomization. Must be `ncol(x)` by `ncol(x)`. See `wt_row` for
+  details on weight interpretation.
 
 - seed:
 
@@ -133,16 +161,15 @@ x_rand <- nullcat(x, method = "curvecat", n_iter = 1000)
 all.equal(sort(x[1, ]), sort(x_rand[1, ]))
 #> [1] TRUE
 
-# Get index output showing where each cell moved
-idx <- nullcat(x, method = "curvecat", n_iter = 1000, output = "index")
+# Spatially constrained randomization using row weights
+coords <- cbind(runif(10), runif(10))
+d <- as.matrix(dist(coords))
+W <- exp(-d / 0.3)  # Gaussian distance decay
+x_spatial <- nullcat(x, method = "curvecat", n_iter = 1000, wt_row = W)
 
-# Use different methods
-x_swap <- nullcat(x, method = "swapcat", n_iter = 1000)
-x_r0 <- nullcat(x, method = "r0cat")
-
-# Use with a seed for reproducibility
-x_rand1 <- nullcat(x, method = "curvecat", n_iter = 1000, seed = 42)
-x_rand2 <- nullcat(x, method = "curvecat", n_iter = 1000, seed = 42)
-identical(x_rand1, x_rand2)
-#> [1] TRUE
+# Dual-margin weighting (Gibbs-like alternating)
+W_row <- exp(-as.matrix(dist(cbind(runif(10), runif(10)))) / 0.3)
+W_col <- exp(-as.matrix(dist(cbind(runif(10), runif(10)))) / 0.3)
+x_dual <- nullcat(x, method = "curvecat", n_iter = 1000,
+                  wt_row = W_row, wt_col = W_col)
 ```

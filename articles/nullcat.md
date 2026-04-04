@@ -326,6 +326,143 @@ print(suggested)
 #> Suggested n iterations: 410
 ```
 
+## Weighted pair sampling
+
+Standard null models assume that any row can freely exchange tokens with
+any other row—by default, all randomization algorithms select pairs of
+rows (or columns) uniformly at random for token exchange. But in many
+ecological contexts, this is unrealistic. Species assemblages at sites
+3000 km apart shouldn’t contribute equally to a null expectation
+designed to test *local* community assembly.
+
+Weighted pair sampling addresses this by making nearby (or similar)
+sites and/or species exchange tokens more frequently, while preserving
+the same marginal constraints as the unweighted model. This changes the
+null hypothesis being tested. An unweighted null model asks whether the
+observed matrix is structured relative to unconstrained random assembly;
+a weighted null model asks whether it is structured relative to assembly
+constrained by the supplied pairwise relationships. There is no
+correction for asymmetric pair selection (as there would be in, e.g., a
+Metropolis-Hastings sampler), so the weights directly shape the
+stationary distribution.
+
+In `nullcat`, the `wt_row` and `wt_col` parameters let you bias pair
+selection frequencies using pairwise weight matrices, enabling
+spatially, environmentally, or taxonomically constrained null models.
+This weighted pair sampling works with the core categorical
+[`curvecat()`](https://matthewkling.github.io/nullcat/reference/curvecat.md),
+[`swapcat()`](https://matthewkling.github.io/nullcat/reference/swapcat.md),
+and
+[`tswapcat()`](https://matthewkling.github.io/nullcat/reference/tswapcat.md)
+functions, as well as with
+[`quantize()`](https://matthewkling.github.io/nullcat/reference/quantize.md)
+for continuous data.
+
+Using weights has minimal effect on computation speed (\<5% increase per
+iteration in benchmarks). However, sparse weight matrices slow mixing
+because fewer pairs are available for exchange, so a larger number of
+iterations is usually necessary with weights. Use
+[`trace_cat()`](https://matthewkling.github.io/nullcat/reference/trace_cat.md)
+and
+[`suggest_n_iter()`](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md)
+to calibrate—they automatically account for the weight structure.
+
+### Basic usage: spatial constraints on rows
+
+The most common use case is constraining row exchanges by spatial
+distance:
+
+``` r
+set.seed(42)
+
+# 20 sites x 15 species categorical matrix
+x <- matrix(sample(1:4, 300, replace = TRUE), nrow = 20)
+
+# Site coordinates
+coords <- cbind(runif(20), runif(20))
+
+# Distance-decay weight matrix: nearby sites exchange more often
+d <- as.matrix(dist(coords))
+W <- exp(-d / 0.3)  # Gaussian kernel with scale = 0.3
+
+# Spatially constrained randomization
+x_spatial <- curvecat(x, n_iter = 3000, wt_row = W)
+
+# Margins are still preserved
+all.equal(sort(x[1, ]), sort(x_spatial[1, ]))
+#> [1] TRUE
+all.equal(sort(x[, 1]), sort(x_spatial[, 1]))
+#> [1] TRUE
+```
+
+The weight matrix `W` can be derived from anything: geographic distance,
+environmental dissimilarity, phylogenetic distance, trait similarity, or
+even a binary adjacency matrix for hard strata-like constraints.
+
+### Hard thresholds as soft strata
+
+A weight matrix with zero entries effectively prevents exchange between
+those pairs. A block-diagonal weight matrix is functionally equivalent
+to vegan’s `strata` argument, but with the added flexibility that some
+between-group exchange can be allowed:
+
+``` r
+set.seed(42)
+x <- matrix(sample(1:3, 80, replace = TRUE), nrow = 8)
+
+# Two island groups: rows 1-4 and 5-8
+W <- matrix(0, 8, 8)
+W[1:4, 1:4] <- 1
+W[5:8, 5:8] <- 1
+diag(W) <- 0  # diagonal is ignored, but zero is cleaner
+
+# Tokens only move within islands
+x_islands <- curvecat(x, n_iter = 3000, wt_row = W, output = "index")
+
+# Verify: tokens from rows 1-4 stayed in rows 1-4
+idx <- matrix(1:length(x), nrow(x))
+all(x_islands[1:4, ] %in% idx[1:4, ])
+#> [1] TRUE
+```
+
+### Column weights
+
+You can also weight column pair selection using `wt_col`. This
+constrains which species (or other column entities) can exchange
+positions:
+
+``` r
+set.seed(42)
+x <- matrix(sample(1:4, 200, replace = TRUE), nrow = 20)
+
+# Trait-based column weights (e.g., species with similar body size exchange more)
+traits <- runif(10)
+W_col <- exp(-as.matrix(dist(traits)) / 0.3)
+
+x_trait <- curvecat(x, n_iter = 3000, wt_col = W_col)
+```
+
+### Dual-margin weighting
+
+Supplying both `wt_row` and `wt_col` produces a Gibbs-like alternating
+scheme: even iterations use the row weights for vertical exchanges, odd
+iterations use the column weights for horizontal exchanges. This is
+forced to `swaps = "alternating"` automatically:
+
+``` r
+set.seed(42)
+x <- matrix(sample(1:4, 200, replace = TRUE), nrow = 20)
+
+# Spatial weights for rows, trait weights for columns
+coords <- cbind(runif(20), runif(20))
+W_row <- exp(-as.matrix(dist(coords)) / 0.3)
+
+traits <- runif(10)
+W_col <- exp(-as.matrix(dist(traits)) / 0.3)
+
+x_dual <- curvecat(x, n_iter = 3000, wt_row = W_row, wt_col = W_col)
+```
+
 ## Integration with `vegan`
 
 `nullcat` includes several functions to integrate with the `vegan`
