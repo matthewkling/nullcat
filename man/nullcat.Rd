@@ -10,6 +10,8 @@ nullcat(
   n_iter = 1000L,
   output = c("category", "index"),
   swaps = c("auto", "vertical", "horizontal", "alternating"),
+  wt_row = NULL,
+  wt_col = NULL,
   seed = NULL
 )
 }
@@ -59,7 +61,29 @@ either row or column token sets.
 \item \code{"auto"} (default): For \code{output = "category"},
 automatically selects the fastest option based on matrix dimensions. For
 \code{output = "index"}, defaults to \code{"alternating"} for full mixing.
+When \code{wt_row} or \code{wt_col} is supplied, defaults to the appropriate
+direction, or \code{"alternating"} if both are supplied.
 }}
+
+\item{wt_row}{An optional square numeric matrix of non-negative weights
+controlling which pairs of rows are likely to exchange tokens during
+randomization. Must be \code{nrow(x)} by \code{nrow(x)}. This enables spatially
+or trait-constrained null models where nearby or similar sites exchange
+tokens more frequently.
+
+Values are treated as relative weights (not probabilities) and are
+normalized internally. The diagonal is ignored. The matrix should be
+symmetric. Only supported for sequential methods (\code{curvecat}, \code{swapcat},
+\code{tswapcat}).
+
+When both \code{wt_row} and \code{wt_col} are supplied, \code{swaps} is forced to
+\code{"alternating"}, producing a Gibbs-like sweep that applies each weight
+matrix on its respective margin in alternation.}
+
+\item{wt_col}{An optional square numeric matrix of non-negative weights
+controlling which pairs of columns are likely to exchange tokens during
+randomization. Must be \code{ncol(x)} by \code{ncol(x)}. See \code{wt_row} for details
+on weight interpretation.}
 
 \item{seed}{Integer used to seed random number generator, for reproducibility.}
 }
@@ -97,17 +121,17 @@ x_rand <- nullcat(x, method = "curvecat", n_iter = 1000)
 # Check that row multisets are preserved
 all.equal(sort(x[1, ]), sort(x_rand[1, ]))
 
-# Get index output showing where each cell moved
-idx <- nullcat(x, method = "curvecat", n_iter = 1000, output = "index")
+# Spatially constrained randomization using row weights
+coords <- cbind(runif(10), runif(10))
+d <- as.matrix(dist(coords))
+W <- exp(-d / 0.3)  # Gaussian distance decay
+x_spatial <- nullcat(x, method = "curvecat", n_iter = 1000, wt_row = W)
 
-# Use different methods
-x_swap <- nullcat(x, method = "swapcat", n_iter = 1000)
-x_r0 <- nullcat(x, method = "r0cat")
-
-# Use with a seed for reproducibility
-x_rand1 <- nullcat(x, method = "curvecat", n_iter = 1000, seed = 42)
-x_rand2 <- nullcat(x, method = "curvecat", n_iter = 1000, seed = 42)
-identical(x_rand1, x_rand2)
+# Dual-margin weighting (Gibbs-like alternating)
+W_row <- exp(-as.matrix(dist(cbind(runif(10), runif(10)))) / 0.3)
+W_col <- exp(-as.matrix(dist(cbind(runif(10), runif(10)))) / 0.3)
+x_dual <- nullcat(x, method = "curvecat", n_iter = 1000,
+                  wt_row = W_row, wt_col = W_col)
 
 }
 \seealso{

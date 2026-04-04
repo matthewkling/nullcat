@@ -13,7 +13,9 @@ quantize_prep(
   transform = identity,
   offset = 0,
   zero_stratum = FALSE,
-  n_iter = 1000
+  n_iter = 1000,
+  wt_row = NULL,
+  wt_col = NULL
 )
 }
 \arguments{
@@ -22,9 +24,21 @@ nonnegative quantitative values in cells.
 This is the dataset for which stratification and null model overhead
 should be prepared.}
 
-\item{method}{Character string specifying the null model algorithm.
-The default \code{"curvecat"} uses the categorical curveball algorithm.
-See \code{\link[=nullcat]{nullcat()}} for alternative options.}
+\item{method}{Character specifying the randomization algorithm to use.
+Options include the following; see details and linked functions
+for more info.
+\itemize{
+\item \code{"curvecat"}: categorical analog to \code{curveball};
+see \code{\link[=curvecat]{curvecat()}} for details.
+\item \code{"swapcat"}: categorical analog to \code{swap};
+see \code{\link[=swapcat]{swapcat()}} for details.
+\item \code{"tswapcat"}: categorical analog to \code{tswap};
+see \code{\link[=tswapcat]{tswapcat()}} for details.
+\item \code{"r0cat"}: categorical analog to \code{r0};
+see \code{\link[=r0cat]{r0cat()}} for details.
+\item \code{"c0cat"}: categorical analog to \code{c0};
+see \code{\link[=c0cat]{c0cat()}} for details.
+}}
 
 \item{fixed}{Character string specifying the level at which quantitative
 values are held fixed during randomization. One of:
@@ -37,10 +51,10 @@ cell and its randomized destination is fixed.
 \item \code{"stratum"}: values are shuffled globally within each stratum,
 holding only the overall stratum-level value distribution fixed.
 \item \code{"row"}: values are shuffled within strata separately for each
-row, holding each row’s value multiset fixed. Not compatible with all
+row, holding each row's value multiset fixed. Not compatible with all
 \code{method}s.
 \item \code{"col"}: values are shuffled within strata separately for each
-column, holding each column’s value multiset fixed.
+column, holding each column's value multiset fixed.
 }
 Note that this interacts with \code{method}: different null models
 fix different margins in the underlying binary representation.}
@@ -75,6 +89,26 @@ of the \code{n_strata} will represent zeros and the others will be nonzero range
 \item{n_iter}{Number of iterations. Default is 1000. Larger values yield
 more thorough mixing. Ignored for non-sequential methods. Minimum
 burn-in times can be estimated with \code{suggest_n_iter()}.}
+
+\item{wt_row}{An optional square numeric matrix of non-negative weights
+controlling which pairs of rows are likely to exchange tokens during
+randomization. Must be \code{nrow(x)} by \code{nrow(x)}. This enables spatially
+or trait-constrained null models where nearby or similar sites exchange
+tokens more frequently.
+
+Values are treated as relative weights (not probabilities) and are
+normalized internally. The diagonal is ignored. The matrix should be
+symmetric. Only supported for sequential methods (\code{curvecat}, \code{swapcat},
+\code{tswapcat}).
+
+When both \code{wt_row} and \code{wt_col} are supplied, \code{swaps} is forced to
+\code{"alternating"}, producing a Gibbs-like sweep that applies each weight
+matrix on its respective margin in alternation.}
+
+\item{wt_col}{An optional square numeric matrix of non-negative weights
+controlling which pairs of columns are likely to exchange tokens during
+randomization. Must be \code{ncol(x)} by \code{ncol(x)}. See \code{wt_row} for details
+on weight interpretation.}
 }
 \value{
 A list with class \code{"quantize_prep"} (if you want to set it)
@@ -91,6 +125,7 @@ the stratification and reassignment settings used to construct
 \code{strata} and \code{pool}.
 \item \code{sim_args}: named list of arguments passed to \code{nullcat()}
 (e.g. \code{n_iter}).
+\item \code{wt_row}, \code{wt_col}: the row and column weight matrices (or NULL).
 }
 
 This object is intended to be passed unchanged to the \code{prep} argument of

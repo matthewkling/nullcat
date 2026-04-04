@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include "cat.h"
+#include "weighted_pair.h"
 
 using namespace Rcpp;
 using namespace nullcat;
@@ -110,66 +111,62 @@ static void swapcat_block_vertical(CatState &S, IntegerMatrix *idx,
 }
 
 // Run n_iter swap attempts with horizontal flips.
-static void swapcat_engine_horizontal(CatState &S, IntegerMatrix *idx, int n_iter) {
+// For horizontal swaps, tokens move between columns, so the relevant
+// weighted margin (if any) is the column margin.
+static void swapcat_engine_horizontal(CatState &S, IntegerMatrix *idx, int n_iter,
+                                      const WeightedPairSampler &col_sampler) {
       const int nrow = S.n_row;
       const int ncol = S.n_col;
 
       if (nrow < 2 || ncol < 2 || n_iter <= 0) return;
 
+      // Row pairs are always sampled uniformly in swap (both rows and cols
+      // are needed to identify the 2x2 block). The wt_row weights apply
+      // to the margin corresponding to the swap direction.
+      WeightedPairSampler row_sampler = make_pair_sampler(nrow, std::vector<double>());
+
       for (int it = 0; it < n_iter; ++it) {
-            // Sample two distinct rows
-            int r1 = static_cast<int>(std::floor(R::runif(0.0, (double)nrow)));
-            int r2 = static_cast<int>(std::floor(R::runif(0.0, (double)(nrow - 1))));
-            if (r2 >= r1) r2++;
-
-            // Sample two distinct columns
-            int c1 = static_cast<int>(std::floor(R::runif(0.0, (double)ncol)));
-            int c2 = static_cast<int>(std::floor(R::runif(0.0, (double)(ncol - 1))));
-            if (c2 >= c1) c2++;
-
+            int r1, r2, c1, c2;
+            row_sampler.sample(r1, r2);
+            col_sampler.sample(c1, c2);
             swapcat_block_horizontal(S, idx, r1, r2, c1, c2);
       }
 }
 
 // Run n_iter swap attempts with vertical flips.
-static void swapcat_engine_vertical(CatState &S, IntegerMatrix *idx, int n_iter) {
+// For vertical swaps, tokens move between rows, so the relevant
+// weighted margin (if any) is the row margin.
+static void swapcat_engine_vertical(CatState &S, IntegerMatrix *idx, int n_iter,
+                                    const WeightedPairSampler &row_sampler) {
       const int nrow = S.n_row;
       const int ncol = S.n_col;
 
       if (nrow < 2 || ncol < 2 || n_iter <= 0) return;
 
+      // Column pairs always sampled uniformly
+      WeightedPairSampler col_sampler = make_pair_sampler(ncol, std::vector<double>());
+
       for (int it = 0; it < n_iter; ++it) {
-            // Sample two distinct rows
-            int r1 = static_cast<int>(std::floor(R::runif(0.0, (double)nrow)));
-            int r2 = static_cast<int>(std::floor(R::runif(0.0, (double)(nrow - 1))));
-            if (r2 >= r1) r2++;
-
-            // Sample two distinct columns
-            int c1 = static_cast<int>(std::floor(R::runif(0.0, (double)ncol)));
-            int c2 = static_cast<int>(std::floor(R::runif(0.0, (double)(ncol - 1))));
-            if (c2 >= c1) c2++;
-
+            int r1, r2, c1, c2;
+            row_sampler.sample(r1, r2);
+            col_sampler.sample(c1, c2);
             swapcat_block_vertical(S, idx, r1, r2, c1, c2);
       }
 }
 
 // Run n_iter swap attempts alternating between horizontal and vertical flips.
-static void swapcat_engine_alternating(CatState &S, IntegerMatrix *idx, int n_iter) {
+static void swapcat_engine_alternating(CatState &S, IntegerMatrix *idx, int n_iter,
+                                       const WeightedPairSampler &row_sampler,
+                                       const WeightedPairSampler &col_sampler) {
       const int nrow = S.n_row;
       const int ncol = S.n_col;
 
       if (nrow < 2 || ncol < 2 || n_iter <= 0) return;
 
       for (int it = 0; it < n_iter; ++it) {
-            // Sample two distinct rows
-            int r1 = static_cast<int>(std::floor(R::runif(0.0, (double)nrow)));
-            int r2 = static_cast<int>(std::floor(R::runif(0.0, (double)(nrow - 1))));
-            if (r2 >= r1) r2++;
-
-            // Sample two distinct columns
-            int c1 = static_cast<int>(std::floor(R::runif(0.0, (double)ncol)));
-            int c2 = static_cast<int>(std::floor(R::runif(0.0, (double)(ncol - 1))));
-            if (c2 >= c1) c2++;
+            int r1, r2, c1, c2;
+            row_sampler.sample(r1, r2);
+            col_sampler.sample(c1, c2);
 
             // Alternate between horizontal and vertical
             if (it % 2 == 0) {
@@ -188,7 +185,9 @@ static void swapcat_engine_alternating(CatState &S, IntegerMatrix *idx, int n_it
 IntegerMatrix swapcat_cpp(IntegerMatrix mat,
                           int n_iter,
                           std::string swaps = "vertical",
-                          std::string output = "category") {
+                          std::string output = "category",
+                          Rcpp::Nullable<Rcpp::NumericMatrix> wt_row = R_NilValue,
+                          Rcpp::Nullable<Rcpp::NumericMatrix> wt_col = R_NilValue) {
       const int nrow = mat.nrow();
       const int ncol = mat.ncol();
 
@@ -221,11 +220,24 @@ IntegerMatrix swapcat_cpp(IntegerMatrix mat,
 
       // Run the appropriate engine based on swaps parameter
       if (swaps == "horizontal") {
-            swapcat_engine_horizontal(S, idx_ptr, n_iter);
+            WeightedPairSampler col_sampler = wt_col.isNotNull()
+            ? make_pair_sampler_from_matrix(ncol, Rcpp::as<Rcpp::NumericMatrix>(wt_col))
+                  : make_pair_sampler(ncol, std::vector<double>());
+            swapcat_engine_horizontal(S, idx_ptr, n_iter, col_sampler);
       } else if (swaps == "vertical") {
-            swapcat_engine_vertical(S, idx_ptr, n_iter);
+            WeightedPairSampler row_sampler = wt_row.isNotNull()
+            ? make_pair_sampler_from_matrix(nrow, Rcpp::as<Rcpp::NumericMatrix>(wt_row))
+                  : make_pair_sampler(nrow, std::vector<double>());
+            swapcat_engine_vertical(S, idx_ptr, n_iter, row_sampler);
       } else if (swaps == "alternating") {
-            swapcat_engine_alternating(S, idx_ptr, n_iter);
+            WeightedPairSampler row_sampler = wt_row.isNotNull()
+            ? make_pair_sampler_from_matrix(nrow, Rcpp::as<Rcpp::NumericMatrix>(wt_row))
+                  : make_pair_sampler(nrow, std::vector<double>());
+            WeightedPairSampler col_sampler = wt_col.isNotNull()
+                  ? make_pair_sampler_from_matrix(ncol, Rcpp::as<Rcpp::NumericMatrix>(wt_col))
+                        : make_pair_sampler(ncol, std::vector<double>());
+
+            swapcat_engine_alternating(S, idx_ptr, n_iter, row_sampler, col_sampler);
       } else {
             Rcpp::stop("Invalid swaps parameter. Must be 'vertical', 'horizontal', or 'alternating'.");
       }

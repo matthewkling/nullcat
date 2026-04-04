@@ -2,7 +2,7 @@
 % Please edit documentation in R/quantize.R
 \name{quantize}
 \alias{quantize}
-\title{Stratified randomization of a quantitative community matrix}
+\title{Stratified quantitative null models via quantize}
 \usage{
 quantize(
   x = NULL,
@@ -15,23 +15,35 @@ quantize(
   offset = 0,
   zero_stratum = FALSE,
   n_iter = 1000,
+  wt_row = NULL,
+  wt_col = NULL,
   seed = NULL
 )
 }
 \arguments{
 \item{x}{Community matrix with sites in rows, species in columns, and
-nonnegative quantitative values in cells. Ignored if \code{prep} is
-supplied.}
+nonnegative quantitative values in cells. Can be \code{NULL} when \code{prep}
+is provided.}
 
-\item{prep}{Optional precomputed object returned by
-\code{quantize_prep()}. If supplied, \code{x} is ignored and all
-overhead (stratification, pools, etc.) is taken from \code{prep}, which
-is typically much faster when generating many randomizations of the same
-dataset.}
+\item{prep}{A \code{"quantize_prep"} object (from \code{\link[=quantize_prep]{quantize_prep()}}).
+If provided, \code{x} and all stratification arguments are ignored and
+the precomputed overhead is used directly for fast repeated draws.}
 
-\item{method}{Character string specifying the null model algorithm.
-The default \code{"curvecat"} uses the categorical curveball algorithm.
-See \code{\link[=nullcat]{nullcat()}} for alternative options.}
+\item{method}{Character specifying the randomization algorithm to use.
+Options include the following; see details and linked functions
+for more info.
+\itemize{
+\item \code{"curvecat"}: categorical analog to \code{curveball};
+see \code{\link[=curvecat]{curvecat()}} for details.
+\item \code{"swapcat"}: categorical analog to \code{swap};
+see \code{\link[=swapcat]{swapcat()}} for details.
+\item \code{"tswapcat"}: categorical analog to \code{tswap};
+see \code{\link[=tswapcat]{tswapcat()}} for details.
+\item \code{"r0cat"}: categorical analog to \code{r0};
+see \code{\link[=r0cat]{r0cat()}} for details.
+\item \code{"c0cat"}: categorical analog to \code{c0};
+see \code{\link[=c0cat]{c0cat()}} for details.
+}}
 
 \item{fixed}{Character string specifying the level at which quantitative
 values are held fixed during randomization. One of:
@@ -44,10 +56,10 @@ cell and its randomized destination is fixed.
 \item \code{"stratum"}: values are shuffled globally within each stratum,
 holding only the overall stratum-level value distribution fixed.
 \item \code{"row"}: values are shuffled within strata separately for each
-row, holding each row’s value multiset fixed. Not compatible with all
+row, holding each row's value multiset fixed. Not compatible with all
 \code{method}s.
 \item \code{"col"}: values are shuffled within strata separately for each
-column, holding each column’s value multiset fixed.
+column, holding each column's value multiset fixed.
 }
 Note that this interacts with \code{method}: different null models
 fix different margins in the underlying binary representation.}
@@ -83,6 +95,26 @@ of the \code{n_strata} will represent zeros and the others will be nonzero range
 more thorough mixing. Ignored for non-sequential methods. Minimum
 burn-in times can be estimated with \code{suggest_n_iter()}.}
 
+\item{wt_row}{An optional square numeric matrix of non-negative weights
+controlling which pairs of rows are likely to exchange tokens during
+randomization. Must be \code{nrow(x)} by \code{nrow(x)}. This enables spatially
+or trait-constrained null models where nearby or similar sites exchange
+tokens more frequently.
+
+Values are treated as relative weights (not probabilities) and are
+normalized internally. The diagonal is ignored. The matrix should be
+symmetric. Only supported for sequential methods (\code{curvecat}, \code{swapcat},
+\code{tswapcat}).
+
+When both \code{wt_row} and \code{wt_col} are supplied, \code{swaps} is forced to
+\code{"alternating"}, producing a Gibbs-like sweep that applies each weight
+matrix on its respective margin in alternation.}
+
+\item{wt_col}{An optional square numeric matrix of non-negative weights
+controlling which pairs of columns are likely to exchange tokens during
+randomization. Must be \code{ncol(x)} by \code{ncol(x)}. See \code{wt_row} for details
+on weight interpretation.}
+
 \item{seed}{Integer used to seed random number generator, for reproducibility.}
 }
 \value{
@@ -93,25 +125,11 @@ multisets. For binary methods, the result corresponds to applying the
 chosen binary null model to each stratum and recombining.
 }
 \description{
-\code{quantize()} is a community null model for quantitative community data
-(e.g. abundance, biomass, or occurrence probability). It works by converting
-quantitative values into discrete strata, randomizing the stratified matrix
-using a categorical null model, and reassigning quantitative values within
-strata according to a specified constraint.
-}
-\details{
-This approach provides a framework for preserving row and/or column value
-distributions in continuous data. When using \code{fixed = "row"} or
-\code{fixed = "col"}, one dimension's value multisets are preserved exactly
-while the other is preserved at the resolution of strata, approximating a
-fixed-fixed null model for quantitative data. The number of strata controls
-the tradeoff between preservation fidelity and randomization strength.
-
-By default, \code{quantize()} will compute all necessary overhead for a
-given dataset (strata, pools, etc.) internally. For repeated randomization
-of the same matrix (e.g. to build a null distribution), this overhead can be
-computed once using \code{\link[=quantize_prep]{quantize_prep()}} and reused by supplying the
-resulting object via the \code{prep} argument.
+\code{quantize()} implements a stratified randomization framework for
+continuous ecological data. It discretizes quantitative values into
+strata, randomizes the strata assignments using a categorical null
+model algorithm (via \code{\link[=nullcat]{nullcat()}}), and then reassigns the original
+quantitative values according to the new stratum layout.
 }
 \examples{
 # toy quantitative community matrix

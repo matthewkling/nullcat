@@ -5,6 +5,7 @@
 #include <algorithm>
 
 #include "cat.h"
+#include "weighted_pair.h"
 
 using namespace Rcpp;
 using namespace nullcat;
@@ -90,14 +91,14 @@ static void curvecat_pair_rows(CatState &S, IntegerMatrix *idx, int r1, int r2) 
 
             // Assign first n_ab to (a,b), rest to (b,a).
             // While doing so, if we have an index matrix, we swap indices
-            // for columns whose orientation flips relative to the original.
+            // for rows whose orientation flips relative to the original.
             for (int i = 0; i < m; ++i) {
                   int col        = cols[i];
                   bool new_is_ab = (i < n_ab);        // TRUE if we assign (a,b)
                   bool old_is_ab = (orient[i] == 0);  // TRUE if originally (a,b)
 
                   // If we are tracking indices and the orientation flips,
-                  // swap the indices in this column.
+                  // swap the indices in this row.
                   if (idx && (new_is_ab != old_is_ab)) {
                         int tmp = (*idx)(r1, col);
                         (*idx)(r1, col) = (*idx)(r2, col);
@@ -210,37 +211,38 @@ static void curvecat_pair_cols(CatState &S, IntegerMatrix *idx, int c1, int c2) 
 }
 
 // Run n_iter curveball trades on CatState using row pairs (vertical swaps).
-static void curvecat_engine_rows(CatState &S, IntegerMatrix *idx, int n_iter) {
+// Uses weighted pair sampling when sampler is weighted.
+static void curvecat_engine_rows(CatState &S, IntegerMatrix *idx, int n_iter,
+                                 const WeightedPairSampler &sampler) {
       const int nrow = S.n_row;
       if (nrow < 2 || n_iter <= 0) return;
 
       for (int it = 0; it < n_iter; ++it) {
-            // Sample two distinct rows uniformly
-            int r1 = static_cast<int>(std::floor(R::runif(0.0, (double)nrow)));
-            int r2 = static_cast<int>(std::floor(R::runif(0.0, (double)(nrow - 1))));
-            if (r2 >= r1) r2++;  // ensure r2 != r1
-
+            int r1, r2;
+            sampler.sample(r1, r2);
             curvecat_pair_rows(S, idx, r1, r2);
       }
 }
 
 // Run n_iter curveball trades on CatState using column pairs (horizontal swaps).
-static void curvecat_engine_cols(CatState &S, IntegerMatrix *idx, int n_iter) {
+// Uses weighted pair sampling when sampler is weighted.
+static void curvecat_engine_cols(CatState &S, IntegerMatrix *idx, int n_iter,
+                                 const WeightedPairSampler &sampler) {
       const int ncol = S.n_col;
       if (ncol < 2 || n_iter <= 0) return;
 
       for (int it = 0; it < n_iter; ++it) {
-            // Sample two distinct columns uniformly
-            int c1 = static_cast<int>(std::floor(R::runif(0.0, (double)ncol)));
-            int c2 = static_cast<int>(std::floor(R::runif(0.0, (double)(ncol - 1))));
-            if (c2 >= c1) c2++;  // ensure c2 != c1
-
+            int c1, c2;
+            sampler.sample(c1, c2);
             curvecat_pair_cols(S, idx, c1, c2);
       }
 }
 
 // Run n_iter curveball trades alternating between row and column pairs.
-static void curvecat_engine_alternating(CatState &S, IntegerMatrix *idx, int n_iter) {
+// Uses weighted pair sampling for the active margin on each iteration.
+static void curvecat_engine_alternating(CatState &S, IntegerMatrix *idx, int n_iter,
+                                        const WeightedPairSampler &row_sampler,
+                                        const WeightedPairSampler &col_sampler) {
       const int nrow = S.n_row;
       const int ncol = S.n_col;
       if (nrow < 2 || ncol < 2 || n_iter <= 0) return;
@@ -248,15 +250,13 @@ static void curvecat_engine_alternating(CatState &S, IntegerMatrix *idx, int n_i
       for (int it = 0; it < n_iter; ++it) {
             if (it % 2 == 0) {
                   // Even iterations: pair rows (vertical swaps)
-                  int r1 = static_cast<int>(std::floor(R::runif(0.0, (double)nrow)));
-                  int r2 = static_cast<int>(std::floor(R::runif(0.0, (double)(nrow - 1))));
-                  if (r2 >= r1) r2++;
+                  int r1, r2;
+                  row_sampler.sample(r1, r2);
                   curvecat_pair_rows(S, idx, r1, r2);
             } else {
                   // Odd iterations: pair columns (horizontal swaps)
-                  int c1 = static_cast<int>(std::floor(R::runif(0.0, (double)ncol)));
-                  int c2 = static_cast<int>(std::floor(R::runif(0.0, (double)(ncol - 1))));
-                  if (c2 >= c1) c2++;
+                  int c1, c2;
+                  col_sampler.sample(c1, c2);
                   curvecat_pair_cols(S, idx, c1, c2);
             }
       }
@@ -270,7 +270,9 @@ static void curvecat_engine_alternating(CatState &S, IntegerMatrix *idx, int n_i
 IntegerMatrix curvecat_cpp(IntegerMatrix mat,
                            int n_iter,
                            std::string swaps = "vertical",
-                           std::string output = "category") {
+                           std::string output = "category",
+                           Rcpp::Nullable<Rcpp::NumericMatrix> wt_row = R_NilValue,
+                           Rcpp::Nullable<Rcpp::NumericMatrix> wt_col = R_NilValue) {
       const int nrow = mat.nrow();
       const int ncol = mat.ncol();
 
@@ -303,11 +305,27 @@ IntegerMatrix curvecat_cpp(IntegerMatrix mat,
 
       // Run the appropriate engine based on swaps parameter
       if (swaps == "vertical") {
-            curvecat_engine_rows(S, idx_ptr, n_iter);
+            WeightedPairSampler sampler = wt_row.isNotNull()
+            ? make_pair_sampler_from_matrix(nrow, Rcpp::as<Rcpp::NumericMatrix>(wt_row))
+                  : make_pair_sampler(nrow, std::vector<double>());
+            curvecat_engine_rows(S, idx_ptr, n_iter, sampler);
       } else if (swaps == "horizontal") {
-            curvecat_engine_cols(S, idx_ptr, n_iter);
+            WeightedPairSampler sampler = wt_col.isNotNull()
+            ? make_pair_sampler_from_matrix(ncol, Rcpp::as<Rcpp::NumericMatrix>(wt_col))
+                  : make_pair_sampler(ncol, std::vector<double>());
+            curvecat_engine_cols(S, idx_ptr, n_iter, sampler);
       } else if (swaps == "alternating") {
-            curvecat_engine_alternating(S, idx_ptr, n_iter);
+            // For alternating: wt_row weights row pairs (vertical steps),
+            // wt_col weights column pairs (horizontal steps).
+            // Either or both can be NULL for uniform sampling on that margin.
+            WeightedPairSampler row_sampler = wt_row.isNotNull()
+            ? make_pair_sampler_from_matrix(nrow, Rcpp::as<Rcpp::NumericMatrix>(wt_row))
+                  : make_pair_sampler(nrow, std::vector<double>());
+            WeightedPairSampler col_sampler = wt_col.isNotNull()
+                  ? make_pair_sampler_from_matrix(ncol, Rcpp::as<Rcpp::NumericMatrix>(wt_col))
+                        : make_pair_sampler(ncol, std::vector<double>());
+
+            curvecat_engine_alternating(S, idx_ptr, n_iter, row_sampler, col_sampler);
       } else {
             Rcpp::stop("Invalid swaps parameter. Must be 'vertical', 'horizontal', or 'alternating'.");
       }

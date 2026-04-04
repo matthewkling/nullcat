@@ -9,6 +9,8 @@ tswapcat(
   n_iter = 1000L,
   output = c("category", "index"),
   swaps = "auto",
+  wt_row = NULL,
+  wt_col = NULL,
   seed = NULL
 )
 }
@@ -42,7 +44,29 @@ either row or column token sets.
 \item \code{"auto"} (default): For \code{output = "category"},
 automatically selects the fastest option based on matrix dimensions. For
 \code{output = "index"}, defaults to \code{"alternating"} for full mixing.
+When \code{wt_row} or \code{wt_col} is supplied, defaults to the appropriate
+direction, or \code{"alternating"} if both are supplied.
 }}
+
+\item{wt_row}{An optional square numeric matrix of non-negative weights
+controlling which pairs of rows are likely to exchange tokens during
+randomization. Must be \code{nrow(x)} by \code{nrow(x)}. This enables spatially
+or trait-constrained null models where nearby or similar sites exchange
+tokens more frequently.
+
+Values are treated as relative weights (not probabilities) and are
+normalized internally. The diagonal is ignored. The matrix should be
+symmetric. Only supported for sequential methods (\code{curvecat}, \code{swapcat},
+\code{tswapcat}).
+
+When both \code{wt_row} and \code{wt_col} are supplied, \code{swaps} is forced to
+\code{"alternating"}, producing a Gibbs-like sweep that applies each weight
+matrix on its respective margin in alternation.}
+
+\item{wt_col}{An optional square numeric matrix of non-negative weights
+controlling which pairs of columns are likely to exchange tokens during
+randomization. Must be \code{ncol(x)} by \code{ncol(x)}. See \code{wt_row} for details
+on weight interpretation.}
 
 \item{seed}{Integer used to seed random number generator, for reproducibility.}
 }
@@ -52,32 +76,23 @@ categorical values (when \code{output = "category"}) or an integer index
 matrix describing the permutation of entries (when \code{output = "index"}).
 }
 \description{
-The trial-swap ("tswap") algorithm is a fixed–fixed randomization that repeatedly
-attempts random 2×2 swaps until a valid one is found in each iteration,
+The trial-swap ("tswap") algorithm is a fixed-fixed randomization that repeatedly
+attempts random 2x2 swaps until a valid one is found in each iteration,
 reducing the number of wasted draws compared to the simple swap.
 \code{tswapcat()} extends this logic to categorical matrices.
 }
 \examples{
 set.seed(123)
 x <- matrix(sample(1:4, 100, replace = TRUE), nrow = 10)
-
-# Randomize using swap algorithm
 x_rand <- tswapcat(x, n_iter = 1000)
-
-# Verify fixed-fixed constraint (row and column margins preserved)
-all.equal(sort(x[1, ]), sort(x_rand[1, ]))
-all.equal(sort(x[, 1]), sort(x_rand[, 1]))
 
 }
 \references{
 Gotelli, N. J. (2000). Null model analysis of species co-occurrence patterns.
-\emph{Ecology}, 81(9), 2606–2621.
+\emph{Ecology}, 81(9), 2606-2621.
 
-Miklós, I. & Podani, J. (2004). Randomization of presence–absence matrices:
-comments and new algorithms. \emph{Ecology}, 85(1), 86–92.
-
-Gotelli, N. J. & Entsminger, G. L. (2003). \emph{EcoSim: Null models software for
-ecology} (Version 7.0). Acquired Intelligence Inc. & Kesey-Bear, Jericho (VT).
+Miklos, I. & Podani, J. (2004). Randomization of presence-absence matrices:
+comments and new algorithms. \emph{Ecology}, 85(1), 86-92.
 }
 \seealso{
 \code{\link[=curvecat]{curvecat()}} for an algorithm that produces equivalent results with

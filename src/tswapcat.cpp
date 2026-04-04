@@ -1,9 +1,10 @@
 #include <Rcpp.h>
 #include <vector>
 #include <cmath>
-#include <unordered_map>  // needed by inline helpers in cat.hpp
+#include <unordered_map>
 
 #include "cat.h"
+#include "weighted_pair.h"
 
 using namespace Rcpp;
 using namespace nullcat;
@@ -14,16 +15,8 @@ using namespace nullcat;
 
 // Attempt one categorical 2x2 trial swap with horizontal flip.
 // Returns true if a swap was performed, false otherwise.
-//
-// We look for a 2x2 block:
-//   a  b
-//   c  d
-// where a != b, a == d, b == c, and flip it horizontally to:
-//   b  a
-//   d  c
 static bool tswapcat_try_block_horizontal(CatState &S, IntegerMatrix *idx,
                                           int r1, int r2, int c1, int c2) {
-      // Guard against degenerate cases
       if (r1 == r2 || c1 == c2) return false;
 
       int a = S.get(r1, c1);
@@ -31,12 +24,10 @@ static bool tswapcat_try_block_horizontal(CatState &S, IntegerMatrix *idx,
       int c = S.get(r2, c1);
       int d = S.get(r2, c2);
 
-      // Check for AB/BA or BA/AB pattern in category ids
       if (!(a != b && a == d && b == c)) {
-            return false; // no valid swap
+            return false;
       }
 
-      // If tracking indices, pull out the 2x2 block of indices
       int ia, ib, ic, id;
       if (idx) {
             ia = (*idx)(r1, c1);
@@ -45,9 +36,6 @@ static bool tswapcat_try_block_horizontal(CatState &S, IntegerMatrix *idx,
             id = (*idx)(r2, c2);
       }
 
-      // Flip horizontally:
-      //   a  b        b  a
-      //   c  d   ->   d  c
       S.set(r1, c1, b);
       S.set(r1, c2, a);
       S.set(r2, c1, d);
@@ -65,16 +53,8 @@ static bool tswapcat_try_block_horizontal(CatState &S, IntegerMatrix *idx,
 
 // Attempt one categorical 2x2 trial swap with vertical flip.
 // Returns true if a swap was performed, false otherwise.
-//
-// We look for a 2x2 block:
-//   a  b
-//   c  d
-// where a != b, a == d, b == c, and flip it vertically to:
-//   c  d
-//   a  b
 static bool tswapcat_try_block_vertical(CatState &S, IntegerMatrix *idx,
                                         int r1, int r2, int c1, int c2) {
-      // Guard against degenerate cases
       if (r1 == r2 || c1 == c2) return false;
 
       int a = S.get(r1, c1);
@@ -82,12 +62,10 @@ static bool tswapcat_try_block_vertical(CatState &S, IntegerMatrix *idx,
       int c = S.get(r2, c1);
       int d = S.get(r2, c2);
 
-      // Check for AB/BA or BA/AB pattern in category ids
       if (!(a != b && a == d && b == c)) {
-            return false; // no valid swap
+            return false;
       }
 
-      // If tracking indices, pull out the 2x2 block of indices
       int ia, ib, ic, id;
       if (idx) {
             ia = (*idx)(r1, c1);
@@ -96,9 +74,6 @@ static bool tswapcat_try_block_vertical(CatState &S, IntegerMatrix *idx,
             id = (*idx)(r2, c2);
       }
 
-      // Flip vertically:
-      //   a  b        c  d
-      //   c  d   ->   a  b
       S.set(r1, c1, c);
       S.set(r1, c2, d);
       S.set(r2, c1, a);
@@ -115,80 +90,67 @@ static bool tswapcat_try_block_vertical(CatState &S, IntegerMatrix *idx,
 }
 
 // Run n_iter trial swaps with horizontal flips.
-//
-// For each "iteration", we try up to max_trials randomly chosen 2x2 blocks.
-// If any trial succeeds (i.e., we find a valid AB/BA block), we perform
-// exactly one swap and move on to the next iteration.
-static void tswapcat_engine_horizontal(CatState &S, IntegerMatrix *idx, int n_iter) {
+static void tswapcat_engine_horizontal(CatState &S, IntegerMatrix *idx, int n_iter,
+                                       const WeightedPairSampler &col_sampler) {
       const int nrow = S.n_row;
       const int ncol = S.n_col;
 
       if (nrow < 2 || ncol < 2 || n_iter <= 0) return;
 
-      // Simple default: number of trials per iteration proportional to matrix size.
       const int max_trials = nrow * ncol;
+      WeightedPairSampler row_sampler = make_pair_sampler(nrow, std::vector<double>());
 
       for (int it = 0; it < n_iter; ++it) {
             bool swapped = false;
 
             for (int trial = 0; trial < max_trials; ++trial) {
-                  // Sample two distinct rows
-                  int r1 = static_cast<int>(std::floor(R::runif(0.0, (double)nrow)));
-                  int r2 = static_cast<int>(std::floor(R::runif(0.0, (double)(nrow - 1))));
-                  if (r2 >= r1) r2++;
-
-                  // Sample two distinct columns
-                  int c1 = static_cast<int>(std::floor(R::runif(0.0, (double)ncol)));
-                  int c2 = static_cast<int>(std::floor(R::runif(0.0, (double)(ncol - 1))));
-                  if (c2 >= c1) c2++;
+                  int r1, r2, c1, c2;
+                  row_sampler.sample(r1, r2);
+                  col_sampler.sample(c1, c2);
 
                   if (tswapcat_try_block_horizontal(S, idx, r1, r2, c1, c2)) {
                         swapped = true;
-                        break; // proceed to next "iteration"
+                        break;
                   }
             }
 
-            // If no swap happened in max_trials attempts, this iteration
-            // is effectively a no-op and we move on to the next one.
-            (void)swapped; // silence unused-variable warning
+            (void)swapped;
       }
 }
 
 // Run n_iter trial swaps with vertical flips.
-static void tswapcat_engine_vertical(CatState &S, IntegerMatrix *idx, int n_iter) {
+static void tswapcat_engine_vertical(CatState &S, IntegerMatrix *idx, int n_iter,
+                                     const WeightedPairSampler &row_sampler) {
       const int nrow = S.n_row;
       const int ncol = S.n_col;
 
       if (nrow < 2 || ncol < 2 || n_iter <= 0) return;
 
       const int max_trials = nrow * ncol;
+      WeightedPairSampler col_sampler = make_pair_sampler(ncol, std::vector<double>());
 
       for (int it = 0; it < n_iter; ++it) {
             bool swapped = false;
 
             for (int trial = 0; trial < max_trials; ++trial) {
-                  // Sample two distinct rows
-                  int r1 = static_cast<int>(std::floor(R::runif(0.0, (double)nrow)));
-                  int r2 = static_cast<int>(std::floor(R::runif(0.0, (double)(nrow - 1))));
-                  if (r2 >= r1) r2++;
-
-                  // Sample two distinct columns
-                  int c1 = static_cast<int>(std::floor(R::runif(0.0, (double)ncol)));
-                  int c2 = static_cast<int>(std::floor(R::runif(0.0, (double)(ncol - 1))));
-                  if (c2 >= c1) c2++;
+                  int r1, r2, c1, c2;
+                  row_sampler.sample(r1, r2);
+                  col_sampler.sample(c1, c2);
 
                   if (tswapcat_try_block_vertical(S, idx, r1, r2, c1, c2)) {
                         swapped = true;
-                        break; // proceed to next "iteration"
+                        break;
                   }
             }
 
-            (void)swapped; // silence unused-variable warning
+            (void)swapped;
       }
 }
 
 // Run n_iter trial swaps alternating between horizontal and vertical flips.
-static void tswapcat_engine_alternating(CatState &S, IntegerMatrix *idx, int n_iter) {
+static void tswapcat_engine_alternating(CatState &S, IntegerMatrix *idx, int n_iter,
+                                        const WeightedPairSampler &row_sampler,
+                                        const WeightedPairSampler &col_sampler) {
       const int nrow = S.n_row;
       const int ncol = S.n_col;
 
@@ -200,17 +162,10 @@ static void tswapcat_engine_alternating(CatState &S, IntegerMatrix *idx, int n_i
             bool swapped = false;
 
             for (int trial = 0; trial < max_trials; ++trial) {
-                  // Sample two distinct rows
-                  int r1 = static_cast<int>(std::floor(R::runif(0.0, (double)nrow)));
-                  int r2 = static_cast<int>(std::floor(R::runif(0.0, (double)(nrow - 1))));
-                  if (r2 >= r1) r2++;
+                  int r1, r2, c1, c2;
+                  row_sampler.sample(r1, r2);
+                  col_sampler.sample(c1, c2);
 
-                  // Sample two distinct columns
-                  int c1 = static_cast<int>(std::floor(R::runif(0.0, (double)ncol)));
-                  int c2 = static_cast<int>(std::floor(R::runif(0.0, (double)(ncol - 1))));
-                  if (c2 >= c1) c2++;
-
-                  // Alternate between horizontal and vertical
                   bool success;
                   if (it % 2 == 0) {
                         success = tswapcat_try_block_horizontal(S, idx, r1, r2, c1, c2);
@@ -220,11 +175,11 @@ static void tswapcat_engine_alternating(CatState &S, IntegerMatrix *idx, int n_i
 
                   if (success) {
                         swapped = true;
-                        break; // proceed to next "iteration"
+                        break;
                   }
             }
 
-            (void)swapped; // silence unused-variable warning
+            (void)swapped;
       }
 }
 
@@ -236,29 +191,27 @@ static void tswapcat_engine_alternating(CatState &S, IntegerMatrix *idx, int n_i
 IntegerMatrix tswapcat_cpp(IntegerMatrix mat,
                            int n_iter,
                            std::string swaps = "vertical",
-                           std::string output = "category") {
+                           std::string output = "category",
+                           Rcpp::Nullable<Rcpp::NumericMatrix> wt_row = R_NilValue,
+                           Rcpp::Nullable<Rcpp::NumericMatrix> wt_col = R_NilValue) {
       const int nrow = mat.nrow();
       const int ncol = mat.ncol();
 
       if (nrow < 2 || ncol < 2 || n_iter <= 0) {
-            // Nothing to do; return input matrix unchanged
             return mat;
       }
 
       const bool return_index = (output == "index");
 
-      RNGScope scope;  // hook into R's RNG
+      RNGScope scope;
 
-      // Build shared categorical state
       CatState S = make_cat_state_from_matrix(mat);
 
-      // Optional index matrix for token tracking
       IntegerMatrix idx;
       IntegerMatrix *idx_ptr = nullptr;
       if (return_index) {
             idx = IntegerMatrix(nrow, ncol);
             int counter = 1;
-            // COLUMN-major order to match R's as.vector()
             for (int j = 0; j < ncol; ++j) {
                   for (int i = 0; i < nrow; ++i) {
                         idx(i, j) = counter++;
@@ -267,18 +220,29 @@ IntegerMatrix tswapcat_cpp(IntegerMatrix mat,
             idx_ptr = &idx;
       }
 
-      // Run the appropriate engine based on swaps parameter
       if (swaps == "horizontal") {
-            tswapcat_engine_horizontal(S, idx_ptr, n_iter);
+            WeightedPairSampler col_sampler = wt_col.isNotNull()
+            ? make_pair_sampler_from_matrix(ncol, Rcpp::as<Rcpp::NumericMatrix>(wt_col))
+                  : make_pair_sampler(ncol, std::vector<double>());
+            tswapcat_engine_horizontal(S, idx_ptr, n_iter, col_sampler);
       } else if (swaps == "vertical") {
-            tswapcat_engine_vertical(S, idx_ptr, n_iter);
+            WeightedPairSampler row_sampler = wt_row.isNotNull()
+            ? make_pair_sampler_from_matrix(nrow, Rcpp::as<Rcpp::NumericMatrix>(wt_row))
+                  : make_pair_sampler(nrow, std::vector<double>());
+            tswapcat_engine_vertical(S, idx_ptr, n_iter, row_sampler);
       } else if (swaps == "alternating") {
-            tswapcat_engine_alternating(S, idx_ptr, n_iter);
+            WeightedPairSampler row_sampler = wt_row.isNotNull()
+            ? make_pair_sampler_from_matrix(nrow, Rcpp::as<Rcpp::NumericMatrix>(wt_row))
+                  : make_pair_sampler(nrow, std::vector<double>());
+            WeightedPairSampler col_sampler = wt_col.isNotNull()
+                  ? make_pair_sampler_from_matrix(ncol, Rcpp::as<Rcpp::NumericMatrix>(wt_col))
+                        : make_pair_sampler(ncol, std::vector<double>());
+
+            tswapcat_engine_alternating(S, idx_ptr, n_iter, row_sampler, col_sampler);
       } else {
             Rcpp::stop("Invalid swaps parameter. Must be 'vertical', 'horizontal', or 'alternating'.");
       }
 
-      // Return either the randomized categories or the index mapping
       if (return_index) {
             return idx;
       } else {

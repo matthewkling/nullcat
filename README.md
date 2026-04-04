@@ -70,12 +70,35 @@ all.equal(rowSums(comm), rowSums(rand2))
 #> [1] TRUE
 ```
 
+#### Spatially constrained null models
+
+Weight pair selection by spatial proximity, trait similarity, or any
+pairwise measure:
+
+``` r
+set.seed(789)
+x <- matrix(sample(1:4, 200, replace = TRUE), nrow = 20)
+
+# Site coordinates and distance-decay weights
+coords <- cbind(runif(20), runif(20))
+W <- exp(-as.matrix(dist(coords)) / 0.3)
+
+# Nearby sites exchange tokens more frequently
+x_spatial <- curvecat(x, n_iter = 2000, wt_row = W)
+
+# Weight both margins simultaneously (Gibbs-like alternating)
+W_col <- exp(-as.matrix(dist(cbind(runif(10), runif(10)))) / 0.3)
+x_dual <- curvecat(x, n_iter = 2000, wt_row = W, wt_col = W_col)
+```
+
 ## Learn more
 
 See `vignette("nullcat")` for comprehensive documentation including:
 
 - Categorical null model algorithms and their constraints
 - Quantitative null model workflow and stratification options
+- Spatially and trait-constrained randomization via weighted pair
+  sampling
 - Convergence diagnostics and burn-in estimation
 - Efficient batch generation of null distributions
 - Integration with the vegan package

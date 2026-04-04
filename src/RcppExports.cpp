@@ -24,8 +24,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // curvecat_cpp
-IntegerMatrix curvecat_cpp(IntegerMatrix mat, int n_iter, std::string swaps, std::string output);
-RcppExport SEXP _nullcat_curvecat_cpp(SEXP matSEXP, SEXP n_iterSEXP, SEXP swapsSEXP, SEXP outputSEXP) {
+IntegerMatrix curvecat_cpp(IntegerMatrix mat, int n_iter, std::string swaps, std::string output, Rcpp::Nullable<Rcpp::NumericMatrix> wt_row, Rcpp::Nullable<Rcpp::NumericMatrix> wt_col);
+RcppExport SEXP _nullcat_curvecat_cpp(SEXP matSEXP, SEXP n_iterSEXP, SEXP swapsSEXP, SEXP outputSEXP, SEXP wt_rowSEXP, SEXP wt_colSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -33,7 +33,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type n_iter(n_iterSEXP);
     Rcpp::traits::input_parameter< std::string >::type swaps(swapsSEXP);
     Rcpp::traits::input_parameter< std::string >::type output(outputSEXP);
-    rcpp_result_gen = Rcpp::wrap(curvecat_cpp(mat, n_iter, swaps, output));
+    Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::NumericMatrix> >::type wt_row(wt_rowSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::NumericMatrix> >::type wt_col(wt_colSEXP);
+    rcpp_result_gen = Rcpp::wrap(curvecat_cpp(mat, n_iter, swaps, output, wt_row, wt_col));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -51,8 +53,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // swapcat_cpp
-IntegerMatrix swapcat_cpp(IntegerMatrix mat, int n_iter, std::string swaps, std::string output);
-RcppExport SEXP _nullcat_swapcat_cpp(SEXP matSEXP, SEXP n_iterSEXP, SEXP swapsSEXP, SEXP outputSEXP) {
+IntegerMatrix swapcat_cpp(IntegerMatrix mat, int n_iter, std::string swaps, std::string output, Rcpp::Nullable<Rcpp::NumericMatrix> wt_row, Rcpp::Nullable<Rcpp::NumericMatrix> wt_col);
+RcppExport SEXP _nullcat_swapcat_cpp(SEXP matSEXP, SEXP n_iterSEXP, SEXP swapsSEXP, SEXP outputSEXP, SEXP wt_rowSEXP, SEXP wt_colSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -60,13 +62,15 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type n_iter(n_iterSEXP);
     Rcpp::traits::input_parameter< std::string >::type swaps(swapsSEXP);
     Rcpp::traits::input_parameter< std::string >::type output(outputSEXP);
-    rcpp_result_gen = Rcpp::wrap(swapcat_cpp(mat, n_iter, swaps, output));
+    Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::NumericMatrix> >::type wt_row(wt_rowSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::NumericMatrix> >::type wt_col(wt_colSEXP);
+    rcpp_result_gen = Rcpp::wrap(swapcat_cpp(mat, n_iter, swaps, output, wt_row, wt_col));
     return rcpp_result_gen;
 END_RCPP
 }
 // tswapcat_cpp
-IntegerMatrix tswapcat_cpp(IntegerMatrix mat, int n_iter, std::string swaps, std::string output);
-RcppExport SEXP _nullcat_tswapcat_cpp(SEXP matSEXP, SEXP n_iterSEXP, SEXP swapsSEXP, SEXP outputSEXP) {
+IntegerMatrix tswapcat_cpp(IntegerMatrix mat, int n_iter, std::string swaps, std::string output, Rcpp::Nullable<Rcpp::NumericMatrix> wt_row, Rcpp::Nullable<Rcpp::NumericMatrix> wt_col);
+RcppExport SEXP _nullcat_tswapcat_cpp(SEXP matSEXP, SEXP n_iterSEXP, SEXP swapsSEXP, SEXP outputSEXP, SEXP wt_rowSEXP, SEXP wt_colSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -74,17 +78,19 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type n_iter(n_iterSEXP);
     Rcpp::traits::input_parameter< std::string >::type swaps(swapsSEXP);
     Rcpp::traits::input_parameter< std::string >::type output(outputSEXP);
-    rcpp_result_gen = Rcpp::wrap(tswapcat_cpp(mat, n_iter, swaps, output));
+    Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::NumericMatrix> >::type wt_row(wt_rowSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::NumericMatrix> >::type wt_col(wt_colSEXP);
+    rcpp_result_gen = Rcpp::wrap(tswapcat_cpp(mat, n_iter, swaps, output, wt_row, wt_col));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
     {"_nullcat_c0cat_cpp", (DL_FUNC) &_nullcat_c0cat_cpp, 3},
-    {"_nullcat_curvecat_cpp", (DL_FUNC) &_nullcat_curvecat_cpp, 4},
+    {"_nullcat_curvecat_cpp", (DL_FUNC) &_nullcat_curvecat_cpp, 6},
     {"_nullcat_r0cat_cpp", (DL_FUNC) &_nullcat_r0cat_cpp, 3},
-    {"_nullcat_swapcat_cpp", (DL_FUNC) &_nullcat_swapcat_cpp, 4},
-    {"_nullcat_tswapcat_cpp", (DL_FUNC) &_nullcat_tswapcat_cpp, 4},
+    {"_nullcat_swapcat_cpp", (DL_FUNC) &_nullcat_swapcat_cpp, 6},
+    {"_nullcat_tswapcat_cpp", (DL_FUNC) &_nullcat_tswapcat_cpp, 6},
     {NULL, NULL, 0}
 };
 

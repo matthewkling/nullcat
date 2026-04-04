@@ -1,3 +1,12 @@
+#' @keywords internal
+NULLCAT_METHODS <- c("curvecat", "swapcat", "tswapcat", "r0cat", "c0cat")
+
+#' Available categorical null model methods
+#'
+#' @return Character vector of available method names.
+#' @export
+nullcat_methods <- function() NULLCAT_METHODS
+
 
 #' Categorical matrix randomization
 #'
@@ -44,7 +53,27 @@
 #'     \item `"auto"` (default): For `output = "category"`,
 #'       automatically selects the fastest option based on matrix dimensions. For
 #'       `output = "index"`, defaults to `"alternating"` for full mixing.
+#'       When `wt_row` or `wt_col` is supplied, defaults to the appropriate
+#'       direction, or `"alternating"` if both are supplied.
 #'   }
+#' @param wt_row An optional square numeric matrix of non-negative weights
+#'   controlling which pairs of rows are likely to exchange tokens during
+#'   randomization. Must be `nrow(x)` by `nrow(x)`. This enables spatially
+#'   or trait-constrained null models where nearby or similar sites exchange
+#'   tokens more frequently.
+#'
+#'   Values are treated as relative weights (not probabilities) and are
+#'   normalized internally. The diagonal is ignored. The matrix should be
+#'   symmetric. Only supported for sequential methods (`curvecat`, `swapcat`,
+#'   `tswapcat`).
+#'
+#'   When both `wt_row` and `wt_col` are supplied, `swaps` is forced to
+#'   `"alternating"`, producing a Gibbs-like sweep that applies each weight
+#'   matrix on its respective margin in alternation.
+#' @param wt_col An optional square numeric matrix of non-negative weights
+#'   controlling which pairs of columns are likely to exchange tokens during
+#'   randomization. Must be `ncol(x)` by `ncol(x)`. See `wt_row` for details
+#'   on weight interpretation.
 #' @param seed Integer used to seed random number generator, for reproducibility.
 #'
 #' @details
@@ -80,17 +109,17 @@
 #' # Check that row multisets are preserved
 #' all.equal(sort(x[1, ]), sort(x_rand[1, ]))
 #'
-#' # Get index output showing where each cell moved
-#' idx <- nullcat(x, method = "curvecat", n_iter = 1000, output = "index")
+#' # Spatially constrained randomization using row weights
+#' coords <- cbind(runif(10), runif(10))
+#' d <- as.matrix(dist(coords))
+#' W <- exp(-d / 0.3)  # Gaussian distance decay
+#' x_spatial <- nullcat(x, method = "curvecat", n_iter = 1000, wt_row = W)
 #'
-#' # Use different methods
-#' x_swap <- nullcat(x, method = "swapcat", n_iter = 1000)
-#' x_r0 <- nullcat(x, method = "r0cat")
-#'
-#' # Use with a seed for reproducibility
-#' x_rand1 <- nullcat(x, method = "curvecat", n_iter = 1000, seed = 42)
-#' x_rand2 <- nullcat(x, method = "curvecat", n_iter = 1000, seed = 42)
-#' identical(x_rand1, x_rand2)
+#' # Dual-margin weighting (Gibbs-like alternating)
+#' W_row <- exp(-as.matrix(dist(cbind(runif(10), runif(10)))) / 0.3)
+#' W_col <- exp(-as.matrix(dist(cbind(runif(10), runif(10)))) / 0.3)
+#' x_dual <- nullcat(x, method = "curvecat", n_iter = 1000,
+#'                   wt_row = W_row, wt_col = W_col)
 #'
 #' @export
 nullcat <- function(x,
@@ -98,6 +127,8 @@ nullcat <- function(x,
                     n_iter = 1000L,
                     output = c("category", "index"),
                     swaps = c("auto", "vertical", "horizontal", "alternating"),
+                    wt_row = NULL,
+                    wt_col = NULL,
                     seed = NULL) {
 
       method <- match.arg(method, NULLCAT_METHODS)
@@ -108,15 +139,62 @@ nullcat <- function(x,
       x <- as.matrix(x)
       storage.mode(x) <- "integer"
 
-      # Handle "auto" swaps setting
+      has_wt <- !is.null(wt_row) || !is.null(wt_col)
+
+      if (has_wt) {
+            if (!method %in% c("curvecat", "swapcat", "tswapcat")) {
+                  stop("wt_row/wt_col are only supported for sequential methods ",
+                       "(curvecat, swapcat, tswapcat).")
+            }
+      }
+
+      # Validate wt_row
+      if (!is.null(wt_row)) {
+            if (!is.matrix(wt_row) || !is.numeric(wt_row)) stop("wt_row must be a numeric matrix.")
+            if (nrow(wt_row) != ncol(wt_row)) stop("wt_row must be a square matrix.")
+            if (nrow(wt_row) != nrow(x)) stop("wt_row must be ", nrow(x), " x ", nrow(x), " (matching nrow(x)).")
+            if (any(wt_row < 0, na.rm = TRUE)) stop("wt_row must contain only non-negative values.")
+            if (anyNA(wt_row)) stop("wt_row must not contain NA values.")
+      }
+
+      # Validate wt_col
+      if (!is.null(wt_col)) {
+            if (!is.matrix(wt_col) || !is.numeric(wt_col)) stop("wt_col must be a numeric matrix.")
+            if (nrow(wt_col) != ncol(wt_col)) stop("wt_col must be a square matrix.")
+            if (nrow(wt_col) != ncol(x)) stop("wt_col must be ", ncol(x), " x ", ncol(x), " (matching ncol(x)).")
+            if (any(wt_col < 0, na.rm = TRUE)) stop("wt_col must contain only non-negative values.")
+            if (anyNA(wt_col)) stop("wt_col must not contain NA values.")
+      }
+
+      # Resolve swaps direction based on weights
+      if (swaps == "auto" & has_wt) {
+            if (!is.null(wt_row) && !is.null(wt_col)) {
+                  swaps <- "alternating"
+            } else if (!is.null(wt_row)) {
+                  swaps <- "vertical"
+            } else {
+                  swaps <- "horizontal"
+            }
+      }
+
+      # Check consistency of weights with swaps direction
+      if (!is.null(wt_row) && swaps == "horizontal") {
+            stop("wt_row cannot be used with swaps = 'horizontal' ",
+                 "(row weights require vertical or alternating swaps).")
+      }
+      if (!is.null(wt_col) && swaps == "vertical") {
+            stop("wt_col cannot be used with swaps = 'vertical' ",
+                 "(column weights require horizontal or alternating swaps).")
+      }
+      if (!is.null(wt_row) && !is.null(wt_col) && swaps != "alternating") {
+            stop("Both wt_row and wt_col supplied; swaps must be 'alternating'.")
+      }
+
+      # Handle "auto" swaps setting (when no weights supplied)
       if (swaps == "auto" & method %in% c("curvecat", "swapcat", "tswapcat")){
             if (output == "category") {
-                  # Pick fastest based on dimensions
-                  # (confirmed with benchmarking. it's likely about minimizing the inner loop
-                  # iterations, not about the sampling space or cache)
                   swaps <- if (nrow(x) > ncol(x)) "vertical" else "horizontal"
             } else {
-                  # For token tracking, use alternating for full 2D mixing
                   swaps <- "alternating"
             }
       }
@@ -124,12 +202,17 @@ nullcat <- function(x,
       with_seed(seed, {
             switch(
                   method,
-                  "curvecat" = curvecat_cpp(x, n_iter = n_iter, output = output, swaps = swaps),
-                  "swapcat"  = swapcat_cpp(x, n_iter = n_iter, output = output, swaps = swaps),
-                  "tswapcat"  = tswapcat_cpp(x, n_iter = n_iter, output = output, swaps = swaps),
+                  "curvecat" = curvecat_cpp(x, n_iter = n_iter, output = output,
+                                            swaps = swaps, wt_row = wt_row,
+                                            wt_col = wt_col),
+                  "swapcat"  = swapcat_cpp(x, n_iter = n_iter, output = output,
+                                           swaps = swaps, wt_row = wt_row,
+                                           wt_col = wt_col),
+                  "tswapcat"  = tswapcat_cpp(x, n_iter = n_iter, output = output,
+                                             swaps = swaps, wt_row = wt_row,
+                                             wt_col = wt_col),
                   "r0cat"  = r0cat_cpp(x, n_iter = 1, output = output),
                   "c0cat"  = c0cat_cpp(x, n_iter = 1, output = output)
             )
       })
 }
-

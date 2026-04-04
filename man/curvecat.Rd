@@ -4,7 +4,15 @@
 \alias{curvecat}
 \title{Categorical curveball randomization (curvecat)}
 \usage{
-curvecat(x, n_iter = 1000L, output = "category", swaps = "auto", seed = NULL)
+curvecat(
+  x,
+  n_iter = 1000L,
+  output = "category",
+  swaps = "auto",
+  wt_row = NULL,
+  wt_col = NULL,
+  seed = NULL
+)
 }
 \arguments{
 \item{x}{A matrix of categorical data, encoded as integers.
@@ -36,7 +44,29 @@ either row or column token sets.
 \item \code{"auto"} (default): For \code{output = "category"},
 automatically selects the fastest option based on matrix dimensions. For
 \code{output = "index"}, defaults to \code{"alternating"} for full mixing.
+When \code{wt_row} or \code{wt_col} is supplied, defaults to the appropriate
+direction, or \code{"alternating"} if both are supplied.
 }}
+
+\item{wt_row}{An optional square numeric matrix of non-negative weights
+controlling which pairs of rows are likely to exchange tokens during
+randomization. Must be \code{nrow(x)} by \code{nrow(x)}. This enables spatially
+or trait-constrained null models where nearby or similar sites exchange
+tokens more frequently.
+
+Values are treated as relative weights (not probabilities) and are
+normalized internally. The diagonal is ignored. The matrix should be
+symmetric. Only supported for sequential methods (\code{curvecat}, \code{swapcat},
+\code{tswapcat}).
+
+When both \code{wt_row} and \code{wt_col} are supplied, \code{swaps} is forced to
+\code{"alternating"}, producing a Gibbs-like sweep that applies each weight
+matrix on its respective margin in alternation.}
+
+\item{wt_col}{An optional square numeric matrix of non-negative weights
+controlling which pairs of columns are likely to exchange tokens during
+randomization. Must be \code{ncol(x)} by \code{ncol(x)}. See \code{wt_row} for details
+on weight interpretation.}
 
 \item{seed}{Integer used to seed random number generator, for reproducibility.}
 }
@@ -74,11 +104,6 @@ x_rand <- curvecat(x, n_iter = 1000)
 # Verify margins are preserved
 all.equal(sort(x[1, ]), sort(x_rand[1, ])) # row multisets preserved
 all.equal(sort(x[, 1]), sort(x_rand[, 1])) # column multisets preserved
-
-# Use with a seed for reproducibility
-x_rand1 <- curvecat(x, n_iter = 1000, seed = 42)
-x_rand2 <- curvecat(x, n_iter = 1000, seed = 42)
-identical(x_rand1, x_rand2)
 
 }
 \references{

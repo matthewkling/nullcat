@@ -40,12 +40,9 @@
 #' all.equal(sort(x[1, ]), sort(x_rand[1, ])) # row multisets preserved
 #' all.equal(sort(x[, 1]), sort(x_rand[, 1])) # column multisets preserved
 #'
-#' # Use with a seed for reproducibility
-#' x_rand1 <- curvecat(x, n_iter = 1000, seed = 42)
-#' x_rand2 <- curvecat(x, n_iter = 1000, seed = 42)
-#' identical(x_rand1, x_rand2)
-#'
 #' @export
-curvecat <- function(x, n_iter = 1000L, output = "category", swaps = "auto", seed = NULL) {
-      nullcat(x, method = "curvecat", n_iter = n_iter, output = output, swaps = swaps, seed = seed)
+curvecat <- function(x, n_iter = 1000L, output = "category", swaps = "auto",
+                     wt_row = NULL, wt_col = NULL, seed = NULL) {
+      nullcat(x, method = "curvecat", n_iter = n_iter, output = output,
+              swaps = swaps, wt_row = wt_row, wt_col = wt_col, seed = seed)
 }

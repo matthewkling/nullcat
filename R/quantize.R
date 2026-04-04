@@ -1,36 +1,17 @@
-
-#' Stratified randomization of a quantitative community matrix
+#' Stratified quantitative null models via quantize
 #'
-#' `quantize()` is a community null model for quantitative community data
-#' (e.g. abundance, biomass, or occurrence probability). It works by converting
-#' quantitative values into discrete strata, randomizing the stratified matrix
-#' using a categorical null model, and reassigning quantitative values within
-#' strata according to a specified constraint.
-#'
-#' This approach provides a framework for preserving row and/or column value
-#' distributions in continuous data. When using `fixed = "row"` or
-#' `fixed = "col"`, one dimension's value multisets are preserved exactly
-#' while the other is preserved at the resolution of strata, approximating a
-#' fixed-fixed null model for quantitative data. The number of strata controls
-#' the tradeoff between preservation fidelity and randomization strength.
-#'
-#' By default, `quantize()` will compute all necessary overhead for a
-#' given dataset (strata, pools, etc.) internally. For repeated randomization
-#' of the same matrix (e.g. to build a null distribution), this overhead can be
-#' computed once using [quantize_prep()] and reused by supplying the
-#' resulting object via the `prep` argument.
+#' `quantize()` implements a stratified randomization framework for
+#' continuous ecological data. It discretizes quantitative values into
+#' strata, randomizes the strata assignments using a categorical null
+#' model algorithm (via [nullcat()]), and then reassigns the original
+#' quantitative values according to the new stratum layout.
 #'
 #' @param x Community matrix with sites in rows, species in columns, and
-#'   nonnegative quantitative values in cells. Ignored if `prep` is
-#'   supplied.
-#' @param prep Optional precomputed object returned by
-#'   `quantize_prep()`. If supplied, `x` is ignored and all
-#'   overhead (stratification, pools, etc.) is taken from `prep`, which
-#'   is typically much faster when generating many randomizations of the same
-#'   dataset.
-#' @param method Character string specifying the null model algorithm.
-#'   The default `"curvecat"` uses the categorical curveball algorithm.
-#'   See [nullcat()] for alternative options.
+#'   nonnegative quantitative values in cells. Can be `NULL` when `prep`
+#'   is provided.
+#' @param prep A `"quantize_prep"` object (from [quantize_prep()]).
+#'   If provided, `x` and all stratification arguments are ignored and
+#'   the precomputed overhead is used directly for fast repeated draws.
 #' @param fixed Character string specifying the level at which quantitative
 #'   values are held fixed during randomization. One of:
 #'   \itemize{
@@ -42,13 +23,13 @@
 #'     \item `"stratum"`: values are shuffled globally within each stratum,
 #'       holding only the overall stratum-level value distribution fixed.
 #'     \item `"row"`: values are shuffled within strata separately for each
-#'       row, holding each row’s value multiset fixed. Not compatible with all
+#'       row, holding each row's value multiset fixed. Not compatible with all
 #'       `method`s.
 #'     \item `"col"`: values are shuffled within strata separately for each
-#'       column, holding each column’s value multiset fixed.
-#' }
-#' Note that this interacts with `method`: different null models
-#' fix different margins in the underlying binary representation.
+#'       column, holding each column's value multiset fixed.
+#'   }
+#'   Note that this interacts with `method`: different null models
+#'   fix different margins in the underlying binary representation.
 #'
 #' @inheritParams stratify
 #' @inheritParams nullcat
@@ -99,6 +80,8 @@ quantize <- function(x = NULL,
                      offset = 0,
                      zero_stratum = FALSE,
                      n_iter = 1000,
+                     wt_row = NULL,
+                     wt_col = NULL,
                      seed = NULL) {
 
       fixed <- match.arg(fixed)
@@ -107,7 +90,8 @@ quantize <- function(x = NULL,
             if(is.null(x)) stop("`x` and `prep` cannot both be NULL")
             prep <- quantize_prep(x, method = method, fixed = fixed,
                                   breaks = breaks, n_strata = n_strata, transform = transform,
-                                  offset = offset, zero_stratum = zero_stratum, n_iter = n_iter)
+                                  offset = offset, zero_stratum = zero_stratum, n_iter = n_iter,
+                                  wt_row = wt_row, wt_col = wt_col)
       }
 
       mode <- ifelse(prep$fixed == "cell", "index", "category")
@@ -115,7 +99,8 @@ quantize <- function(x = NULL,
 
       rand_strata <- nullcat(prep$strata, method = prep$method,
                              n_iter = prep$n_iter, output = mode,
-                             swaps = swaps, seed = seed)
+                             swaps = swaps, wt_row = prep$wt_row,
+                             wt_col = prep$wt_col, seed = seed)
 
       with_seed(seed, {
             rand <- fill_from_pool(
@@ -171,6 +156,7 @@ quantize <- function(x = NULL,
 #'       `strata` and `pool`.
 #'     \item `sim_args`: named list of arguments passed to `nullcat()`
 #'       (e.g. `n_iter`).
+#'     \item `wt_row`, `wt_col`: the row and column weight matrices (or NULL).
 #'   }
 #'
 #'   This object is intended to be passed unchanged to the `prep` argument of
@@ -203,7 +189,9 @@ quantize_prep <- function(x,
                           transform = identity,
                           offset = 0,
                           zero_stratum = FALSE,
-                          n_iter = 1000) {
+                          n_iter = 1000,
+                          wt_row = NULL,
+                          wt_col = NULL) {
 
       method <- match.arg(method, NULLCAT_METHODS)
       fixed <- match.arg(fixed)
@@ -214,33 +202,33 @@ quantize_prep <- function(x,
             stop("The selected choices for `fixed` and `method` are incompatible.")
       }
 
-      # convert to strata
-      strata <- stratify(x,
-                         breaks = breaks,
-                         n_strata = n_strata,
-                         transform = transform,
-                         offset = offset,
+      x <- as.matrix(x)
+      storage.mode(x) <- "double"
+
+      strata <- stratify(x, breaks = breaks, n_strata = n_strata,
+                         transform = transform, offset = offset,
                          zero_stratum = zero_stratum)
 
-      pool <- make_cat_pool(x, strata, fixed = fixed)
+      pool <- make_cat_pool(x, strata, fixed)
 
-      prep <- list(
+      obj <- list(
             x = x,
             strata = strata,
             pool = pool,
             method = method,
-            breaks = breaks,
             n_strata = n_strata,
             transform = transform,
-            offset  = offset,
-            zero_stratum = zero_stratum,
+            offset = offset,
             fixed = fixed,
-            n_iter = n_iter
+            n_iter = as.integer(n_iter),
+            wt_row = wt_row,
+            wt_col = wt_col
       )
-      class(prep) <- c("quantize_prep", "list")
-      prep
-}
 
+      class(obj) <- "quantize_prep"
+
+      obj
+}
 
 #' @method print quantize_prep
 #' @export
