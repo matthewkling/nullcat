@@ -1,6 +1,8 @@
 # Categorical matrix randomization
 
-Categorical generalizations of binary community null model algorithms.
+Randomize binary or categorical community matrices using categorical
+generalizations of binary community null model algorithms. Optionally
+constrain mixing using spatial (row) and taxonomic (column) weights.
 
 ## Usage
 
@@ -139,6 +141,7 @@ columns, while `c0cat` does the opposite.
 Note that categorical null models are for cell-level categorical data.
 Site-level attributes (e.g., land cover) or species-level attributes
 (e.g., functional traits) should be analyzed using different approaches.
+See vignette for details.
 
 ## See also
 
