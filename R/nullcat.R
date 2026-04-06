@@ -10,7 +10,9 @@ nullcat_methods <- function() NULLCAT_METHODS
 
 #' Categorical matrix randomization
 #'
-#' Categorical generalizations of binary community null model algorithms.
+#' Randomize binary or categorical community matrices using categorical
+#' generalizations of binary community null model algorithms. Optionally
+#' constrain mixing using spatial (row) and taxonomic (column) weights.
 #'
 #' @param x A matrix of categorical data, encoded as integers.
 #'   Values should represent category or stratum membership for each cell.
@@ -89,7 +91,7 @@ nullcat_methods <- function() NULLCAT_METHODS
 #'
 #' Note that categorical null models are for cell-level categorical data. Site-level
 #' attributes (e.g., land cover) or species-level attributes (e.g., functional
-#' traits) should be analyzed using different approaches.
+#' traits) should be analyzed using different approaches. See vignette for details.
 #'
 #' @seealso [nullcat_batch()] for efficient generation of multiple randomized
 #'   matrices; [nullcat_commsim()] for integration with `vegan`.

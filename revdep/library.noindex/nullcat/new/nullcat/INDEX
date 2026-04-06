@@ -1,0 +1,27 @@
+c0cat                   Column-constrained categorical randomization
+                        (c0cat)
+curvecat                Categorical curveball randomization (curvecat)
+nullcat                 Categorical matrix randomization
+nullcat_batch           Generate a batch of null matrices using
+                        nullcat()
+nullcat_commsim         Nullcat-based commsim (non-sequential)
+nullcat_commsim_seq     Nullcat-based commsim (sequential / Markov
+                        chain)
+nullcat_methods         Supported nullcat methods
+quantize                Stratified quantitative null models via
+                        quantize
+quantize_batch          Generate a batch of null matrices using
+                        quantize()
+quantize_commsim        Quantize-based commsim (non-sequential)
+quantize_commsim_seq    Quantile-based quantize commsim (sequential /
+                        Markov chain)
+quantize_prep           Prepare stratified null model overhead for
+                        quantize()
+r0cat                   Row-constrained categorical randomization
+                        (r0cat)
+stratify                Bin quantitative data into strata
+suggest_n_iter          Suggest a reasonable n_iter for a randomization
+swapcat                 Categorical swap randomization (swapcat)
+trace_cat               Trace diagnostics for categorical
+                        randomizations
+tswapcat                Trial-swap categorical randomization (tswapcat)

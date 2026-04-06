@@ -1,13 +1,18 @@
-## Resubmission
+## R CMD check results
 
-This is a resubmission, with the following changes made to address maintainer
-feedback:
+0 errors | 0 warnings | 0 notes
 
-* There are currently no references for the novel methods implemented here (a
-  methods paper is in preparation), so this resubmission does not add 
-  references to the DESCRIPTION
-* Limited all examples to maximum 2 cores, per CRAN policy
-* Avoided all use of \dontrun{} in examples
-* Avoid modifying .GlobalEnv by changing with_seed() utility
+## What's changed
 
-All checks pass cleanly.
+This is a minor release (0.2.0). The main change is the addition of optional weights parameters to most functions in the package. 
+
+## Test environments
+
+* GitHub Actions (ubuntu-latest): R-devel, R-release, R-oldrel
+* GitHub Actions (windows-latest): R-release
+* GitHub Actions (macos-latest): R-release
+* GitHub Actions with _R_CHECK_DEPENDS_ONLY_=true: R-release
+
+## Reverse dependencies
+
+Checked 1 reverse dependency (phylospatial). No errors, warnings, or notes introduced.

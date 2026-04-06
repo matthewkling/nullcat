@@ -93,7 +93,9 @@ categorical values (when \code{output = "category"}) or an integer index
 matrix describing the permutation of entries (when \code{output = "index"}).
 }
 \description{
-Categorical generalizations of binary community null model algorithms.
+Randomize binary or categorical community matrices using categorical
+generalizations of binary community null model algorithms. Optionally
+constrain mixing using spatial (row) and taxonomic (column) weights.
 }
 \details{
 \code{curvecat}, \code{swapcat}, and \code{tswapcat} are sequential algorithms that hold
@@ -108,7 +110,7 @@ while \code{c0cat} does the opposite.
 
 Note that categorical null models are for cell-level categorical data. Site-level
 attributes (e.g., land cover) or species-level attributes (e.g., functional
-traits) should be analyzed using different approaches.
+traits) should be analyzed using different approaches. See vignette for details.
 }
 \examples{
 # Create a categorical matrix
