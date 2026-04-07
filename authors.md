@@ -7,7 +7,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/matthewkling/nullcat/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/matthewkling/nullcat/blob/v0.2.0/DESCRIPTION)
 
 Kling M (2026). *nullcat: Null Models for Categorical and Continuous
 Community Matrices*. R package version 0.2.0,

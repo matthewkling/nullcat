@@ -2,6 +2,8 @@
 
 ## nullcat 0.2.0
 
+CRAN release: 2026-04-06
+
 - New feature: weighted pair sampling via `wt_row` and `wt_col`
   parameters. Enables spatially, phylogenetically, or trait-constrained
   null models by weighting which pairs of rows or columns exchange
