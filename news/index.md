@@ -1,5 +1,7 @@
 # Changelog
 
+## nullcat (development version)
+
 ## nullcat 0.2.0
 
 CRAN release: 2026-04-06
