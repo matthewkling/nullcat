@@ -1,3 +1,5 @@
+# nullcat (development version)
+
 # nullcat 0.2.0
 
 * New feature: weighted pair sampling via `wt_row` and `wt_col` parameters.
