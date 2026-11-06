@@ -2,7 +2,8 @@
 
 Randomize binary or categorical community matrices using categorical
 generalizations of binary community null model algorithms. Optionally
-constrain mixing using spatial (row) and taxonomic (column) weights.
+constrain randomization to occur within groups of rows (e.g. regions)
+and/or columns (e.g. clades).
 
 ## Usage
 
@@ -13,6 +14,8 @@ nullcat(
   n_iter = 1000L,
   output = c("category", "index"),
   swaps = c("auto", "vertical", "horizontal", "alternating"),
+  row_groups = NULL,
+  col_groups = NULL,
   wt_row = NULL,
   wt_col = NULL,
   seed = NULL
@@ -57,6 +60,9 @@ nullcat(
   thorough mixing. Ignored for non-sequential methods. Minimum burn-in
   times can be estimated with
   [`suggest_n_iter()`](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md).
+  When `row_groups` or `col_groups` is used, `n_iter` iterations are run
+  separately on every block, so it should be sized for a block rather
+  than for the full matrix.
 
 - output:
 
@@ -89,32 +95,39 @@ nullcat(
   - `"auto"` (default): For `output = "category"`, automatically selects
     the fastest option based on matrix dimensions. For
     `output = "index"`, defaults to `"alternating"` for full mixing.
-    When `wt_row` or `wt_col` is supplied, defaults to the appropriate
-    direction, or `"alternating"` if both are supplied.
 
-- wt_row:
+- row_groups, col_groups:
 
-  An optional square numeric matrix of non-negative weights controlling
-  which pairs of rows are likely to exchange tokens during
-  randomization. Must be `nrow(x)` by `nrow(x)`. This enables spatially
-  or trait-constrained null models where nearby or similar sites
-  exchange tokens more frequently.
+  Optional vectors assigning each row (for `row_groups`) or column (for
+  `col_groups`) of `x` to a group. Labels can be integers, characters,
+  or factor levels. When supplied, the matrix is split into blocks
+  (every combination of a row group and a column group) and each block
+  is randomized independently with `method`, so values are only ever
+  exchanged within a block. For algorithms that fix row and column
+  margins, this additionally fixes the category counts of every row
+  group within each column (and every column group within each row): for
+  example, grouping sites into regions gives a null model in which each
+  region keeps its own species pool. Rows or columns that are alone in
+  their group cannot be changed by fixed-margin algorithms. To randomize
+  within a different grouping in each replicate (e.g. random spatial
+  tilings from
+  [`tile_groups()`](https://matthewkling.github.io/nullcat/reference/tile_groups.md)),
+  pass a groups matrix to
+  [`nullcat_batch()`](https://matthewkling.github.io/nullcat/reference/nullcat_batch.md)
+  or
+  [`quantize_batch()`](https://matthewkling.github.io/nullcat/reference/quantize_batch.md).
 
-  Values are treated as relative weights (not probabilities) and are
-  normalized internally. The diagonal is ignored. The matrix should be
-  symmetric. Only supported for sequential methods (`curvecat`,
-  `swapcat`, `tswapcat`).
+- wt_row, wt_col:
 
-  When both `wt_row` and `wt_col` are supplied, `swaps` is forced to
-  `"alternating"`, producing a Gibbs-like sweep that applies each weight
-  matrix on its respective margin in alternation.
-
-- wt_col:
-
-  An optional square numeric matrix of non-negative weights controlling
-  which pairs of columns are likely to exchange tokens during
-  randomization. Must be `ncol(x)` by `ncol(x)`. See `wt_row` for
-  details on weight interpretation.
+  Deprecated. Experimental pairwise weight matrices previously used to
+  bias which pairs of rows or columns exchange values. But weighting
+  pair selection changes only how quickly a randomization mixes, not the
+  null distribution it converges to; the only lasting effect of a weight
+  matrix is to prevent exchanges between rows (or columns) that are not
+  connected, directly or through intermediaries, by nonzero weights.
+  Weight matrices are therefore now converted to `row_groups` /
+  `col_groups` given by the connected components of their nonzero
+  entries, with a warning. Use `row_groups` / `col_groups` instead.
 
 - seed:
 
@@ -129,11 +142,16 @@ describing the permutation of entries (when `output = "index"`).
 ## Details
 
 `curvecat`, `swapcat`, and `tswapcat` are sequential algorithms that
-hold category multisets fixed in every row and column. These three
-algorithms typically reach the same stationary distribution. They differ
-primarily in efficiency, with `curvecat` being the most efficient (i.e.
-fewest steps to become fully mixed); `swapcat` and `tswapcat` are thus
-useful mainly for methodological comparison.
+hold category multisets fixed in every row and column. `curvecat` and
+`swapcat` propose symmetric moves, so with enough iterations they
+converge to the same null distribution: a uniform draw from all matrices
+with the observed row and column category multisets. `curvecat` is the
+most efficient of the two (i.e. fewest steps to become fully mixed).
+`tswapcat` repeatedly redraws until it finds a valid swap; this makes
+each iteration productive, but biases the sampling toward matrices with
+many available swaps, so its stationary distribution is not uniform (cf.
+Miklós & Podani 2004). `swapcat` and `tswapcat` are thus useful mainly
+for methodological comparison.
 
 The `r0cat` algorithm holds category multisets fixed in rows but not
 columns, while `c0cat` does the opposite.
@@ -143,12 +161,19 @@ Site-level attributes (e.g., land cover) or species-level attributes
 (e.g., functional traits) should be analyzed using different approaches.
 See vignette for details.
 
+## References
+
+Miklós, I., & Podani, J. (2004). Randomization of presence–absence
+matrices: comments and new algorithms. *Ecology*, 85(1), 86–92.
+
 ## See also
 
 [`nullcat_batch()`](https://matthewkling.github.io/nullcat/reference/nullcat_batch.md)
 for efficient generation of multiple randomized matrices;
 [`nullcat_commsim()`](https://matthewkling.github.io/nullcat/reference/nullcat_commsim.md)
-for integration with `vegan`.
+for integration with `vegan`;
+[`tile_groups()`](https://matthewkling.github.io/nullcat/reference/tile_groups.md)
+for random spatial groupings.
 
 ## Examples
 
@@ -164,15 +189,11 @@ x_rand <- nullcat(x, method = "curvecat", n_iter = 1000)
 all.equal(sort(x[1, ]), sort(x_rand[1, ]))
 #> [1] TRUE
 
-# Spatially constrained randomization using row weights
-coords <- cbind(runif(10), runif(10))
-d <- as.matrix(dist(coords))
-W <- exp(-d / 0.3)  # Gaussian distance decay
-x_spatial <- nullcat(x, method = "curvecat", n_iter = 1000, wt_row = W)
+# Randomize within two regions of five sites each
+region <- rep(c("north", "south"), each = 5)
+x_reg <- nullcat(x, method = "curvecat", n_iter = 1000, row_groups = region)
 
-# Dual-margin weighting (Gibbs-like alternating)
-W_row <- exp(-as.matrix(dist(cbind(runif(10), runif(10)))) / 0.3)
-W_col <- exp(-as.matrix(dist(cbind(runif(10), runif(10)))) / 0.3)
-x_dual <- nullcat(x, method = "curvecat", n_iter = 1000,
-                  wt_row = W_row, wt_col = W_col)
+# Each region keeps its own category counts in every column
+all.equal(rowsum((x == 1) * 1, region), rowsum((x_reg == 1) * 1, region))
+#> [1] TRUE
 ```

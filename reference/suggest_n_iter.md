@@ -41,7 +41,10 @@ suggest_n_iter(trace = NULL, tail_frac = 0.3, plot = FALSE, ...)
   [`nullcat()`](https://matthewkling.github.io/nullcat/reference/nullcat.md)
   or
   [`quantize()`](https://matthewkling.github.io/nullcat/reference/quantize.md)
-  function. Ignored if `trace` is non-NULL.
+  function. Ignored if `trace` is non-NULL. When `row_groups` or
+  `col_groups` are supplied, the trace is run on the largest block and
+  the suggestion is the number of iterations to use per block (which is
+  how `n_iter` is applied when groups are used).
 
 ## Value
 

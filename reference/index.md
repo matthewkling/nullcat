@@ -30,6 +30,13 @@
 - [`stratify()`](https://matthewkling.github.io/nullcat/reference/stratify.md)
   : Bin quantitative data into strata
 
+## Constrained randomization
+
+- [`tile_groups()`](https://matthewkling.github.io/nullcat/reference/tile_groups.md)
+  : Random hexagonal tilings for spatially constrained null models
+- [`group_sizes()`](https://matthewkling.github.io/nullcat/reference/group_sizes.md)
+  : Mean group size for each row
+
 ## Mixing diagnostics
 
 - [`suggest_n_iter()`](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md)

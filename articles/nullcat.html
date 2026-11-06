@@ -12,8 +12,8 @@
 <link rel="icon" sizes="any" href="../favicon.ico">
 <link rel="manifest" href="../site.webmanifest">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Introduction to nullcat">
 </head>
@@ -385,129 +385,99 @@ reasonable number of burn-in iterations to reach stationarity.</p>
 <span><span class="co">#&gt; Suggested n iterations: 410</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="weighted-pair-sampling">Weighted pair sampling<a class="anchor" aria-label="anchor" href="#weighted-pair-sampling"></a>
+<h2 id="constrained-randomization-within-groups">Constrained randomization within groups<a class="anchor" aria-label="anchor" href="#constrained-randomization-within-groups"></a>
 </h2>
-<p>Standard null models assume that any row can freely exchange tokens
-with any other row—by default, all randomization algorithms select pairs
-of rows (or columns) uniformly at random for token exchange. But in many
-ecological contexts, this is unrealistic. Species assemblages at sites
-3000 km apart shouldn’t contribute equally to a null expectation
-designed to test <em>local</em> community assembly.</p>
-<p>Weighted pair sampling addresses this by making nearby (or similar)
-sites and/or species exchange tokens more frequently, while preserving
-the same marginal constraints as the unweighted model. This changes the
-null hypothesis being tested. An unweighted null model asks whether the
-observed matrix is structured relative to unconstrained random assembly;
-a weighted null model asks whether it is structured relative to assembly
-constrained by the supplied pairwise relationships. There is no
-correction for asymmetric pair selection (as there would be in, e.g., a
-Metropolis-Hastings sampler), so the weights directly shape the
-stationary distribution.</p>
-<p>In <code>nullcat</code>, the <code>wt_row</code> and
-<code>wt_col</code> parameters let you bias pair selection frequencies
-using pairwise weight matrices, enabling spatially, environmentally, or
-taxonomically constrained null models. This weighted pair sampling works
-with the core categorical <code><a href="../reference/curvecat.html">curvecat()</a></code>,
-<code><a href="../reference/swapcat.html">swapcat()</a></code>, and <code><a href="../reference/tswapcat.html">tswapcat()</a></code> functions, as well
-as with <code><a href="../reference/quantize.html">quantize()</a></code> for continuous data.</p>
-<p>Using weights has minimal effect on computation speed (&lt;5%
-increase per iteration in benchmarks). However, sparse weight matrices
-slow mixing because fewer pairs are available for exchange, so a larger
-number of iterations is usually necessary with weights. Use
-<code><a href="../reference/trace_cat.html">trace_cat()</a></code> and <code><a href="../reference/suggest_n_iter.html">suggest_n_iter()</a></code> to
-calibrate—they automatically account for the weight structure.</p>
+<p>Standard null models let any row exchange tokens with any other row.
+In many ecological contexts this is unrealistic: for example, species
+assemblages at sites 3000 km apart shouldn’t contribute equally to a
+null expectation designed to test <em>local</em> community assembly.
+<code>nullcat</code> handles this by randomizing within groups. The
+<code>row_groups</code> and <code>col_groups</code> arguments assign
+rows (e.g. sites) and/or columns (e.g. species) to groups; the matrix is
+split into blocks (every combination of a row group and a column group),
+and each block is randomized independently. Tokens therefore never leave
+their block.</p>
+<p>For algorithms that fix row and column margins, this adds a
+constraint to the null model. With sites grouped into regions, for
+example, each region keeps the category counts of every species: a null
+model with a regional species pool. Grouping works with every
+<code>nullcat</code> method, with <code><a href="../reference/quantize.html">quantize()</a></code>, and with the
+batch, trace, and <code>vegan</code> integration functions.</p>
 <div class="section level3">
-<h3 id="basic-usage-spatial-constraints-on-rows">Basic usage: spatial constraints on rows<a class="anchor" aria-label="anchor" href="#basic-usage-spatial-constraints-on-rows"></a>
+<h3 id="fixed-groups">Fixed groups<a class="anchor" aria-label="anchor" href="#fixed-groups"></a>
 </h3>
-<p>The most common use case is constraining row exchanges by spatial
-distance:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 20 sites x 15 species categorical matrix</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span>, <span class="fl">300</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Site coordinates</span></span>
-<span><span class="va">coords</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">20</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">20</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co"># Sites belong to two regions</span></span>
+<span><span class="va">region</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"north"</span>, <span class="st">"south"</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Distance-decay weight matrix: nearby sites exchange more often</span></span>
-<span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/dist.html" class="external-link">dist</a></span><span class="op">(</span><span class="va">coords</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">W</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="va">d</span> <span class="op">/</span> <span class="fl">0.3</span><span class="op">)</span>  <span class="co"># Gaussian kernel with scale = 0.3</span></span>
+<span><span class="va">x_reg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/curvecat.html">curvecat</a></span><span class="op">(</span><span class="va">x</span>, n_iter <span class="op">=</span> <span class="fl">1000</span>, row_groups <span class="op">=</span> <span class="va">region</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Spatially constrained randomization</span></span>
-<span><span class="va">x_spatial</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/curvecat.html">curvecat</a></span><span class="op">(</span><span class="va">x</span>, n_iter <span class="op">=</span> <span class="fl">3000</span>, wt_row <span class="op">=</span> <span class="va">W</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Margins are still preserved</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="va">x_spatial</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co"># Row and column margins are still preserved...</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="va">x_reg</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] TRUE</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="va">x_spatial</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="va">x_reg</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span>
+<span></span>
+<span><span class="co"># ...and so are the category counts of each species within each region</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rowsum.html" class="external-link">rowsum</a></span><span class="op">(</span><span class="op">(</span><span class="va">x</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span> <span class="op">*</span> <span class="fl">1</span>, <span class="va">region</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rowsum.html" class="external-link">rowsum</a></span><span class="op">(</span><span class="op">(</span><span class="va">x_reg</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span> <span class="op">*</span> <span class="fl">1</span>, <span class="va">region</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
-<p>The weight matrix <code>W</code> can be derived from anything:
-geographic distance, environmental dissimilarity, phylogenetic distance,
-trait similarity, or even a binary adjacency matrix for hard strata-like
-constraints.</p>
-</div>
-<div class="section level3">
-<h3 id="hard-thresholds-as-soft-strata">Hard thresholds as soft strata<a class="anchor" aria-label="anchor" href="#hard-thresholds-as-soft-strata"></a>
-</h3>
-<p>A weight matrix with zero entries effectively prevents exchange
-between those pairs. A block-diagonal weight matrix is functionally
-equivalent to vegan’s <code>strata</code> argument, but with the added
-flexibility that some between-group exchange can be allowed:</p>
+<p>Column groups work the same way, e.g. restricting exchanges to
+species within the same clade or guild. Supplying both gives independent
+randomization within every region-by-clade block.</p>
+<p>When groups are used, <code>n_iter</code> iterations are run on every
+block, so <code>n_iter</code> only needs to be large enough to mix a
+block, not the whole matrix. Given the same groups,
+<code><a href="../reference/trace_cat.html">trace_cat()</a></code> and <code><a href="../reference/suggest_n_iter.html">suggest_n_iter()</a></code> trace the
+largest block:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
-<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, <span class="fl">80</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">8</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Two island groups: rows 1-4 and 5-8</span></span>
-<span><span class="va">W</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">8</span>, <span class="fl">8</span><span class="op">)</span></span>
-<span><span class="va">W</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
-<span><span class="va">W</span><span class="op">[</span><span class="fl">5</span><span class="op">:</span><span class="fl">8</span>, <span class="fl">5</span><span class="op">:</span><span class="fl">8</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">W</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fl">0</span>  <span class="co"># diagonal is ignored, but zero is cleaner</span></span>
-<span></span>
-<span><span class="co"># Tokens only move within islands</span></span>
-<span><span class="va">x_islands</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/curvecat.html">curvecat</a></span><span class="op">(</span><span class="va">x</span>, n_iter <span class="op">=</span> <span class="fl">3000</span>, wt_row <span class="op">=</span> <span class="va">W</span>, output <span class="op">=</span> <span class="st">"index"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Verify: tokens from rows 1-4 stayed in rows 1-4</span></span>
-<span><span class="va">idx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="va">x_islands</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span>, <span class="op">]</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">idx</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span>, <span class="op">]</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/suggest_n_iter.html">suggest_n_iter</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, n_iter <span class="op">=</span> <span class="fl">2000</span>, row_groups <span class="op">=</span> <span class="va">region</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="column-weights">Column weights<a class="anchor" aria-label="anchor" href="#column-weights"></a>
+<h3 id="random-spatial-tilings">Random spatial tilings<a class="anchor" aria-label="anchor" href="#random-spatial-tilings"></a>
 </h3>
-<p>You can also weight column pair selection using <code>wt_col</code>.
-This constrains which species (or other column entities) can exchange
-positions:</p>
+<p>Fixed regions impose arbitrary boundaries: two neighboring sites on
+either side of a boundary never exchange tokens, while two sites at
+opposite ends of a region always can. A smoother, distance-based
+alternative is to use a different random grouping in each replicate.
+<code><a href="../reference/tile_groups.html">tile_groups()</a></code> covers the sites with randomly placed and
+oriented hexagonal tiles, returning one tiling per column. Batch
+functions accept such a matrix of groups and use column <code>r</code>
+for replicate <code>r</code>:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
-<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span>, <span class="fl">200</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Trait-based column weights (e.g., species with similar body size exchange more)</span></span>
-<span><span class="va">traits</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span></span>
-<span><span class="va">W_col</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/dist.html" class="external-link">dist</a></span><span class="op">(</span><span class="va">traits</span><span class="op">)</span><span class="op">)</span> <span class="op">/</span> <span class="fl">0.3</span><span class="op">)</span></span>
+<span><span class="co"># 200 sites with coordinates, 15 species</span></span>
+<span><span class="va">coords</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">200</span>, <span class="fl">0</span>, <span class="fl">100</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">200</span>, <span class="fl">0</span>, <span class="fl">100</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span>, <span class="fl">3000</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">200</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">x_trait</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/curvecat.html">curvecat</a></span><span class="op">(</span><span class="va">x</span>, n_iter <span class="op">=</span> <span class="fl">3000</span>, wt_col <span class="op">=</span> <span class="va">W_col</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="dual-margin-weighting">Dual-margin weighting<a class="anchor" aria-label="anchor" href="#dual-margin-weighting"></a>
-</h3>
-<p>Supplying both <code>wt_row</code> and <code>wt_col</code> produces a
-Gibbs-like alternating scheme: even iterations use the row weights for
-vertical exchanges, odd iterations use the column weights for horizontal
-exchanges. This is forced to <code>swaps = "alternating"</code>
-automatically:</p>
+<span><span class="co"># one random tiling per replicate, with tiles 30 units apart</span></span>
+<span><span class="va">tiles</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tile_groups.html">tile_groups</a></span><span class="op">(</span><span class="va">coords</span>, spacing <span class="op">=</span> <span class="fl">30</span>, n <span class="op">=</span> <span class="fl">99</span>, lonlat <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">sims</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nullcat_batch.html">nullcat_batch</a></span><span class="op">(</span><span class="va">x</span>, n_reps <span class="op">=</span> <span class="fl">99</span>, row_groups <span class="op">=</span> <span class="va">tiles</span>, n_iter <span class="op">=</span> <span class="fl">500</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">sims</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 200  15  99</span></span></code></pre></div>
+<p>Across tilings, two sites a distance <code>d</code> apart share a
+tile with a probability that falls from 1 at <code>d = 0</code> to about
+0.5 at <code>d = 0.42 * spacing</code>, and to 0 at about
+<code>1.15 * spacing</code>. This acts as the distance kernel of the
+null model: each site is pooled with its neighbors, never with distant
+sites. A vector of spacings (one per tiling) blends tile sizes for a
+smoother, longer-tailed kernel. For longitude/latitude coordinates
+(<code>lonlat = TRUE</code>, the default), tiles are laid out on the
+sphere, with <code>spacing</code> in meters.</p>
+<p>Sites near edges or gaps tend to fall in small tiles, and a site
+alone in its tile cannot be changed by fixed-margin algorithms.
+<code><a href="../reference/group_sizes.html">group_sizes()</a></code> gives each site’s average pool size, which is
+worth checking before choosing <code>spacing</code>:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
-<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span>, <span class="fl">200</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Spatial weights for rows, trait weights for columns</span></span>
-<span><span class="va">coords</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">20</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">20</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">W_row</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/dist.html" class="external-link">dist</a></span><span class="op">(</span><span class="va">coords</span><span class="op">)</span><span class="op">)</span> <span class="op">/</span> <span class="fl">0.3</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">traits</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span></span>
-<span><span class="va">W_col</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/dist.html" class="external-link">dist</a></span><span class="op">(</span><span class="va">traits</span><span class="op">)</span><span class="op">)</span> <span class="op">/</span> <span class="fl">0.3</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">x_dual</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/curvecat.html">curvecat</a></span><span class="op">(</span><span class="va">x</span>, n_iter <span class="op">=</span> <span class="fl">3000</span>, wt_row <span class="op">=</span> <span class="va">W_row</span>, wt_col <span class="op">=</span> <span class="va">W_col</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu"><a href="../reference/group_sizes.html">group_sizes</a></span><span class="op">(</span><span class="va">tiles</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></span>
+<span><span class="co">#&gt;    3.98   10.98   13.58   13.52   16.07   19.60</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -567,7 +537,7 @@ patterns. <em>Ecology</em>, 81(9), 2606-2621.</li>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

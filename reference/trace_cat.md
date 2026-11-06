@@ -76,7 +76,13 @@ trace_cat(
   ([`nullcat()`](https://matthewkling.github.io/nullcat/reference/nullcat.md)
   or
   [`quantize()`](https://matthewkling.github.io/nullcat/reference/quantize.md)),
-  such as `method`, `n_strata`, `fixed`, etc.
+  such as `method`, `n_strata`, `fixed`, etc. If `row_groups` and/or
+  `col_groups` are supplied (as vectors, or as matrices with one column
+  per replicate), randomizations run independently within blocks and
+  `n_iter` applies to each block, so the trace is run on the single
+  largest block (the one with the most cells, searched across up to the
+  first 10 columns of a groups matrix), as it is generally the slowest
+  to mix. For `quantize`, strata are still defined from the full matrix.
 
 ## Value
 
@@ -89,6 +95,9 @@ An object of class `"cat_trace"` with elements:
 - `fun`, `n_iter`, `thin`, `n_chains`, `n_cores`, `stat_name`, `call`
 
 - `fun_args`: list of the `...` used (for reproducibility)
+
+- `block`: when groups were supplied, the dimensions of the block that
+  was traced; otherwise `NULL`
 
 Plotting is available via `plot(cat_trace)`.
 

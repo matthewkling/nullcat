@@ -42,8 +42,13 @@ nullcat_batch(x, n_reps = 999L, stat = NULL, n_cores = 1L, seed = NULL, ...)
 - ...:
 
   Additional arguments passed to
-  [`nullcat()`](https://matthewkling.github.io/nullcat/reference/nullcat.md)
-  (e.g. `method`, `n_iter`, `output`).
+  [`nullcat()`](https://matthewkling.github.io/nullcat/reference/nullcat.md).
+  `row_groups` and `col_groups` may be given either as vectors (the same
+  grouping for every replicate) or as matrices with one column per
+  replicate (e.g. random tilings from
+  [`tile_groups()`](https://matthewkling.github.io/nullcat/reference/tile_groups.md)),
+  in which case replicate `r` uses column `r`. (e.g. `method`, `n_iter`,
+  `output`).
 
 ## Value
 

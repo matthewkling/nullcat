@@ -13,6 +13,8 @@ swapcat(
   n_iter = 1000L,
   output = c("category", "index"),
   swaps = "auto",
+  row_groups = NULL,
+  col_groups = NULL,
   wt_row = NULL,
   wt_col = NULL,
   seed = NULL
@@ -32,6 +34,9 @@ swapcat(
   thorough mixing. Ignored for non-sequential methods. Minimum burn-in
   times can be estimated with
   [`suggest_n_iter()`](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md).
+  When `row_groups` or `col_groups` is used, `n_iter` iterations are run
+  separately on every block, so it should be sized for a block rather
+  than for the full matrix.
 
 - output:
 
@@ -64,32 +69,39 @@ swapcat(
   - `"auto"` (default): For `output = "category"`, automatically selects
     the fastest option based on matrix dimensions. For
     `output = "index"`, defaults to `"alternating"` for full mixing.
-    When `wt_row` or `wt_col` is supplied, defaults to the appropriate
-    direction, or `"alternating"` if both are supplied.
 
-- wt_row:
+- row_groups, col_groups:
 
-  An optional square numeric matrix of non-negative weights controlling
-  which pairs of rows are likely to exchange tokens during
-  randomization. Must be `nrow(x)` by `nrow(x)`. This enables spatially
-  or trait-constrained null models where nearby or similar sites
-  exchange tokens more frequently.
+  Optional vectors assigning each row (for `row_groups`) or column (for
+  `col_groups`) of `x` to a group. Labels can be integers, characters,
+  or factor levels. When supplied, the matrix is split into blocks
+  (every combination of a row group and a column group) and each block
+  is randomized independently with `method`, so values are only ever
+  exchanged within a block. For algorithms that fix row and column
+  margins, this additionally fixes the category counts of every row
+  group within each column (and every column group within each row): for
+  example, grouping sites into regions gives a null model in which each
+  region keeps its own species pool. Rows or columns that are alone in
+  their group cannot be changed by fixed-margin algorithms. To randomize
+  within a different grouping in each replicate (e.g. random spatial
+  tilings from
+  [`tile_groups()`](https://matthewkling.github.io/nullcat/reference/tile_groups.md)),
+  pass a groups matrix to
+  [`nullcat_batch()`](https://matthewkling.github.io/nullcat/reference/nullcat_batch.md)
+  or
+  [`quantize_batch()`](https://matthewkling.github.io/nullcat/reference/quantize_batch.md).
 
-  Values are treated as relative weights (not probabilities) and are
-  normalized internally. The diagonal is ignored. The matrix should be
-  symmetric. Only supported for sequential methods (`curvecat`,
-  `swapcat`, `tswapcat`).
+- wt_row, wt_col:
 
-  When both `wt_row` and `wt_col` are supplied, `swaps` is forced to
-  `"alternating"`, producing a Gibbs-like sweep that applies each weight
-  matrix on its respective margin in alternation.
-
-- wt_col:
-
-  An optional square numeric matrix of non-negative weights controlling
-  which pairs of columns are likely to exchange tokens during
-  randomization. Must be `ncol(x)` by `ncol(x)`. See `wt_row` for
-  details on weight interpretation.
+  Deprecated. Experimental pairwise weight matrices previously used to
+  bias which pairs of rows or columns exchange values. But weighting
+  pair selection changes only how quickly a randomization mixes, not the
+  null distribution it converges to; the only lasting effect of a weight
+  matrix is to prevent exchanges between rows (or columns) that are not
+  connected, directly or through intermediaries, by nonzero weights.
+  Weight matrices are therefore now converted to `row_groups` /
+  `col_groups` given by the connected components of their nonzero
+  entries, with a warning. Use `row_groups` / `col_groups` instead.
 
 - seed:
 

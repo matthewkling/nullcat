@@ -22,6 +22,8 @@ quantize(
   offset = 0,
   zero_stratum = FALSE,
   n_iter = 1000,
+  row_groups = NULL,
+  col_groups = NULL,
   wt_row = NULL,
   wt_col = NULL,
   seed = NULL
@@ -77,7 +79,13 @@ quantize(
     values remain attached to their original cells and move with them
     during the categorical randomization. Row and column value
     distributions are not preserved, but the mapping between each
-    original cell and its randomized destination is fixed.
+    original cell and its randomized destination is fixed. Because cells
+    only move when they trade places with a cell of a different stratum,
+    a row or column whose values all fall in a single stratum is never
+    changed;
+    [`quantize_prep()`](https://matthewkling.github.io/nullcat/reference/quantize_prep.md)
+    warns when this happens (see `zero_stratum` and `transform` for ways
+    to separate low values into their own strata).
 
   - `"stratum"`: values are shuffled globally within each stratum,
     holding only the overall stratum-level value distribution fixed.
@@ -134,30 +142,34 @@ quantize(
   thorough mixing. Ignored for non-sequential methods. Minimum burn-in
   times can be estimated with
   [`suggest_n_iter()`](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md).
+  When `row_groups` or `col_groups` is used, `n_iter` iterations are run
+  separately on every block, so it should be sized for a block rather
+  than for the full matrix.
 
-- wt_row:
+- row_groups, col_groups:
 
-  An optional square numeric matrix of non-negative weights controlling
-  which pairs of rows are likely to exchange tokens during
-  randomization. Must be `nrow(x)` by `nrow(x)`. This enables spatially
-  or trait-constrained null models where nearby or similar sites
-  exchange tokens more frequently.
+  Optional vectors assigning rows or columns of `x` to groups, so that
+  randomization happens independently within each block (combination of
+  a row group and a column group); see
+  [`nullcat()`](https://matthewkling.github.io/nullcat/reference/nullcat.md).
+  Strata are defined once for the whole matrix, so every block uses the
+  same stratum breaks, while the quantitative values are reassigned
+  within each block (in every `fixed` mode, values never leave their
+  block). With row groups representing regions, for example, each region
+  keeps its own pool of species and values. `n_iter` iterations are run
+  on every block.
 
-  Values are treated as relative weights (not probabilities) and are
-  normalized internally. The diagonal is ignored. The matrix should be
-  symmetric. Only supported for sequential methods (`curvecat`,
-  `swapcat`, `tswapcat`).
+- wt_row, wt_col:
 
-  When both `wt_row` and `wt_col` are supplied, `swaps` is forced to
-  `"alternating"`, producing a Gibbs-like sweep that applies each weight
-  matrix on its respective margin in alternation.
-
-- wt_col:
-
-  An optional square numeric matrix of non-negative weights controlling
-  which pairs of columns are likely to exchange tokens during
-  randomization. Must be `ncol(x)` by `ncol(x)`. See `wt_row` for
-  details on weight interpretation.
+  Deprecated. Experimental pairwise weight matrices previously used to
+  bias which pairs of rows or columns exchange values. But weighting
+  pair selection changes only how quickly a randomization mixes, not the
+  null distribution it converges to; the only lasting effect of a weight
+  matrix is to prevent exchanges between rows (or columns) that are not
+  connected, directly or through intermediaries, by nonzero weights.
+  Weight matrices are therefore now converted to `row_groups` /
+  `col_groups` given by the connected components of their nonzero
+  entries, with a warning. Use `row_groups` / `col_groups` instead.
 
 - seed:
 
@@ -204,4 +216,10 @@ prep  <- quantize_prep(comm, method = "curvecat",
                        n_strata = 5, fixed = "row")
 rand4 <- quantize(prep = prep)
 rand5 <- quantize(prep = prep)
+
+# randomize within two regions of 25 sites each
+region <- rep(1:2, each = 25)
+rand6 <- quantize(comm, row_groups = region, n_iter = 2000)
+all.equal(sort(comm[region == 1, ]), sort(rand6[region == 1, ]))
+#> [1] TRUE
 ```

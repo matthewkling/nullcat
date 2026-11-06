@@ -42,7 +42,12 @@ quantize_batch(x, n_reps = 999L, stat = NULL, n_cores = 1L, seed = NULL, ...)
   Additional arguments passed to
   [`quantize()`](https://matthewkling.github.io/nullcat/reference/quantize.md),
   (e.g. `method`, `breaks`, `n_strata`, `transform`, `offset`,
-  `zero_stratum`, `fixed`, `n_iter`, etc.).
+  `zero_stratum`, `fixed`, `n_iter`, etc.). `row_groups` and
+  `col_groups` may be given either as vectors (the same grouping for
+  every replicate) or as matrices with one column per replicate (e.g.
+  random tilings from
+  [`tile_groups()`](https://matthewkling.github.io/nullcat/reference/tile_groups.md)),
+  in which case replicate `r` uses column `r`.
 
 ## Value
 

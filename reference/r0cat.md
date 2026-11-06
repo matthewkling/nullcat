@@ -24,6 +24,9 @@ r0cat(x, n_iter = 1L, output = c("category", "index"), seed = NULL)
   thorough mixing. Ignored for non-sequential methods. Minimum burn-in
   times can be estimated with
   [`suggest_n_iter()`](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md).
+  When `row_groups` or `col_groups` is used, `n_iter` iterations are run
+  separately on every block, so it should be sized for a block rather
+  than for the full matrix.
 
 - output:
 

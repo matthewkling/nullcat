@@ -22,6 +22,8 @@ quantize_prep(
   offset = 0,
   zero_stratum = FALSE,
   n_iter = 1000,
+  row_groups = NULL,
+  col_groups = NULL,
   wt_row = NULL,
   wt_col = NULL
 )
@@ -69,7 +71,12 @@ quantize_prep(
     values remain attached to their original cells and move with them
     during the categorical randomization. Row and column value
     distributions are not preserved, but the mapping between each
-    original cell and its randomized destination is fixed.
+    original cell and its randomized destination is fixed. Because cells
+    only move when they trade places with a cell of a different stratum,
+    a row or column whose values all fall in a single stratum is never
+    changed; `quantize_prep()` warns when this happens (see
+    `zero_stratum` and `transform` for ways to separate low values into
+    their own strata).
 
   - `"stratum"`: values are shuffled globally within each stratum,
     holding only the overall stratum-level value distribution fixed.
@@ -128,30 +135,32 @@ quantize_prep(
   thorough mixing. Ignored for non-sequential methods. Minimum burn-in
   times can be estimated with
   [`suggest_n_iter()`](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md).
+  When `row_groups` or `col_groups` is used, `n_iter` iterations are run
+  separately on every block, so it should be sized for a block rather
+  than for the full matrix.
 
-- wt_row:
+- row_groups, col_groups:
 
-  An optional square numeric matrix of non-negative weights controlling
-  which pairs of rows are likely to exchange tokens during
-  randomization. Must be `nrow(x)` by `nrow(x)`. This enables spatially
-  or trait-constrained null models where nearby or similar sites
-  exchange tokens more frequently.
+  Optional groupings of rows or columns (see
+  [`quantize()`](https://matthewkling.github.io/nullcat/reference/quantize.md)).
+  A vector applies to every draw. A matrix with one column per replicate
+  (e.g. from
+  [`tile_groups()`](https://matthewkling.github.io/nullcat/reference/tile_groups.md))
+  is accepted here for use by
+  [`quantize_batch()`](https://matthewkling.github.io/nullcat/reference/quantize_batch.md),
+  which uses column `r` for replicate `r`.
 
-  Values are treated as relative weights (not probabilities) and are
-  normalized internally. The diagonal is ignored. The matrix should be
-  symmetric. Only supported for sequential methods (`curvecat`,
-  `swapcat`, `tswapcat`).
+- wt_row, wt_col:
 
-  When both `wt_row` and `wt_col` are supplied, `swaps` is forced to
-  `"alternating"`, producing a Gibbs-like sweep that applies each weight
-  matrix on its respective margin in alternation.
-
-- wt_col:
-
-  An optional square numeric matrix of non-negative weights controlling
-  which pairs of columns are likely to exchange tokens during
-  randomization. Must be `ncol(x)` by `ncol(x)`. See `wt_row` for
-  details on weight interpretation.
+  Deprecated. Experimental pairwise weight matrices previously used to
+  bias which pairs of rows or columns exchange values. But weighting
+  pair selection changes only how quickly a randomization mixes, not the
+  null distribution it converges to; the only lasting effect of a weight
+  matrix is to prevent exchanges between rows (or columns) that are not
+  connected, directly or through intermediaries, by nonzero weights.
+  Weight matrices are therefore now converted to `row_groups` /
+  `col_groups` given by the connected components of their nonzero
+  entries, with a warning. Use `row_groups` / `col_groups` instead.
 
 ## Value
 
@@ -176,7 +185,7 @@ the components needed by
   [`nullcat()`](https://matthewkling.github.io/nullcat/reference/nullcat.md)
   (e.g. `n_iter`).
 
-- `wt_row`, `wt_col`: the row and column weight matrices (or NULL).
+- `row_groups`, `col_groups`: the row and column groupings (or NULL).
 
 This object is intended to be passed unchanged to the `prep` argument of
 [`quantize()`](https://matthewkling.github.io/nullcat/reference/quantize.md)

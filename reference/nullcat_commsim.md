@@ -15,7 +15,9 @@ with `n_iter` trades starting from the original matrix.
 nullcat_commsim(
   n_iter = 10000,
   method = nullcat_methods(),
-  output = c("category", "index")
+  output = c("category", "index"),
+  row_groups = NULL,
+  col_groups = NULL
 )
 ```
 
@@ -38,6 +40,15 @@ nullcat_commsim(
 
   Character, passed to `nullcat(output = ...)`. Typically `"category"`
   (default) or `"index"`.
+
+- row_groups, col_groups:
+
+  Optional vectors of row or column groups, passed to
+  [`nullcat()`](https://matthewkling.github.io/nullcat/reference/nullcat.md)
+  so that randomization happens independently within blocks. The data
+  passed to
+  [`vegan::nullmodel()`](https://vegandevs.github.io/vegan/reference/nullmodel.html)
+  must have the matching number of rows and columns.
 
 ## Value
 

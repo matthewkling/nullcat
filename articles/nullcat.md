@@ -1,6 +1,7 @@
 # Introduction to nullcat
 
 ``` r
+
 library(nullcat)
 ```
 
@@ -62,6 +63,7 @@ The package provides five categorical null model algorithms:
 ### Example: Basic categorical randomization
 
 ``` r
+
 # Create a categorical matrix
 set.seed(123)
 x <- matrix(sample(1:4, 100, replace = TRUE), nrow = 10)
@@ -81,6 +83,7 @@ all.equal(sort(x[, 1]), sort(x_rand[, 1]))  # Column preserved
 Different algorithms preserve different margins:
 
 ``` r
+
 set.seed(456)
 x <- matrix(sample(1:3, 60, replace = TRUE), nrow = 10)
 
@@ -143,6 +146,7 @@ used.
 ### Example: Basic quantitative randomization
 
 ``` r
+
 # Create a quantitative community matrix
 set.seed(789)
 comm <- matrix(runif(200), nrow = 20)
@@ -159,6 +163,7 @@ plot(rowSums(comm), rowSums(rand1))
 ![](nullcat_files/figure-html/quantitative-basic-1.png)
 
 ``` r
+
 plot(colSums(comm), colSums(rand1))
 ```
 
@@ -181,6 +186,7 @@ directly here, to understand its behavior—a good idea for a real
 analysis, not just a tutorial.
 
 ``` r
+
 set.seed(200)
 x <- rexp(100, .1)
 
@@ -233,6 +239,7 @@ are relevant for some algorithms. For a method like the default
 multisets, all four are available:
 
 ``` r
+
 set.seed(100)
 comm <- matrix(rexp(100), nrow = 10)
 
@@ -269,6 +276,7 @@ or you can use `*_batch()` functions to efficiently generate multiple
 replicates (optionally using parallel processing).
 
 ``` r
+
 set.seed(400)
 comm <- matrix(rexp(200), nrow = 20)
 
@@ -302,6 +310,7 @@ to get an automated suggestion for a reasonable number of burn-in
 iterations to reach stationarity.
 
 ``` r
+
 set.seed(300)
 x <- matrix(sample(1:5, 400, replace = TRUE), nrow = 20)
 
@@ -317,6 +326,7 @@ plot(trace)
 
 ``` r
 
+
 # Automatic burn-in suggestion
 suggested <- suggest_n_iter(trace, tail_frac = 0.3)
 print(suggested)
@@ -326,141 +336,114 @@ print(suggested)
 #> Suggested n iterations: 410
 ```
 
-## Weighted pair sampling
+## Constrained randomization within groups
 
-Standard null models assume that any row can freely exchange tokens with
-any other row—by default, all randomization algorithms select pairs of
-rows (or columns) uniformly at random for token exchange. But in many
-ecological contexts, this is unrealistic. Species assemblages at sites
-3000 km apart shouldn’t contribute equally to a null expectation
-designed to test *local* community assembly.
+Standard null models let any row exchange tokens with any other row. In
+many ecological contexts this is unrealistic: for example, species
+assemblages at sites 3000 km apart shouldn’t contribute equally to a
+null expectation designed to test *local* community assembly. `nullcat`
+handles this by randomizing within groups. The `row_groups` and
+`col_groups` arguments assign rows (e.g. sites) and/or columns
+(e.g. species) to groups; the matrix is split into blocks (every
+combination of a row group and a column group), and each block is
+randomized independently. Tokens therefore never leave their block.
 
-Weighted pair sampling addresses this by making nearby (or similar)
-sites and/or species exchange tokens more frequently, while preserving
-the same marginal constraints as the unweighted model. This changes the
-null hypothesis being tested. An unweighted null model asks whether the
-observed matrix is structured relative to unconstrained random assembly;
-a weighted null model asks whether it is structured relative to assembly
-constrained by the supplied pairwise relationships. There is no
-correction for asymmetric pair selection (as there would be in, e.g., a
-Metropolis-Hastings sampler), so the weights directly shape the
-stationary distribution.
+For algorithms that fix row and column margins, this adds a constraint
+to the null model. With sites grouped into regions, for example, each
+region keeps the category counts of every species: a null model with a
+regional species pool. Grouping works with every `nullcat` method, with
+[`quantize()`](https://matthewkling.github.io/nullcat/reference/quantize.md),
+and with the batch, trace, and `vegan` integration functions.
 
-In `nullcat`, the `wt_row` and `wt_col` parameters let you bias pair
-selection frequencies using pairwise weight matrices, enabling
-spatially, environmentally, or taxonomically constrained null models.
-This weighted pair sampling works with the core categorical
-[`curvecat()`](https://matthewkling.github.io/nullcat/reference/curvecat.md),
-[`swapcat()`](https://matthewkling.github.io/nullcat/reference/swapcat.md),
-and
-[`tswapcat()`](https://matthewkling.github.io/nullcat/reference/tswapcat.md)
-functions, as well as with
-[`quantize()`](https://matthewkling.github.io/nullcat/reference/quantize.md)
-for continuous data.
-
-Using weights has minimal effect on computation speed (\<5% increase per
-iteration in benchmarks). However, sparse weight matrices slow mixing
-because fewer pairs are available for exchange, so a larger number of
-iterations is usually necessary with weights. Use
-[`trace_cat()`](https://matthewkling.github.io/nullcat/reference/trace_cat.md)
-and
-[`suggest_n_iter()`](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md)
-to calibrate—they automatically account for the weight structure.
-
-### Basic usage: spatial constraints on rows
-
-The most common use case is constraining row exchanges by spatial
-distance:
+### Fixed groups
 
 ``` r
+
 set.seed(42)
 
 # 20 sites x 15 species categorical matrix
 x <- matrix(sample(1:4, 300, replace = TRUE), nrow = 20)
 
-# Site coordinates
-coords <- cbind(runif(20), runif(20))
+# Sites belong to two regions
+region <- rep(c("north", "south"), each = 10)
 
-# Distance-decay weight matrix: nearby sites exchange more often
-d <- as.matrix(dist(coords))
-W <- exp(-d / 0.3)  # Gaussian kernel with scale = 0.3
+x_reg <- curvecat(x, n_iter = 1000, row_groups = region)
 
-# Spatially constrained randomization
-x_spatial <- curvecat(x, n_iter = 3000, wt_row = W)
-
-# Margins are still preserved
-all.equal(sort(x[1, ]), sort(x_spatial[1, ]))
+# Row and column margins are still preserved...
+all.equal(sort(x[1, ]), sort(x_reg[1, ]))
 #> [1] TRUE
-all.equal(sort(x[, 1]), sort(x_spatial[, 1]))
+all.equal(sort(x[, 1]), sort(x_reg[, 1]))
 #> [1] TRUE
-```
 
-The weight matrix `W` can be derived from anything: geographic distance,
-environmental dissimilarity, phylogenetic distance, trait similarity, or
-even a binary adjacency matrix for hard strata-like constraints.
-
-### Hard thresholds as soft strata
-
-A weight matrix with zero entries effectively prevents exchange between
-those pairs. A block-diagonal weight matrix is functionally equivalent
-to vegan’s `strata` argument, but with the added flexibility that some
-between-group exchange can be allowed:
-
-``` r
-set.seed(42)
-x <- matrix(sample(1:3, 80, replace = TRUE), nrow = 8)
-
-# Two island groups: rows 1-4 and 5-8
-W <- matrix(0, 8, 8)
-W[1:4, 1:4] <- 1
-W[5:8, 5:8] <- 1
-diag(W) <- 0  # diagonal is ignored, but zero is cleaner
-
-# Tokens only move within islands
-x_islands <- curvecat(x, n_iter = 3000, wt_row = W, output = "index")
-
-# Verify: tokens from rows 1-4 stayed in rows 1-4
-idx <- matrix(1:length(x), nrow(x))
-all(x_islands[1:4, ] %in% idx[1:4, ])
+# ...and so are the category counts of each species within each region
+all.equal(rowsum((x == 1) * 1, region), rowsum((x_reg == 1) * 1, region))
 #> [1] TRUE
 ```
 
-### Column weights
+Column groups work the same way, e.g. restricting exchanges to species
+within the same clade or guild. Supplying both gives independent
+randomization within every region-by-clade block.
 
-You can also weight column pair selection using `wt_col`. This
-constrains which species (or other column entities) can exchange
-positions:
+When groups are used, `n_iter` iterations are run on every block, so
+`n_iter` only needs to be large enough to mix a block, not the whole
+matrix. Given the same groups,
+[`trace_cat()`](https://matthewkling.github.io/nullcat/reference/trace_cat.md)
+and
+[`suggest_n_iter()`](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md)
+trace the largest block:
 
 ``` r
-set.seed(42)
-x <- matrix(sample(1:4, 200, replace = TRUE), nrow = 20)
 
-# Trait-based column weights (e.g., species with similar body size exchange more)
-traits <- runif(10)
-W_col <- exp(-as.matrix(dist(traits)) / 0.3)
-
-x_trait <- curvecat(x, n_iter = 3000, wt_col = W_col)
+suggest_n_iter(x = x, n_iter = 2000, row_groups = region)
 ```
 
-### Dual-margin weighting
+### Random spatial tilings
 
-Supplying both `wt_row` and `wt_col` produces a Gibbs-like alternating
-scheme: even iterations use the row weights for vertical exchanges, odd
-iterations use the column weights for horizontal exchanges. This is
-forced to `swaps = "alternating"` automatically:
+Fixed regions impose arbitrary boundaries: two neighboring sites on
+either side of a boundary never exchange tokens, while two sites at
+opposite ends of a region always can. A smoother, distance-based
+alternative is to use a different random grouping in each replicate.
+[`tile_groups()`](https://matthewkling.github.io/nullcat/reference/tile_groups.md)
+covers the sites with randomly placed and oriented hexagonal tiles,
+returning one tiling per column. Batch functions accept such a matrix of
+groups and use column `r` for replicate `r`:
 
 ``` r
+
 set.seed(42)
-x <- matrix(sample(1:4, 200, replace = TRUE), nrow = 20)
 
-# Spatial weights for rows, trait weights for columns
-coords <- cbind(runif(20), runif(20))
-W_row <- exp(-as.matrix(dist(coords)) / 0.3)
+# 200 sites with coordinates, 15 species
+coords <- cbind(runif(200, 0, 100), runif(200, 0, 100))
+x <- matrix(sample(1:4, 3000, replace = TRUE), nrow = 200)
 
-traits <- runif(10)
-W_col <- exp(-as.matrix(dist(traits)) / 0.3)
+# one random tiling per replicate, with tiles 30 units apart
+tiles <- tile_groups(coords, spacing = 30, n = 99, lonlat = FALSE)
 
-x_dual <- curvecat(x, n_iter = 3000, wt_row = W_row, wt_col = W_col)
+sims <- nullcat_batch(x, n_reps = 99, row_groups = tiles, n_iter = 500)
+dim(sims)
+#> [1] 200  15  99
+```
+
+Across tilings, two sites a distance `d` apart share a tile with a
+probability that falls from 1 at `d = 0` to about 0.5 at
+`d = 0.42 * spacing`, and to 0 at about `1.15 * spacing`. This acts as
+the distance kernel of the null model: each site is pooled with its
+neighbors, never with distant sites. A vector of spacings (one per
+tiling) blends tile sizes for a smoother, longer-tailed kernel. For
+longitude/latitude coordinates (`lonlat = TRUE`, the default), tiles are
+laid out on the sphere, with `spacing` in meters.
+
+Sites near edges or gaps tend to fall in small tiles, and a site alone
+in its tile cannot be changed by fixed-margin algorithms.
+[`group_sizes()`](https://matthewkling.github.io/nullcat/reference/group_sizes.md)
+gives each site’s average pool size, which is worth checking before
+choosing `spacing`:
+
+``` r
+
+summary(group_sizes(tiles))
+#>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#>    3.98   10.98   13.58   13.52   16.07   19.60
 ```
 
 ## Integration with `vegan`
@@ -480,6 +463,7 @@ and
 Examples include:
 
 ``` r
+
 library(vegan)
 
 # Categorical data
