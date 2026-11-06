@@ -12,7 +12,10 @@
 #' @param n_cores Number of compute cores to use for parallel processing. Default is `1`.
 #' @param ... Additional arguments passed to `quantize()`,
 #'        (e.g. `method`, `breaks`, `n_strata`, `transform`, `offset`, `zero_stratum`,
-#'        `fixed`, `n_iter`, etc.).
+#'        `fixed`, `n_iter`, etc.). `row_groups` and `col_groups` may be given
+#'        either as vectors (the same grouping for every replicate) or as
+#'        matrices with one column per replicate (e.g. random tilings from
+#'        [tile_groups()]), in which case replicate `r` uses column `r`.
 #' @param seed Integer used to seed random number generator, for reproducibility.
 #'
 #' @return If `stat` is `NULL`, returns a 3D array (rows × cols × n_reps).
@@ -39,11 +42,16 @@ quantize_batch <- function(x, n_reps = 999L, stat = NULL, n_cores = 1L, seed = N
       # one-time overhead
       prep <- quantize_prep(as.matrix(x), ...)
 
+      check_groups_reps(prep$row_groups, n_reps, "row_groups")
+      check_groups_reps(prep$col_groups, n_reps, "col_groups")
+
       # define per-rep function
+      one <- function(i) quantize_draw(prep, groups_rep(prep$row_groups, i),
+                                       groups_rep(prep$col_groups, i))
       if (is.null(stat)) {
-            fun <- function() quantize(prep = prep)
+            fun <- one
       } else {
-            fun <- function() stat(quantize(prep = prep))
+            fun <- function(i) stat(one(i))
       }
 
       with_seed(seed, {

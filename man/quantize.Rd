@@ -15,6 +15,8 @@ quantize(
   offset = 0,
   zero_stratum = FALSE,
   n_iter = 1000,
+  row_groups = NULL,
+  col_groups = NULL,
   wt_row = NULL,
   wt_col = NULL,
   seed = NULL
@@ -52,7 +54,11 @@ values are held fixed during randomization. One of:
 values remain attached to their original cells and move with them during
 the categorical randomization. Row and column value
 distributions are not preserved, but the mapping between each original
-cell and its randomized destination is fixed.
+cell and its randomized destination is fixed. Because cells only move
+when they trade places with a cell of a different stratum, a row or
+column whose values all fall in a single stratum is never changed;
+\code{quantize_prep()} warns when this happens (see \code{zero_stratum} and
+\code{transform} for ways to separate low values into their own strata).
 \item \code{"stratum"}: values are shuffled globally within each stratum,
 holding only the overall stratum-level value distribution fixed.
 \item \code{"row"}: values are shuffled within strata separately for each
@@ -93,27 +99,28 @@ of the \code{n_strata} will represent zeros and the others will be nonzero range
 
 \item{n_iter}{Number of iterations. Default is 1000. Larger values yield
 more thorough mixing. Ignored for non-sequential methods. Minimum
-burn-in times can be estimated with \code{suggest_n_iter()}.}
+burn-in times can be estimated with \code{suggest_n_iter()}. When \code{row_groups}
+or \code{col_groups} is used, \code{n_iter} iterations are run separately on every
+block, so it should be sized for a block rather than for the full matrix.}
 
-\item{wt_row}{An optional square numeric matrix of non-negative weights
-controlling which pairs of rows are likely to exchange tokens during
-randomization. Must be \code{nrow(x)} by \code{nrow(x)}. This enables spatially
-or trait-constrained null models where nearby or similar sites exchange
-tokens more frequently.
+\item{row_groups, col_groups}{Optional vectors assigning rows or columns of
+\code{x} to groups, so that randomization happens independently within each
+block (combination of a row group and a column group); see \code{\link[=nullcat]{nullcat()}}.
+Strata are defined once for the whole matrix, so every block uses the same
+stratum breaks, while the quantitative values are reassigned within each
+block (in every \code{fixed} mode, values never leave their block). With row
+groups representing regions, for example, each region keeps its own pool
+of species and values. \code{n_iter} iterations are run on every block.}
 
-Values are treated as relative weights (not probabilities) and are
-normalized internally. The diagonal is ignored. The matrix should be
-symmetric. Only supported for sequential methods (\code{curvecat}, \code{swapcat},
-\code{tswapcat}).
-
-When both \code{wt_row} and \code{wt_col} are supplied, \code{swaps} is forced to
-\code{"alternating"}, producing a Gibbs-like sweep that applies each weight
-matrix on its respective margin in alternation.}
-
-\item{wt_col}{An optional square numeric matrix of non-negative weights
-controlling which pairs of columns are likely to exchange tokens during
-randomization. Must be \code{ncol(x)} by \code{ncol(x)}. See \code{wt_row} for details
-on weight interpretation.}
+\item{wt_row, wt_col}{Deprecated. Experimental pairwise weight matrices previously used to
+bias which pairs of rows or columns exchange values. But weighting pair
+selection changes only how quickly a randomization mixes, not the null
+distribution it converges to; the only lasting effect of a weight matrix
+is to prevent exchanges between rows (or columns) that are not connected,
+directly or through intermediaries, by nonzero weights. Weight matrices
+are therefore now converted to \code{row_groups} / \code{col_groups} given by the
+connected components of their nonzero entries, with a warning. Use
+\code{row_groups} / \code{col_groups} instead.}
 
 \item{seed}{Integer used to seed random number generator, for reproducibility.}
 }
@@ -155,6 +162,11 @@ prep  <- quantize_prep(comm, method = "curvecat",
                        n_strata = 5, fixed = "row")
 rand4 <- quantize(prep = prep)
 rand5 <- quantize(prep = prep)
+
+# randomize within two regions of 25 sites each
+region <- rep(1:2, each = 25)
+rand6 <- quantize(comm, row_groups = region, n_iter = 2000)
+all.equal(sort(comm[region == 1, ]), sort(rand6[region == 1, ]))
 
 }
 \seealso{

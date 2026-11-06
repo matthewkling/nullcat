@@ -34,7 +34,9 @@
 #'
 #' @export
 swapcat <- function(x, n_iter = 1000L, output = c("category", "index"), swaps = "auto",
+                    row_groups = NULL, col_groups = NULL,
                     wt_row = NULL, wt_col = NULL, seed = NULL) {
       nullcat(x, method = "swapcat", n_iter = n_iter, output = output,
-              swaps = swaps, wt_row = wt_row, wt_col = wt_col, seed = seed)
+              swaps = swaps, row_groups = row_groups, col_groups = col_groups,
+              wt_row = wt_row, wt_col = wt_col, seed = seed)
 }

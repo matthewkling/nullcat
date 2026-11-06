@@ -21,7 +21,10 @@ If \code{NULL} (default), the function returns the full set of randomized matric
 
 \item{...}{Additional arguments passed to \code{quantize()},
 (e.g. \code{method}, \code{breaks}, \code{n_strata}, \code{transform}, \code{offset}, \code{zero_stratum},
-\code{fixed}, \code{n_iter}, etc.).}
+\code{fixed}, \code{n_iter}, etc.). \code{row_groups} and \code{col_groups} may be given
+either as vectors (the same grouping for every replicate) or as
+matrices with one column per replicate (e.g. random tilings from
+\code{\link[=tile_groups]{tile_groups()}}), in which case replicate \code{r} uses column \code{r}.}
 }
 \value{
 If \code{stat} is \code{NULL}, returns a 3D array (rows × cols × n_reps).

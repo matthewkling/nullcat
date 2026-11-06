@@ -19,6 +19,10 @@ reference:
   - quantize_batch
   - quantize_prep
   - stratify
+- title: Constrained randomization
+- contents:
+  - tile_groups
+  - group_sizes
 - title: Mixing diagnostics
 - contents:
   - suggest_n_iter

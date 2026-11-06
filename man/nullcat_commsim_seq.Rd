@@ -6,7 +6,9 @@
 \usage{
 nullcat_commsim_seq(
   method = nullcat_methods(),
-  output = c("category", "index")
+  output = c("category", "index"),
+  row_groups = NULL,
+  col_groups = NULL
 )
 }
 \arguments{
@@ -15,6 +17,11 @@ to use. See \code{\link[=nullcat]{nullcat()}} and \code{\link[=nullcat_methods]{
 
 \item{output}{Character, passed to \code{nullcat(output = ...)}.
 Typically \code{"category"} (default) or \code{"index"}.}
+
+\item{row_groups, col_groups}{Optional vectors of row or column groups, passed
+to \code{\link[=nullcat]{nullcat()}} so that randomization happens independently within blocks.
+The data passed to \code{vegan::nullmodel()} must have the matching number of
+rows and columns.}
 }
 \value{
 An object of class \code{"commsim"} suitable for use with
@@ -55,7 +62,7 @@ in \strong{vegan}.
 }
 
 \examples{
-\dontshow{if (requireNamespace("vegan", quietly = TRUE)) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\dontshow{if (requireNamespace("vegan", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 \donttest{
   library(vegan)
 

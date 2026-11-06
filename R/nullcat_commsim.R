@@ -12,6 +12,10 @@
 #'   to use. See [nullcat()] and [nullcat_methods()] for details.
 #' @param output Character, passed to `nullcat(output = ...)`.
 #'   Typically `"category"` (default) or `"index"`.
+#' @param row_groups,col_groups Optional vectors of row or column groups, passed
+#'   to [nullcat()] so that randomization happens independently within blocks.
+#'   The data passed to `vegan::nullmodel()` must have the matching number of
+#'   rows and columns.
 #'
 #' @section Details:
 #'
@@ -52,7 +56,9 @@
 #' @export
 nullcat_commsim <- function(n_iter = 1e4,
                             method = nullcat_methods(),
-                            output = c("category", "index")) {
+                            output = c("category", "index"),
+                            row_groups = NULL,
+                            col_groups = NULL) {
 
       require_vegan()
       method <- match.arg(method, NULLCAT_METHODS)
@@ -78,7 +84,9 @@ nullcat_commsim <- function(n_iter = 1e4,
                         x,
                         method = method,
                         n_iter = n_iter,
-                        output = output
+                        output = output,
+                        row_groups = row_groups,
+                        col_groups = col_groups
                   )
             }
 
@@ -113,6 +121,10 @@ nullcat_commsim <- function(n_iter = 1e4,
 #'   to use. See [nullcat()] and [nullcat_methods()] for details.
 #' @param output Character, passed to `nullcat(output = ...)`.
 #'   Typically `"category"` (default) or `"index"`.
+#' @param row_groups,col_groups Optional vectors of row or column groups, passed
+#'   to [nullcat()] so that randomization happens independently within blocks.
+#'   The data passed to `vegan::nullmodel()` must have the matching number of
+#'   rows and columns.
 #'
 #' @section Details:
 #'
@@ -154,7 +166,9 @@ nullcat_commsim <- function(n_iter = 1e4,
 #'
 #' @export
 nullcat_commsim_seq <- function(method = nullcat_methods(),
-                                output = c("category", "index")) {
+                                output = c("category", "index"),
+                                row_groups = NULL,
+                                col_groups = NULL) {
 
       require_vegan()
       method <- match.arg(method, NULLCAT_METHODS)
@@ -181,7 +195,9 @@ nullcat_commsim_seq <- function(method = nullcat_methods(),
                         state,
                         method = method,
                         n_iter = thin,
-                        output = output
+                        output = output,
+                        row_groups = row_groups,
+                        col_groups = col_groups
                   )
                   out[, , k] <- state
             }

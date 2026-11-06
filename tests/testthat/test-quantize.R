@@ -52,3 +52,16 @@ test_that("fixed = 'cell' preserves one-to-one mapping with index output", {
       expect_equal(xr, matrix(prep$pool[idx], nrow = nrow(x)))
 })
 
+
+test_that("quantize_prep warns about single-stratum rows in cell mode only", {
+      set.seed(1)
+      q <- matrix(runif(200), 20)
+      q[1:3, ] <- 0
+      q[1:3, 1:2] <- 0.001   # low values only: one stratum unless zeros get their own
+      expect_warning(quantize_prep(q, n_strata = 5), "3 of 20 rows")
+      expect_no_warning(quantize_prep(q, n_strata = 5, fixed = "stratum"))
+      expect_no_warning(quantize_prep(q, n_strata = 5, zero_stratum = TRUE))
+      # and those rows really are frozen in cell mode
+      r <- suppressWarnings(quantize(q, n_strata = 5, n_iter = 2000))
+      expect_identical(r[1:3, ], q[1:3, ])
+})

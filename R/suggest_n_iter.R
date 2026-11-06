@@ -22,7 +22,10 @@
 #' @param tail_frac Fraction of the trace (at the end) used as the tail window (default 0.3).
 #' @param plot If TRUE, plot the trace, with a vertical line at the suggested value.
 #' @param ... Arguments passed to `trace_cat()` including  arguments it passes to the
-#'   `nullcat()` or `quantize()` function. Ignored if `trace` is non-NULL.
+#'   `nullcat()` or `quantize()` function. Ignored if `trace` is non-NULL. When
+#'   `row_groups` or `col_groups` are supplied, the trace is run on the largest
+#'   block and the suggestion is the number of iterations to use per block
+#'   (which is how `n_iter` is applied when groups are used).
 #' @references
 #' Heidelberger, P. & Welch, P.D. (1983). Simulation run length control in the presence of
 #' an initial transient. Operations Research, 31(6): 1109–1144.

@@ -19,7 +19,10 @@ randomized matrices.}
 
 \item{seed}{Integer used to seed random number generator, for reproducibility.}
 
-\item{...}{Additional arguments passed to \code{\link[=nullcat]{nullcat()}}
+\item{...}{Additional arguments passed to \code{\link[=nullcat]{nullcat()}}. \code{row_groups} and
+\code{col_groups} may be given either as vectors (the same grouping for every
+replicate) or as matrices with one column per replicate (e.g. random
+tilings from \code{\link[=tile_groups]{tile_groups()}}), in which case replicate \code{r} uses column \code{r}.
 (e.g. \code{method}, \code{n_iter}, \code{output}).}
 }
 \value{

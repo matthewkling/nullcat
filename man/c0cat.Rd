@@ -12,7 +12,9 @@ Values should represent category or stratum membership for each cell.}
 
 \item{n_iter}{Number of iterations. Default is 1000. Larger values yield
 more thorough mixing. Ignored for non-sequential methods. Minimum
-burn-in times can be estimated with \code{suggest_n_iter()}.}
+burn-in times can be estimated with \code{suggest_n_iter()}. When \code{row_groups}
+or \code{col_groups} is used, \code{n_iter} iterations are run separately on every
+block, so it should be sized for a block rather than for the full matrix.}
 
 \item{output}{Character indicating type of result to return:
 \itemize{

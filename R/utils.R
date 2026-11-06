@@ -43,10 +43,10 @@ with_seed <- function(seed, expr) {
 }
 
 
-# internal helper -- replicate fun() n_reps times, optionally in parallel.
-# fun() should return something that can be simplified via simplify2array()
-# (e.g. a vector, matrix, or array).
-# Updated signature to accept additional arguments
+# internal helper -- call fun(i) for i in 1..n_reps, optionally in parallel.
+# fun(i) should return something that can be simplified via simplify2array()
+# (e.g. a vector, matrix, or array). The replicate index lets fun() vary by
+# replicate (e.g. one column of a groups matrix per replicate).
 mc_replicate <- function(n_reps, fun, n_cores = 1L) {
 
       n_reps  <- as.integer(n_reps)
@@ -58,7 +58,7 @@ mc_replicate <- function(n_reps, fun, n_cores = 1L) {
 
       # Sequential path: just use base::replicate to match semantics
       if (n_cores <= 1L) {
-            return(replicate(n_reps, fun(), simplify = "array"))
+            return(simplify2array(lapply(seq_len(n_reps), fun)))
       }
 
       # Simple, reproducible seeding per replicate
@@ -71,7 +71,7 @@ mc_replicate <- function(n_reps, fun, n_cores = 1L) {
                   seq_len(n_reps),
                   function(i) {
                         set.seed(seeds[i])
-                        fun()
+                        fun(i)
                   },
                   mc.cores = n_cores
             )
@@ -90,7 +90,7 @@ mc_replicate <- function(n_reps, fun, n_cores = 1L) {
                   seq_len(n_reps),
                   function(i) {
                         set.seed(seeds[i])
-                        fun()
+                        fun(i)
                   }
             )
       }

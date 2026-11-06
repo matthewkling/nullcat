@@ -49,7 +49,7 @@ thoroughly each independent null matrix is randomized.
 }
 
 \examples{
-\dontshow{if (requireNamespace("vegan", quietly = TRUE)) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\dontshow{if (requireNamespace("vegan", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 \donttest{
   library(vegan)
 

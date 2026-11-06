@@ -12,7 +12,10 @@
 #'        randomized matrices.
 #' @param n_cores Number of compute cores to use for parallel processing. Default is `1`.
 #' @param seed Integer used to seed random number generator, for reproducibility.
-#' @param ... Additional arguments passed to [nullcat()]
+#' @param ... Additional arguments passed to [nullcat()]. `row_groups` and
+#'   `col_groups` may be given either as vectors (the same grouping for every
+#'   replicate) or as matrices with one column per replicate (e.g. random
+#'   tilings from [tile_groups()]), in which case replicate `r` uses column `r`.
 #'        (e.g. `method`, `n_iter`, `output`).
 #'
 #' @return If `stat` is `NULL`, returns a 3D array (rows × cols × n_reps).
@@ -36,10 +39,22 @@
 #' @export
 nullcat_batch <- function(x, n_reps = 999L, stat = NULL, n_cores = 1L, seed = NULL, ...) {
 
+      dots <- list(...)
+      x <- as.matrix(x)
+      rg <- resolve_groups(dots$row_groups, dots$wt_row, nrow(x), "row_groups", "wt_row",
+                           allow_matrix = TRUE)
+      cg <- resolve_groups(dots$col_groups, dots$wt_col, ncol(x), "col_groups", "wt_col",
+                           allow_matrix = TRUE)
+      check_groups_reps(rg, n_reps, "row_groups")
+      check_groups_reps(cg, n_reps, "col_groups")
+      dots[c("row_groups", "col_groups", "wt_row", "wt_col")] <- NULL
+
+      one <- function(i) do.call(nullcat, c(list(x, row_groups = groups_rep(rg, i),
+                                                 col_groups = groups_rep(cg, i)), dots))
       if (is.null(stat)) {
-            fun <- function() nullcat(x, ...)
+            fun <- one
       } else {
-            fun <- function() stat(nullcat(x, ...))
+            fun <- function(i) stat(one(i))
       }
 
       with_seed(seed, {

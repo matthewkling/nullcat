@@ -41,7 +41,13 @@ correlation for \code{quantize()}.}
 \item{plot}{If TRUE, plot the traces.}
 
 \item{...}{Arguments to the chosen \code{fun} (\code{nullcat()} or \code{quantize()}),
-such as \code{method}, \code{n_strata}, \code{fixed}, etc.}
+such as \code{method}, \code{n_strata}, \code{fixed}, etc. If \code{row_groups} and/or
+\code{col_groups} are supplied (as vectors, or as matrices with one column per
+replicate), randomizations run independently within blocks and \code{n_iter}
+applies to each block, so the trace is run on the single largest block
+(the one with the most cells, searched across up to the first 10 columns
+of a groups matrix), as it is generally the slowest to mix. For
+\code{quantize}, strata are still defined from the full matrix.}
 }
 \value{
 An object of class \code{"cat_trace"} with elements:
@@ -50,6 +56,8 @@ An object of class \code{"cat_trace"} with elements:
 \item \code{steps}: integer vector of iteration numbers (starting at 0)
 \item \code{fun}, \code{n_iter}, \code{thin}, \code{n_chains}, \code{n_cores}, \code{stat_name}, \code{call}
 \item \code{fun_args}: list of the \code{...} used (for reproducibility)
+\item \code{block}: when groups were supplied, the dimensions of the block that
+was traced; otherwise \code{NULL}
 }
 Plotting is available via \code{plot(cat_trace)}.
 }

@@ -124,3 +124,22 @@ test_that("swap direction operates as expected for curvecat, swapcat, and tswapc
       }
 
 })
+
+test_that("single-row and single-column matrices give valid output for every method", {
+      set.seed(1)
+      x <- matrix(sample(1:3, 12, TRUE), 1)
+      for (m in nullcat_methods()) {
+            for (mat in list(x, t(x))) {
+                  idx <- nullcat(mat, method = m, n_iter = 100, output = "index")
+                  expect_setequal(as.vector(idx), seq_along(mat))
+                  expect_equal(sort(nullcat(mat, method = m, n_iter = 100)), sort(mat))
+            }
+      }
+      # sequential methods can't change them, nor anything with n_iter = 0
+      for (m in c("curvecat", "swapcat", "tswapcat")) {
+            expect_identical(nullcat(x, method = m, n_iter = 100), x)
+            expect_identical(as.vector(nullcat(x, method = m, n_iter = 100, output = "index")), seq_along(x))
+      }
+      q <- matrix(runif(20), 4)
+      expect_identical(quantize(q, n_iter = 0, fixed = "cell"), q)
+})

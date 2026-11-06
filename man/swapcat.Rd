@@ -9,6 +9,8 @@ swapcat(
   n_iter = 1000L,
   output = c("category", "index"),
   swaps = "auto",
+  row_groups = NULL,
+  col_groups = NULL,
   wt_row = NULL,
   wt_col = NULL,
   seed = NULL
@@ -20,7 +22,9 @@ Values should represent category or stratum membership for each cell.}
 
 \item{n_iter}{Number of iterations. Default is 1000. Larger values yield
 more thorough mixing. Ignored for non-sequential methods. Minimum
-burn-in times can be estimated with \code{suggest_n_iter()}.}
+burn-in times can be estimated with \code{suggest_n_iter()}. When \code{row_groups}
+or \code{col_groups} is used, \code{n_iter} iterations are run separately on every
+block, so it should be sized for a block rather than for the full matrix.}
 
 \item{output}{Character indicating type of result to return:
 \itemize{
@@ -44,29 +48,32 @@ either row or column token sets.
 \item \code{"auto"} (default): For \code{output = "category"},
 automatically selects the fastest option based on matrix dimensions. For
 \code{output = "index"}, defaults to \code{"alternating"} for full mixing.
-When \code{wt_row} or \code{wt_col} is supplied, defaults to the appropriate
-direction, or \code{"alternating"} if both are supplied.
 }}
 
-\item{wt_row}{An optional square numeric matrix of non-negative weights
-controlling which pairs of rows are likely to exchange tokens during
-randomization. Must be \code{nrow(x)} by \code{nrow(x)}. This enables spatially
-or trait-constrained null models where nearby or similar sites exchange
-tokens more frequently.
+\item{row_groups, col_groups}{Optional vectors assigning each row (for
+\code{row_groups}) or column (for \code{col_groups}) of \code{x} to a group. Labels can be
+integers, characters, or factor levels. When supplied, the matrix is split
+into blocks (every combination of a row group and a column group) and each
+block is randomized independently with \code{method}, so values are only ever
+exchanged within a block. For algorithms that fix row and column margins,
+this additionally fixes the category counts of every row group within each
+column (and every column group within each row): for example, grouping
+sites into regions gives a null model in which each region keeps its own
+species pool. Rows or columns that are alone in their group cannot be
+changed by fixed-margin algorithms. To randomize within a different
+grouping in each replicate (e.g. random spatial tilings from
+\code{\link[=tile_groups]{tile_groups()}}), pass a groups matrix to \code{\link[=nullcat_batch]{nullcat_batch()}} or
+\code{\link[=quantize_batch]{quantize_batch()}}.}
 
-Values are treated as relative weights (not probabilities) and are
-normalized internally. The diagonal is ignored. The matrix should be
-symmetric. Only supported for sequential methods (\code{curvecat}, \code{swapcat},
-\code{tswapcat}).
-
-When both \code{wt_row} and \code{wt_col} are supplied, \code{swaps} is forced to
-\code{"alternating"}, producing a Gibbs-like sweep that applies each weight
-matrix on its respective margin in alternation.}
-
-\item{wt_col}{An optional square numeric matrix of non-negative weights
-controlling which pairs of columns are likely to exchange tokens during
-randomization. Must be \code{ncol(x)} by \code{ncol(x)}. See \code{wt_row} for details
-on weight interpretation.}
+\item{wt_row, wt_col}{Deprecated. Experimental pairwise weight matrices previously used to
+bias which pairs of rows or columns exchange values. But weighting pair
+selection changes only how quickly a randomization mixes, not the null
+distribution it converges to; the only lasting effect of a weight matrix
+is to prevent exchanges between rows (or columns) that are not connected,
+directly or through intermediaries, by nonzero weights. Weight matrices
+are therefore now converted to \code{row_groups} / \code{col_groups} given by the
+connected components of their nonzero entries, with a warning. Use
+\code{row_groups} / \code{col_groups} instead.}
 
 \item{seed}{Integer used to seed random number generator, for reproducibility.}
 }

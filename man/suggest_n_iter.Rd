@@ -16,7 +16,10 @@ parameters must be supplied via \code{...}}
 \item{plot}{If TRUE, plot the trace, with a vertical line at the suggested value.}
 
 \item{...}{Arguments passed to \code{trace_cat()} including  arguments it passes to the
-\code{nullcat()} or \code{quantize()} function. Ignored if \code{trace} is non-NULL.}
+\code{nullcat()} or \code{quantize()} function. Ignored if \code{trace} is non-NULL. When
+\code{row_groups} or \code{col_groups} are supplied, the trace is run on the largest
+block and the suggestion is the number of iterations to use per block
+(which is how \code{n_iter} is applied when groups are used).}
 }
 \value{
 An integer of class \code{"nullcat_n_iter"} with attributes:

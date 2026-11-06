@@ -19,7 +19,11 @@
 #'       values remain attached to their original cells and move with them during
 #'       the categorical randomization. Row and column value
 #'       distributions are not preserved, but the mapping between each original
-#'       cell and its randomized destination is fixed.
+#'       cell and its randomized destination is fixed. Because cells only move
+#'       when they trade places with a cell of a different stratum, a row or
+#'       column whose values all fall in a single stratum is never changed;
+#'       `quantize_prep()` warns when this happens (see `zero_stratum` and
+#'       `transform` for ways to separate low values into their own strata).
 #'     \item `"stratum"`: values are shuffled globally within each stratum,
 #'       holding only the overall stratum-level value distribution fixed.
 #'     \item `"row"`: values are shuffled within strata separately for each
@@ -31,6 +35,14 @@
 #'   Note that this interacts with `method`: different null models
 #'   fix different margins in the underlying binary representation.
 #'
+#' @param row_groups,col_groups Optional vectors assigning rows or columns of
+#'   `x` to groups, so that randomization happens independently within each
+#'   block (combination of a row group and a column group); see [nullcat()].
+#'   Strata are defined once for the whole matrix, so every block uses the same
+#'   stratum breaks, while the quantitative values are reassigned within each
+#'   block (in every `fixed` mode, values never leave their block). With row
+#'   groups representing regions, for example, each region keeps its own pool
+#'   of species and values. `n_iter` iterations are run on every block.
 #' @inheritParams stratify
 #' @inheritParams nullcat
 #'
@@ -68,6 +80,11 @@
 #' rand4 <- quantize(prep = prep)
 #' rand5 <- quantize(prep = prep)
 #'
+#' # randomize within two regions of 25 sites each
+#' region <- rep(1:2, each = 25)
+#' rand6 <- quantize(comm, row_groups = region, n_iter = 2000)
+#' all.equal(sort(comm[region == 1, ]), sort(rand6[region == 1, ]))
+#'
 #' @export
 #' @rdname quantize
 quantize <- function(x = NULL,
@@ -80,6 +97,8 @@ quantize <- function(x = NULL,
                      offset = 0,
                      zero_stratum = FALSE,
                      n_iter = 1000,
+                     row_groups = NULL,
+                     col_groups = NULL,
                      wt_row = NULL,
                      wt_col = NULL,
                      seed = NULL) {
@@ -91,27 +110,54 @@ quantize <- function(x = NULL,
             prep <- quantize_prep(x, method = method, fixed = fixed,
                                   breaks = breaks, n_strata = n_strata, transform = transform,
                                   offset = offset, zero_stratum = zero_stratum, n_iter = n_iter,
+                                  row_groups = row_groups, col_groups = col_groups,
                                   wt_row = wt_row, wt_col = wt_col)
       }
 
-      mode <- ifelse(prep$fixed == "cell", "index", "category")
-      swaps <- ifelse(prep$fixed == "cell", "alternating", "auto")
+      if (is.matrix(prep$row_groups) || is.matrix(prep$col_groups)) {
+            stop("This `prep` holds a matrix of groups (one column per replicate), which only ",
+                 "`quantize_batch()` can use.", call. = FALSE)
+      }
 
-      rand_strata <- nullcat(prep$strata, method = prep$method,
-                             n_iter = prep$n_iter, output = mode,
-                             swaps = swaps, wt_row = prep$wt_row,
-                             wt_col = prep$wt_col, seed = seed)
+      quantize_draw(prep, prep$row_groups, prep$col_groups, seed = seed)
+}
 
+
+# internal -- one randomization from a prep object, optionally within blocks.
+quantize_draw <- function(prep, row_groups = NULL, col_groups = NULL, seed = NULL) {
+
+      mode <- if (prep$fixed == "cell") "index" else "category"
+      swaps <- if (prep$fixed == "cell") "alternating" else "auto"
+
+      if (is.null(row_groups) && is.null(col_groups)) {
+            rand_strata <- nullcat(prep$strata, method = prep$method,
+                                   n_iter = prep$n_iter, output = mode,
+                                   swaps = swaps, seed = seed)
+            with_seed(seed, {
+                  rand <- fill_from_pool(
+                        s = prep$strata,
+                        s_rand = rand_strata,
+                        pool = prep$pool,
+                        fixed = prep$fixed
+                  )
+            })
+            return(rand)
+      }
+
+      # grouped: global strata, per-block value pools
       with_seed(seed, {
-            rand <- fill_from_pool(
-                  s = prep$strata,
-                  s_rand = rand_strata,
-                  pool = prep$pool,
-                  fixed = prep$fixed
-            )
+            rand <- prep$x
+            for (b in block_list(row_groups, col_groups, nrow(prep$x), ncol(prep$x))) {
+                  s_b <- prep$strata[b$i, b$j, drop = FALSE]
+                  x_b <- prep$x[b$i, b$j, drop = FALSE]
+                  s_rand <- nullcat_engine(s_b, method = prep$method, n_iter = prep$n_iter,
+                                           output = mode, swaps = swaps)
+                  rand[b$i, b$j] <- fill_from_pool(s = s_b, s_rand = s_rand,
+                                                   pool = make_cat_pool(x_b, s_b, prep$fixed),
+                                                   fixed = prep$fixed)
+            }
       })
-
-      return(rand)
+      rand
 }
 
 
@@ -141,6 +187,10 @@ quantize <- function(x = NULL,
 #'   nonnegative quantitative values in cells.
 #'   This is the dataset for which stratification and null model overhead
 #'   should be prepared.
+#' @param row_groups,col_groups Optional groupings of rows or columns (see
+#'   [quantize()]). A vector applies to every draw. A matrix with one column
+#'   per replicate (e.g. from [tile_groups()]) is accepted here for use by
+#'   [quantize_batch()], which uses column `r` for replicate `r`.
 #'
 #' @return A list with class `"quantize_prep"` (if you want to set it)
 #'   containing the components needed by `quantize()`:
@@ -156,7 +206,7 @@ quantize <- function(x = NULL,
 #'       `strata` and `pool`.
 #'     \item `sim_args`: named list of arguments passed to `nullcat()`
 #'       (e.g. `n_iter`).
-#'     \item `wt_row`, `wt_col`: the row and column weight matrices (or NULL).
+#'     \item `row_groups`, `col_groups`: the row and column groupings (or NULL).
 #'   }
 #'
 #'   This object is intended to be passed unchanged to the `prep` argument of
@@ -190,6 +240,8 @@ quantize_prep <- function(x,
                           offset = 0,
                           zero_stratum = FALSE,
                           n_iter = 1000,
+                          row_groups = NULL,
+                          col_groups = NULL,
                           wt_row = NULL,
                           wt_col = NULL) {
 
@@ -205,9 +257,18 @@ quantize_prep <- function(x,
       x <- as.matrix(x)
       storage.mode(x) <- "double"
 
+      row_groups <- resolve_groups(row_groups, wt_row, nrow(x), "row_groups", "wt_row",
+                                   allow_matrix = TRUE)
+      col_groups <- resolve_groups(col_groups, wt_col, ncol(x), "col_groups", "wt_col",
+                                   allow_matrix = TRUE)
+
       strata <- stratify(x, breaks = breaks, n_strata = n_strata,
                          transform = transform, offset = offset,
                          zero_stratum = zero_stratum)
+
+      if (fixed == "cell" && method %in% c("curvecat", "swapcat", "tswapcat")) {
+            warn_single_stratum(strata)
+      }
 
       pool <- make_cat_pool(x, strata, fixed)
 
@@ -221,8 +282,8 @@ quantize_prep <- function(x,
             offset = offset,
             fixed = fixed,
             n_iter = as.integer(n_iter),
-            wt_row = wt_row,
-            wt_col = wt_col
+            row_groups = row_groups,
+            col_groups = col_groups
       )
 
       class(obj) <- "quantize_prep"
@@ -348,3 +409,20 @@ fill_from_pool <- function(s, s_rand, pool, fixed = "stratum") {
       }
 }
 
+
+
+# internal -- under fixed = "cell", a row or column whose cells all share one
+# stratum can never change (cells only move by trading places with cells of a
+# different stratum), so its randomized values always equal the observed ones.
+warn_single_stratum <- function(strata) {
+      one <- function(m, margin) sum(apply(m, margin, function(v) length(unique(v)) == 1L))
+      nr <- one(strata, 1)
+      nc <- one(strata, 2)
+      if (nr + nc == 0L) return(invisible(NULL))
+      warning(nr, " of ", nrow(strata), " rows and ", nc, " of ", ncol(strata),
+              " columns have all their values in a single stratum, so the randomization ",
+              "cannot change them under `fixed = \"cell\"`: their randomized values will ",
+              "equal the observed values. To randomize them, separate low values into ",
+              "their own strata (e.g. `zero_stratum = TRUE`, or a `transform`), or use a ",
+              "different `fixed` mode.", call. = FALSE)
+}
