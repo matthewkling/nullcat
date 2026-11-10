@@ -33,7 +33,7 @@
 ## Constrained randomization
 
 - [`tile_groups()`](https://matthewkling.github.io/nullcat/reference/tile_groups.md)
-  : Random hexagonal tilings for spatially constrained null models
+  : Random spatial tilings for spatially constrained null models
 - [`group_sizes()`](https://matthewkling.github.io/nullcat/reference/group_sizes.md)
   : Mean group size for each row
 

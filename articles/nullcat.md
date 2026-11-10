@@ -406,9 +406,9 @@ either side of a boundary never exchange tokens, while two sites at
 opposite ends of a region always can. A smoother, distance-based
 alternative is to use a different random grouping in each replicate.
 [`tile_groups()`](https://matthewkling.github.io/nullcat/reference/tile_groups.md)
-covers the sites with randomly placed and oriented hexagonal tiles,
-returning one tiling per column. Batch functions accept such a matrix of
-groups and use column `r` for replicate `r`:
+covers the sites with randomly placed and oriented tiles, returning one
+tiling per column. Batch functions accept such a matrix of groups and
+use column `r` for replicate `r`:
 
 ``` r
 
@@ -431,9 +431,52 @@ probability that falls from 1 at `d = 0` to about 0.5 at
 `d = 0.42 * spacing`, and to 0 at about `1.15 * spacing`. This acts as
 the distance kernel of the null model: each site is pooled with its
 neighbors, never with distant sites. A vector of spacings (one per
-tiling) blends tile sizes for a smoother, longer-tailed kernel. For
-longitude/latitude coordinates (`lonlat = TRUE`, the default), tiles are
-laid out on the sphere, with `spacing` in meters.
+tiling) blends tile sizes for a smoother, longer-tailed kernel.
+
+The example above uses planar coordinates (`lonlat = FALSE`), which are
+tiled with regular hexagons. For longitude/latitude coordinates
+(`lonlat = TRUE`, the default), tiles are instead laid out on the
+sphere, so results don’t depend on a map projection, and `spacing` is in
+meters. Spherical tiles all have the same area as a hexagon with the
+given spacing, but their shapes vary between irregular hexagons and
+near-squares, depending on where sites fall on the underlying Fibonacci
+lattice. Here are six random tilings of a regular grid of sites, with
+tiles colored arbitrarily:
+
+``` r
+
+set.seed(123)
+s <- seq(0, 10, by = 0.25)
+ll <- expand.grid(lon = s, lat = s)
+tiles_ll <- tile_groups(ll, spacing = 300e3, n = 400)
+
+par(mfrow = c(2, 3), mar = c(0.5, 0.5, 0.5, 0.5))
+for (i in 1:6) {
+  image(s, s, matrix(tiles_ll[, i] %% 7, length(s)), col = hcl.colors(7, "viridis"),
+        asp = 1, axes = FALSE, xlab = "", ylab = "")
+}
+```
+
+![](nullcat_files/figure-html/groups-tiles-sphere-1.png)
+
+Averaged over many tilings, the varying shapes and orientations wash
+out, giving practically the same smooth, circular distance kernel as
+regular hexagons (with a slightly longer tail, reaching 0 at about
+`1.3 * spacing`). Here is the proportion of tilings in which each site
+shares a tile with the site at the center of the grid:
+
+``` r
+
+focal <- which.min((ll$lon - 5)^2 + (ll$lat - 5)^2)
+p_shared <- colMeans(t(tiles_ll) == tiles_ll[focal, ])
+
+filled.contour(s, s, matrix(p_shared, length(s)), asp = 1,
+               color.palette = function(n) hcl.colors(n, "viridis"),
+               plot.title = title(xlab = "longitude", ylab = "latitude"),
+               key.title = title(main = "shared\ntile", cex.main = 0.8))
+```
+
+![](nullcat_files/figure-html/groups-kernel-1.png)
 
 Sites near edges or gaps tend to fall in small tiles, and a site alone
 in its tile cannot be changed by fixed-margin algorithms.

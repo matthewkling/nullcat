@@ -36,15 +36,16 @@
 
 - New function
   [`tile_groups()`](https://matthewkling.github.io/nullcat/reference/tile_groups.md)
-  generates random hexagonal tilings of sites, one per column, for
-  spatially constrained null models: passed to the batch functions, each
-  replicate is randomized within the tiles of a different, randomly
-  placed tiling, so sites are pooled with their neighbours. With
-  longitude/latitude coordinates, tiles are laid out on the sphere (a
-  randomly rotated Fibonacci lattice) with `spacing` in metres; planar
-  coordinates use a randomly rotated and offset hexagonal grid. Two
-  sites share a tile in about half of the tilings at a distance of
-  `0.42 * spacing`.
+  generates random tilings of sites, one per column, for spatially
+  constrained null models: passed to the batch functions, each replicate
+  is randomized within the tiles of a different, randomly placed and
+  oriented tiling, so sites are pooled with their neighbors. Planar
+  coordinates use a regular hexagonal grid. With longitude/latitude
+  coordinates, tiles are the Voronoi cells of a randomly rotated
+  Fibonacci lattice on the sphere: equal in area to hexagons of the
+  given `spacing` (in meters), but varying in shape between irregular
+  hexagons and near-squares. Either way, two sites share a tile in about
+  half of the tilings at a distance of `0.42 * spacing`.
 
 - New function
   [`group_sizes()`](https://matthewkling.github.io/nullcat/reference/group_sizes.md)
