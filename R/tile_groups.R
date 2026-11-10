@@ -1,19 +1,21 @@
-#' Random hexagonal tilings for spatially constrained null models
+#' Random spatial tilings for spatially constrained null models
 #'
-#' Generates random groupings of sites by tiling space with regular hexagons
-#' that are randomly positioned and oriented, independently for each column of
-#' the result. Passing the result as `row_groups` to [nullcat_batch()] or
-#' [quantize_batch()] randomizes each replicate within the tiles of its own
-#' tiling, so that sites only exchange values with nearby sites, and the
-#' resulting null distribution blends over many tile placements.
+#' Generates random groupings of sites by partitioning space into compact,
+#' equal-area tiles that are randomly positioned and oriented, independently
+#' for each column of the result. Passing the result as `row_groups` to
+#' [nullcat_batch()] or [quantize_batch()] randomizes each replicate within the
+#' tiles of its own tiling, so that sites only exchange values with nearby
+#' sites, and the resulting null distribution blends over many tile placements.
 #'
 #' @param coords A two-column numeric matrix (or data frame) of site
 #'   coordinates, one row per row of the community matrix. With
 #'   `lonlat = TRUE`, longitude and latitude in decimal degrees; otherwise
 #'   planar (projected) x and y coordinates.
-#' @param spacing Distance between the centres of neighbouring tiles. With
-#'   `lonlat = TRUE` this is in metres (great-circle distance on a spherical
-#'   Earth of radius 6,371,008.8 m); otherwise it is in the units of `coords`.
+#' @param spacing The size of the tiles. With `lonlat = FALSE`, the distance
+#'   between the centers of neighboring hexagonal tiles, in the units of
+#'   `coords`. With `lonlat = TRUE`, the equivalent spacing in meters: tiles
+#'   have the same area as hexagons with this center spacing
+#'   (`sqrt(3) / 2 * spacing^2`), on a spherical Earth of radius 6,371,008.8 m.
 #'   Either a single value, or a vector of length `n` giving the spacing for
 #'   each tiling (e.g. random draws, for a blend of scales).
 #' @param n Number of tilings (columns of the result). Use one per
@@ -22,25 +24,32 @@
 #'   or planar coordinates (`FALSE`)?
 #'
 #' @details
-#' Each tiling is built from a set of regularly spaced seed points, and every
-#' site is assigned to its nearest seed. With `lonlat = TRUE`, seeds form a
-#' Fibonacci lattice on the sphere with a uniformly random 3-D rotation for each
-#' tiling. This gives near-hexagonal, near-equal-area tiles of any size,
-#' anywhere on the globe, with no projection distortion; nearest seeds are
+#' Each tiling is built from a set of evenly spaced seed points, and every
+#' site is assigned to its nearest seed, so tiles are the Voronoi cells of the
+#' seeds.
+#'
+#' With `lonlat = FALSE`, seeds form a regular hexagonal grid with a random
+#' rotation and offset for each tiling, so tiles are regular hexagons.
+#'
+#' With `lonlat = TRUE`, seeds form a Fibonacci lattice on the sphere with a
+#' uniformly random 3-D rotation for each tiling. This works at any extent, up
+#' to the whole globe, with no projection distortion, and nearest seeds are
 #' found by a fast exact search, so fine spacings are no more costly than
-#' coarse ones. With `lonlat = FALSE`, seeds form a planar hexagonal grid with
-#' a random rotation and offset for each tiling.
+#' coarse ones. Tiles all have the same area, but not the same shape: the
+#' lattice is only approximately hexagonal, so depending on where sites fall
+#' on it, tiles range from irregular hexagons to near-squares.
 #'
 #' Because tile placement is random, two sites a distance `d` apart share a
-#' tile in some tilings and not others. Across tilings, the probability that
-#' they share a tile falls from 1 at `d = 0` to about 0.5 at
-#' `d = 0.42 * spacing`, and to 0 at about the tile diameter: `1.15 * spacing`
-#' for a regular hexagon (the planar grid). Tiles of the spherical lattice all
-#' have nearly the same area, but some are moderately elongated, so a few
-#' pairs of sites up to about `1.3 * spacing` apart can occasionally share a
-#' tile.
+#' tile in some tilings and not others. Since every tiling is placed and
+#' oriented at random, the probability that they share a tile depends only on
+#' `d`, not on where the sites are or the direction between them. It falls
+#' from 1 at `d = 0` to about 0.5 at `d = 0.42 * spacing` and about 0.17 at
+#' `d = 0.75 * spacing`, and is near zero beyond `d = spacing`. It reaches
+#' zero at the tile diameter: `1.15 * spacing` for regular hexagons, or about
+#' `1.3 * spacing` on the sphere, where some tiles are slightly elongated.
+#' Otherwise the two give practically the same curve.
 #' This "co-tile" probability acts as the distance kernel of the null model:
-#' sites are pooled with their neighbours, and never with distant sites.
+#' sites are pooled with their neighbors, and never with distant sites.
 #' Supplying a vector of spacings blends tiles of several sizes, which smooths
 #' and lengthens the kernel.
 #'
@@ -146,7 +155,7 @@ fib_point <- function(k, N) {
 # internal -- index of the nearest Fibonacci lattice point to each row of P
 # (unit vectors). Starts from the lattice point at the same height and descends
 # greedily using index offsets equal to Fibonacci numbers, which connect each
-# lattice point to its neighbours at every scale.
+# lattice point to its neighbors at every scale.
 fib_nearest <- function(P, N) {
       k <- pmin(pmax(round((N * (1 - P[, 3]) - 1) / 2), 0), N - 1)
       d <- rowSums((fib_point(k, N) - P)^2)
@@ -176,7 +185,7 @@ fib_nearest <- function(P, N) {
 }
 
 
-# internal -- assign planar points to cells of a hexagonal grid with centre
+# internal -- assign planar points to cells of a hexagonal grid with center
 # spacing `s`, random rotation, and random offset (cube-coordinate rounding)
 hex_assign <- function(xy, s) {
       th <- stats::runif(1, 0, pi / 3)
