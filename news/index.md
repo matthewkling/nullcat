@@ -25,7 +25,8 @@
   [`trace_cat()`](https://matthewkling.github.io/nullcat/reference/trace_cat.md)
   /
   [`suggest_n_iter()`](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md)
-  trace the largest block.
+  trace the grouped randomization as a whole, suggesting the number of
+  iterations per block.
 
 - [`nullcat_batch()`](https://matthewkling.github.io/nullcat/reference/nullcat_batch.md)
   and

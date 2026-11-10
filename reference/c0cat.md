@@ -25,8 +25,9 @@ c0cat(x, n_iter = 1L, output = c("category", "index"), seed = NULL)
   times can be estimated with
   [`suggest_n_iter()`](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md).
   When `row_groups` or `col_groups` is used, `n_iter` iterations are run
-  separately on every block, so it should be sized for a block rather
-  than for the full matrix.
+  separately on every block. The number needed can be more or fewer than
+  for the full matrix, so estimate it by passing the same groups to
+  [`suggest_n_iter()`](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md).
 
 - output:
 

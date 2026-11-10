@@ -42,9 +42,11 @@ suggest_n_iter(trace = NULL, tail_frac = 0.3, plot = FALSE, ...)
   or
   [`quantize()`](https://matthewkling.github.io/nullcat/reference/quantize.md)
   function. Ignored if `trace` is non-NULL. When `row_groups` or
-  `col_groups` are supplied, the trace is run on the largest block and
-  the suggestion is the number of iterations to use per block (which is
-  how `n_iter` is applied when groups are used).
+  `col_groups` are supplied, the grouped randomization is traced as a
+  whole, and the suggestion is the number of iterations to run in each
+  block (which is how `n_iter` is applied when groups are used). This
+  can be more or fewer than the full matrix needs: smaller blocks have
+  fewer rows (or columns) to mix among, but also fewer possible swaps.
 
 ## Value
 

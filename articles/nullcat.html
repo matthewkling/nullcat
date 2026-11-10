@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nullcat</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0.9001</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -430,10 +430,11 @@ batch, trace, and <code>vegan</code> integration functions.</p>
 species within the same clade or guild. Supplying both gives independent
 randomization within every region-by-clade block.</p>
 <p>When groups are used, <code>n_iter</code> iterations are run on every
-block, so <code>n_iter</code> only needs to be large enough to mix a
-block, not the whole matrix. Given the same groups,
-<code><a href="../reference/trace_cat.html">trace_cat()</a></code> and <code><a href="../reference/suggest_n_iter.html">suggest_n_iter()</a></code> trace the
-largest block:</p>
+block. That can be more or fewer iterations than the whole matrix needs:
+a smaller block has fewer rows to mix among, but also fewer possible
+swaps. Given the same groups, <code><a href="../reference/trace_cat.html">trace_cat()</a></code> and
+<code><a href="../reference/suggest_n_iter.html">suggest_n_iter()</a></code> trace the grouped randomization as it will
+be run and suggest the number of iterations per block:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/suggest_n_iter.html">suggest_n_iter</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, n_iter <span class="op">=</span> <span class="fl">2000</span>, row_groups <span class="op">=</span> <span class="va">region</span><span class="op">)</span></span></code></pre></div>
 </div>

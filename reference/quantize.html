@@ -15,7 +15,7 @@ quantitative values according to the new stratum layout."><meta property="og:ima
 
     <a class="navbar-brand me-2" href="../index.html">nullcat</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0.9001</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -166,7 +166,8 @@ of the <code>n_strata</code> will represent zeros and the others will be nonzero
 more thorough mixing. Ignored for non-sequential methods. Minimum
 burn-in times can be estimated with <code><a href="suggest_n_iter.html">suggest_n_iter()</a></code>. When <code>row_groups</code>
 or <code>col_groups</code> is used, <code>n_iter</code> iterations are run separately on every
-block, so it should be sized for a block rather than for the full matrix.</p></dd>
+block. The number needed can be more or fewer than for the full matrix, so
+estimate it by passing the same groups to <code><a href="suggest_n_iter.html">suggest_n_iter()</a></code>.</p></dd>
 
 
 <dt id="arg-row-groups-col-groups">row_groups, col_groups<a class="anchor" aria-label="anchor" href="#arg-row-groups-col-groups"></a></dt>

@@ -78,11 +78,18 @@ trace_cat(
   [`quantize()`](https://matthewkling.github.io/nullcat/reference/quantize.md)),
   such as `method`, `n_strata`, `fixed`, etc. If `row_groups` and/or
   `col_groups` are supplied (as vectors, or as matrices with one column
-  per replicate), randomizations run independently within blocks and
-  `n_iter` applies to each block, so the trace is run on the single
-  largest block (the one with the most cells, searched across up to the
-  first 10 columns of a groups matrix), as it is generally the slowest
-  to mix. For `quantize`, strata are still defined from the full matrix.
+  per replicate), the traced chains run the grouped randomization
+  exactly as it is used: every block is advanced by the same number of
+  iterations, and the statistic is computed on the whole matrix, so the
+  trace (and
+  [`suggest_n_iter()`](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md))
+  gives the number of iterations to run per block. With a matrix of
+  groups (e.g. tilings), the first column is used. Because every cell
+  counts equally in the statistic, a few small blocks that mix more
+  slowly than the rest have little influence on it. Each traced chain
+  costs as much as one grouped randomization run for `n_iter` iterations
+  (that is, `n_iter` iterations in every block), so with many blocks it
+  pays not to set `n_iter` far above the number expected to be needed.
 
 ## Value
 
@@ -96,8 +103,8 @@ An object of class `"cat_trace"` with elements:
 
 - `fun_args`: list of the `...` used (for reproducibility)
 
-- `block`: when groups were supplied, the dimensions of the block that
-  was traced; otherwise `NULL`
+- `n_blocks`: when groups were supplied, the number of blocks in the
+  traced grouping; otherwise `NULL`
 
 Plotting is available via `plot(cat_trace)`.
 

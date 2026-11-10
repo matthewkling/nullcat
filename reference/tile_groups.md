@@ -79,9 +79,9 @@ randomizations in that replicate. Use
 [`group_sizes()`](https://matthewkling.github.io/nullcat/reference/group_sizes.md)
 to check the average pool size of each site before running
 randomizations. When randomizing within groups, `n_iter` is applied to
-every tile, so it only needs to be large enough for the largest tile;
-[`suggest_n_iter()`](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md)
-given the same groups traces the largest tile.
+every tile; estimate it by passing the same groups to
+[`suggest_n_iter()`](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md),
+since tiles can need more or fewer iterations than the full matrix.
 
 ## See also
 

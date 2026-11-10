@@ -9,7 +9,7 @@ a summary statistic at each iteration to help assess mixing on a given dataset."
 
     <a class="navbar-brand me-2" href="../index.html">nullcat</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0.9001</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -104,11 +104,16 @@ correlation for <code><a href="quantize.html">quantize()</a></code>.</p></dd>
 <dd><p>Arguments to the chosen <code>fun</code> (<code><a href="nullcat.html">nullcat()</a></code> or <code><a href="quantize.html">quantize()</a></code>),
 such as <code>method</code>, <code>n_strata</code>, <code>fixed</code>, etc. If <code>row_groups</code> and/or
 <code>col_groups</code> are supplied (as vectors, or as matrices with one column per
-replicate), randomizations run independently within blocks and <code>n_iter</code>
-applies to each block, so the trace is run on the single largest block
-(the one with the most cells, searched across up to the first 10 columns
-of a groups matrix), as it is generally the slowest to mix. For
-<code>quantize</code>, strata are still defined from the full matrix.</p></dd>
+replicate), the traced chains run the grouped randomization exactly as it
+is used: every block is advanced by the same number of iterations, and the
+statistic is computed on the whole matrix, so the trace (and
+<code><a href="suggest_n_iter.html">suggest_n_iter()</a></code>) gives the number of iterations to run per block. With a
+matrix of groups (e.g. tilings), the first column is used. Because every
+cell counts equally in the statistic, a few small blocks that mix more
+slowly than the rest have little influence on it. Each traced chain costs
+as much as one grouped randomization run for <code>n_iter</code> iterations (that is,
+<code>n_iter</code> iterations in every block), so with many blocks it pays not to set
+<code>n_iter</code> far above the number expected to be needed.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -117,8 +122,8 @@ of a groups matrix), as it is generally the slowest to mix. For
 <li><p><code>steps</code>: integer vector of iteration numbers (starting at 0)</p></li>
 <li><p><code>fun</code>, <code>n_iter</code>, <code>thin</code>, <code>n_chains</code>, <code>n_cores</code>, <code>stat_name</code>, <code>call</code></p></li>
 <li><p><code>fun_args</code>: list of the <code>...</code> used (for reproducibility)</p></li>
-<li><p><code>block</code>: when groups were supplied, the dimensions of the block that
-was traced; otherwise <code>NULL</code></p></li>
+<li><p><code>n_blocks</code>: when groups were supplied, the number of blocks in the
+traced grouping; otherwise <code>NULL</code></p></li>
 </ul><p>Plotting is available via <code>plot(cat_trace)</code>.</p>
     </div>
 

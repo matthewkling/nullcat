@@ -384,13 +384,15 @@ Column groups work the same way, e.g. restricting exchanges to species
 within the same clade or guild. Supplying both gives independent
 randomization within every region-by-clade block.
 
-When groups are used, `n_iter` iterations are run on every block, so
-`n_iter` only needs to be large enough to mix a block, not the whole
-matrix. Given the same groups,
+When groups are used, `n_iter` iterations are run on every block. That
+can be more or fewer iterations than the whole matrix needs: a smaller
+block has fewer rows to mix among, but also fewer possible swaps. Given
+the same groups,
 [`trace_cat()`](https://matthewkling.github.io/nullcat/reference/trace_cat.md)
 and
 [`suggest_n_iter()`](https://matthewkling.github.io/nullcat/reference/suggest_n_iter.md)
-trace the largest block:
+trace the grouped randomization as it will be run and suggest the number
+of iterations per block:
 
 ``` r
 
