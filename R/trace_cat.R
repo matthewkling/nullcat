@@ -20,11 +20,16 @@
 #' @param ... Arguments to the chosen `fun` (`nullcat()` or `quantize()`),
 #'   such as `method`, `n_strata`, `fixed`, etc. If `row_groups` and/or
 #'   `col_groups` are supplied (as vectors, or as matrices with one column per
-#'   replicate), randomizations run independently within blocks and `n_iter`
-#'   applies to each block, so the trace is run on the single largest block
-#'   (the one with the most cells, searched across up to the first 10 columns
-#'   of a groups matrix), as it is generally the slowest to mix. For
-#'   `quantize`, strata are still defined from the full matrix.
+#'   replicate), the traced chains run the grouped randomization exactly as it
+#'   is used: every block is advanced by the same number of iterations, and the
+#'   statistic is computed on the whole matrix, so the trace (and
+#'   [suggest_n_iter()]) gives the number of iterations to run per block. With a
+#'   matrix of groups (e.g. tilings), the first column is used. Because every
+#'   cell counts equally in the statistic, a few small blocks that mix more
+#'   slowly than the rest have little influence on it. Each traced chain costs
+#'   as much as one grouped randomization run for `n_iter` iterations (that is,
+#'   `n_iter` iterations in every block), so with many blocks it pays not to set
+#'   `n_iter` far above the number expected to be needed.
 #'
 #' @return An object of class `"cat_trace"` with elements:
 #' \itemize{
@@ -32,8 +37,8 @@
 #'   \item `steps`: integer vector of iteration numbers (starting at 0)
 #'   \item `fun`, `n_iter`, `thin`, `n_chains`, `n_cores`, `stat_name`, `call`
 #'   \item `fun_args`: list of the `...` used (for reproducibility)
-#'   \item `block`: when groups were supplied, the dimensions of the block that
-#'     was traced; otherwise `NULL`
+#'   \item `n_blocks`: when groups were supplied, the number of blocks in the
+#'     traced grouping; otherwise `NULL`
 #' }
 #' Plotting is available via `plot(cat_trace)`.
 #'
@@ -107,7 +112,7 @@ trace_cat <- function(x,
             stat_name = stat_name,
             call = match.call(),
             fun_args = list(...),
-            block = core$block
+            n_blocks = core$n_blocks
       )
       class(obj) <- "cat_trace"
 
@@ -141,19 +146,23 @@ trace_chain <- function(x0,
       n_steps <- length(steps)
       if (n_steps > 5000L) warning("trace will record ", n_steps, " steps; this may be slow.")
 
-      # With groups, randomizations run independently per block; trace the largest one.
+      # With groups, every block is advanced by `thin` iterations between checkpoints
+      # (exactly as a grouped randomization runs), and the statistic is computed on
+      # the whole matrix. A groups matrix contributes its first column (one tiling).
       dots <- list(...)
       rg <- resolve_groups(dots$row_groups, dots$wt_row, nrow(x0), "row_groups", "wt_row",
                            allow_matrix = TRUE)
       cg <- resolve_groups(dots$col_groups, dots$wt_col, ncol(x0), "col_groups", "wt_col",
                            allow_matrix = TRUE)
       dots[c("row_groups", "col_groups", "wt_row", "wt_col")] <- NULL
-      block <- if (is.null(rg) && is.null(cg)) NULL else largest_block(rg, cg, nrow(x0), ncol(x0))
-      x_full <- x0
-      if (!is.null(block) && fun == "nullcat") x0 <- x0[block$i, block$j, drop = FALSE]
+      rg <- groups_rep(rg, 1L)
+      cg <- groups_rep(cg, 1L)
+      grouped <- !is.null(rg) || !is.null(cg)
+      n_blocks <- if (grouped) length(block_list(rg, cg, nrow(x0), ncol(x0))) else NULL
 
       if (fun == "nullcat") {
-            update_fun <- function(x) do.call(nullcat, c(list(x, n_iter = thin, output = "category"), dots))
+            update_fun <- function(x) do.call(nullcat, c(list(x, n_iter = thin, output = "category",
+                                                              row_groups = rg, col_groups = cg), dots))
             one_chain <- function(i) {
                   x <- x0
                   vals <- numeric(n_steps)
@@ -165,15 +174,27 @@ trace_chain <- function(x0,
             }
       } else { # fun == "quantize" —— optimized path to avoid unneeded overhead computation
 
-            # One-time prep from the initial matrix (strata defined from the full matrix)
-            prep  <- do.call(quantize_prep, c(list(x_full), dots))
-            if (!is.null(block)) {
-                  x0 <- x_full[block$i, block$j, drop = FALSE]
-                  prep$x <- x0
-                  prep$strata <- prep$strata[block$i, block$j, drop = FALSE]
-                  prep$pool <- make_cat_pool(x0, prep$strata, prep$fixed)
-            }
+            # One-time prep from the initial matrix
+            prep  <- do.call(quantize_prep, c(list(x0), dots))
             fixed <- prep$fixed
+
+            # Value pools: global, or one per block when grouped (values never leave their block)
+            blocks <- if (grouped) block_list(rg, cg, nrow(x0), ncol(x0)) else NULL
+            block_pools <- if (grouped) lapply(blocks, function(b)
+                  make_cat_pool(x0[b$i, b$j, drop = FALSE], prep$strata[b$i, b$j, drop = FALSE], fixed)) else NULL
+            fill_draw <- function(s_rand) {
+                  if (!grouped) {
+                        return(fill_from_pool(s = prep$strata, s_rand = s_rand, pool = prep$pool, fixed = fixed))
+                  }
+                  out <- x0
+                  for (k in seq_along(blocks)) {
+                        b <- blocks[[k]]
+                        out[b$i, b$j] <- fill_from_pool(s = prep$strata[b$i, b$j, drop = FALSE],
+                                                        s_rand = s_rand[b$i, b$j, drop = FALSE],
+                                                        pool = block_pools[[k]], fixed = fixed)
+                  }
+                  out
+            }
             mode  <- if (fixed == "cell") "index" else "category"
 
             make_one_chain <- function(i) {
@@ -189,7 +210,8 @@ trace_chain <- function(x0,
                   for (i in seq_len(n_steps)) {
                         if (mode == "index") {
                               # Advance categories by 'thin' updates and get the composite index permutation
-                              idx <- nullcat(s_cur, method = method, n_iter = nstep, output = "index")
+                              idx <- nullcat(s_cur, method = method, n_iter = nstep, output = "index",
+                                             row_groups = rg, col_groups = cg)
                               # Move both the categorical layout AND the quantitative values by the same permutation
                               s_cur[] <- s_cur[idx]
                               x_cur[] <- x_cur[idx]
@@ -197,9 +219,10 @@ trace_chain <- function(x0,
                               vals[i] <- stat_fun(x_cur, x0)
                         } else {
                               # Advance categorical layout directly
-                              s_cur <- nullcat(s_cur, method = method, n_iter = nstep, output = "category")
-                              # Materialize a quantitative draw using precomputed pool
-                              x_draw <- fill_from_pool(s = prep$strata, s_rand = s_cur, pool = prep$pool, fixed = fixed)
+                              s_cur <- nullcat(s_cur, method = method, n_iter = nstep, output = "category",
+                                               row_groups = rg, col_groups = cg)
+                              # Materialize a quantitative draw using precomputed pool(s)
+                              x_draw <- fill_draw(s_cur)
                               vals[i] <- stat_fun(x_draw, x0)
                         }
                   }
@@ -220,30 +243,8 @@ trace_chain <- function(x0,
       out[1L, ] <- stat_fun(x0, x0)
       out[2:(n_steps + 1L), ] <- chain_mat
 
-      list(traces = out, steps = c(0L, steps),
-           block = if (is.null(block)) NULL else c(rows = length(block$i), cols = length(block$j)))
+      list(traces = out, steps = c(0L, steps), n_blocks = n_blocks)
 }
-
-
-# internal -- the block with the most cells, across (up to the first 10)
-# columns of any groups matrices.
-largest_block <- function(row_groups, col_groups, nr, nc) {
-      reps <- max(1L, if (is.matrix(row_groups)) min(10L, ncol(row_groups)) else 1L,
-                  if (is.matrix(col_groups)) min(10L, ncol(col_groups)) else 1L)
-      best <- NULL
-      for (r in seq_len(reps)) {
-            rg <- if (is.matrix(row_groups)) row_groups[, min(r, ncol(row_groups))] else row_groups
-            cg <- if (is.matrix(col_groups)) col_groups[, min(r, ncol(col_groups))] else col_groups
-            for (b in block_list(rg, cg, nr, nc)) {
-                  if (is.null(best) || length(b$i) * length(b$j) > length(best$i) * length(best$j)) best <- b
-            }
-      }
-      best
-}
-
-
-
-
 
 
 # Cohen's kappa for categorical data
@@ -308,8 +309,8 @@ print.cat_trace <- function(x, digits = 3, ...) {
       cat(sprintf(" Chains:   %d (%d recorded steps per chain)\n", n_chains, n_steps))
       cat(sprintf(" Iterations: %d total  (thin = %d)\n", total_iter, thin))
       cat(sprintf(" Statistic:  %s\n", stat_name))
-      if (!is.null(x$block)) cat(sprintf(" Traced block: %d rows x %d columns (largest block)\n",
-                                         x$block[["rows"]], x$block[["cols"]]))
+      if (!is.null(x$n_blocks)) cat(sprintf(" Grouped:    %d blocks, traced jointly (n_iter per block)\n",
+                                            x$n_blocks))
       if (!is.null(x$seed)) cat(sprintf(" Seed:      %d\n", x$seed))
       cat("\n")
 

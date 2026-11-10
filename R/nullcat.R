@@ -36,7 +36,8 @@ nullcat_methods <- function() NULLCAT_METHODS
 #'   more thorough mixing. Ignored for non-sequential methods. Minimum
 #'   burn-in times can be estimated with `suggest_n_iter()`. When `row_groups`
 #'   or `col_groups` is used, `n_iter` iterations are run separately on every
-#'   block, so it should be sized for a block rather than for the full matrix.
+#'   block. The number needed can be more or fewer than for the full matrix, so
+#'   estimate it by passing the same groups to `suggest_n_iter()`.
 #' @param output Character indicating type of result to return:
 #'   \itemize{
 #'     \item `"category"` (default) returns randomized matrix

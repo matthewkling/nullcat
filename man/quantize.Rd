@@ -101,7 +101,8 @@ of the \code{n_strata} will represent zeros and the others will be nonzero range
 more thorough mixing. Ignored for non-sequential methods. Minimum
 burn-in times can be estimated with \code{suggest_n_iter()}. When \code{row_groups}
 or \code{col_groups} is used, \code{n_iter} iterations are run separately on every
-block, so it should be sized for a block rather than for the full matrix.}
+block. The number needed can be more or fewer than for the full matrix, so
+estimate it by passing the same groups to \code{suggest_n_iter()}.}
 
 \item{row_groups, col_groups}{Optional vectors assigning rows or columns of
 \code{x} to groups, so that randomization happens independently within each

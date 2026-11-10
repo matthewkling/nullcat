@@ -17,9 +17,11 @@ parameters must be supplied via \code{...}}
 
 \item{...}{Arguments passed to \code{trace_cat()} including  arguments it passes to the
 \code{nullcat()} or \code{quantize()} function. Ignored if \code{trace} is non-NULL. When
-\code{row_groups} or \code{col_groups} are supplied, the trace is run on the largest
-block and the suggestion is the number of iterations to use per block
-(which is how \code{n_iter} is applied when groups are used).}
+\code{row_groups} or \code{col_groups} are supplied, the grouped randomization is
+traced as a whole, and the suggestion is the number of iterations to run in
+each block (which is how \code{n_iter} is applied when groups are used). This can
+be more or fewer than the full matrix needs: smaller blocks have fewer rows
+(or columns) to mix among, but also fewer possible swaps.}
 }
 \value{
 An integer of class \code{"nullcat_n_iter"} with attributes:

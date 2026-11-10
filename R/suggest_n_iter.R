@@ -23,9 +23,11 @@
 #' @param plot If TRUE, plot the trace, with a vertical line at the suggested value.
 #' @param ... Arguments passed to `trace_cat()` including  arguments it passes to the
 #'   `nullcat()` or `quantize()` function. Ignored if `trace` is non-NULL. When
-#'   `row_groups` or `col_groups` are supplied, the trace is run on the largest
-#'   block and the suggestion is the number of iterations to use per block
-#'   (which is how `n_iter` is applied when groups are used).
+#'   `row_groups` or `col_groups` are supplied, the grouped randomization is
+#'   traced as a whole, and the suggestion is the number of iterations to run in
+#'   each block (which is how `n_iter` is applied when groups are used). This can
+#'   be more or fewer than the full matrix needs: smaller blocks have fewer rows
+#'   (or columns) to mix among, but also fewer possible swaps.
 #' @references
 #' Heidelberger, P. & Welch, P.D. (1983). Simulation run length control in the presence of
 #' an initial transient. Operations Research, 31(6): 1109–1144.

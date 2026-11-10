@@ -95,15 +95,33 @@ test_that("batch functions use one column of a groups matrix per replicate", {
       expect_length(nullcat_batch(x, n_reps = 4, row_groups = G, stat = sum), 4)
 })
 
-test_that("trace_cat traces the largest block", {
+test_that("trace_cat traces the grouped randomization as a whole", {
       set.seed(6)
       x <- matrix(sample(1:4, 30 * 6, TRUE), 30)
+      q <- matrix(runif(30 * 6), 30)
       tr <- trace_cat(x, n_iter = 200, n_chains = 2, row_groups = c(rep(1, 20), rep(2, 10)))
-      expect_equal(unname(tr$block), c(20, 6))
-      tq <- trace_cat(matrix(runif(180), 30), fun = "quantize", n_iter = 200, n_chains = 2,
+      expect_equal(tr$n_blocks, 2)
+      expect_equal(nrow(tr$traces), length(tr$steps))
+      expect_null(trace_cat(x, n_iter = 200, n_chains = 2)$n_blocks)
+
+      # with every row alone in its group, nothing can move: the statistic stays at 1
+      tr1 <- trace_cat(x, n_iter = 200, n_chains = 2, row_groups = seq_len(30))
+      expect_true(all(abs(tr1$traces - 1) < 1e-12))
+      # (in "cell" and "col" modes; "stratum" and "row" modes still redraw values within each row)
+      for (f in c("cell", "col")) {
+            tq1 <- suppressWarnings(trace_cat(q, fun = "quantize", fixed = f, n_iter = 200,
+                                              n_chains = 2, row_groups = seq_len(30)))
+            expect_true(all(abs(tq1$traces - 1) < 1e-12), info = f)
+      }
+
+      # grouped quantize traces run with row and column groups, and with a groups matrix
+      tq <- trace_cat(q, fun = "quantize", n_iter = 200, n_chains = 2,
                       row_groups = c(rep(1, 12), rep(2, 18)), col_groups = rep(1:2, 3))
-      expect_equal(unname(tq$block), c(18, 3))
-      expect_null(trace_cat(x, n_iter = 200, n_chains = 2)$block)
+      expect_equal(tq$n_blocks, 4)
+      G <- matrix(sample(1:3, 30 * 5, TRUE), 30, 5)
+      expect_equal(trace_cat(x, n_iter = 200, n_chains = 2, row_groups = G)$n_blocks,
+                   length(unique(G[, 1])))
+      expect_true(is.numeric(suggest_n_iter(x = x, n_iter = 400, n_chains = 2, row_groups = G[, 1])))
 })
 
 test_that("commsim functions accept groups", {

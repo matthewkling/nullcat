@@ -74,5 +74,5 @@ test_that("deprecated weights work through quantize, batch and trace functions",
       expect_equal(n_warn, 1)
 
       expect_warning(tr <- trace_cat(x, n_iter = 100, n_chains = 2, wt_row = W), "deprecated")
-      expect_equal(tr$block[["rows"]], 10)
+      expect_equal(tr$n_blocks, 2)
 })

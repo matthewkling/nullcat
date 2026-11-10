@@ -48,9 +48,9 @@
 #' sites. A site alone in its tile cannot be changed by fixed-margin
 #' randomizations in that replicate. Use [group_sizes()] to check the average
 #' pool size of each site before running randomizations. When randomizing
-#' within groups, `n_iter` is applied to every tile, so it only needs to be
-#' large enough for the largest tile; [suggest_n_iter()] given the same groups
-#' traces the largest tile.
+#' within groups, `n_iter` is applied to every tile; estimate it by passing the
+#' same groups to [suggest_n_iter()], since tiles can need more or fewer
+#' iterations than the full matrix.
 #'
 #' @return An integer matrix with one row per site and `n` columns. Each
 #'   column is one tiling, giving the tile membership of every site (tile

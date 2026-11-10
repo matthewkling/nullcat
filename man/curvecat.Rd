@@ -24,7 +24,8 @@ Values should represent category or stratum membership for each cell.}
 more thorough mixing. Ignored for non-sequential methods. Minimum
 burn-in times can be estimated with \code{suggest_n_iter()}. When \code{row_groups}
 or \code{col_groups} is used, \code{n_iter} iterations are run separately on every
-block, so it should be sized for a block rather than for the full matrix.}
+block. The number needed can be more or fewer than for the full matrix, so
+estimate it by passing the same groups to \code{suggest_n_iter()}.}
 
 \item{output}{Character indicating type of result to return:
 \itemize{

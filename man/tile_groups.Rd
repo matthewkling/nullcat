@@ -64,9 +64,9 @@ Sites near edges, gaps, or coastlines tend to fall in tiles with few other
 sites. A site alone in its tile cannot be changed by fixed-margin
 randomizations in that replicate. Use \code{\link[=group_sizes]{group_sizes()}} to check the average
 pool size of each site before running randomizations. When randomizing
-within groups, \code{n_iter} is applied to every tile, so it only needs to be
-large enough for the largest tile; \code{\link[=suggest_n_iter]{suggest_n_iter()}} given the same groups
-traces the largest tile.
+within groups, \code{n_iter} is applied to every tile; estimate it by passing the
+same groups to \code{\link[=suggest_n_iter]{suggest_n_iter()}}, since tiles can need more or fewer
+iterations than the full matrix.
 }
 \examples{
 # planar coordinates
